@@ -1,0 +1,118 @@
+.adSidebars {
+    position: fixed;
+    top: 64px;
+    /* Height of AppBar */
+    left: 0;
+    bottom: 0;
+    width: 260px;
+    /* Sidebar width */
+    background-color: #d8c9ae54;
+    overflow-y: auto;
+    transition: transform 0.3s ease-in-out;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+    z-index: 1200;
+    /* Ensure it stays above main content */
+}
+
+.adSidebars.collapsed {
+    transform: translateX(-260px);
+}
+
+.mainContent {
+    width: calc(100% - 260px);
+    /* Dynamically adjust width based on sidebar */
+    margin-left: 260px;
+    /* Sidebar width */
+    padding: 16px;
+    margin-top: 64px;
+    /* AppBar height */
+    transition: margin 0.3s ease-in-out, width 0.3s ease-in-out;
+    overflow: hidden;
+    /* Prevent scrollbars */
+}
+
+.mainContent.fullWidth {
+    width: 100%;
+    /* Full width when sidebar is collapsed */
+    margin-left: 0;
+}
+
+/* AppBar fixed at the top */
+.MuiAppBar-root {
+    z-index: 1201;
+}
+
+/* Smooth scrolling for sidebar */
+.adSidebars::-webkit-scrollbar {
+    width: 6px;
+}
+
+.adSidebars::-webkit-scrollbar-thumb {
+    background-color: #aaa;
+    border-radius: 3px;
+}
+
+/* Remove horizontal scrollbar in the entire layout */
+body,
+html {
+    overflow-x: hidden;
+}
+
+p {
+    margin: 0 !important;
+}
+
+.user-name {
+    font-family: 'Montserrat', sans-serif !important;
+    font-size: 14px;
+    color: #fff !important;
+    padding-right: 20px;
+}
+
+.user-profile {
+    display: flex;
+    align-items: center;
+    margin-left: auto;
+    margin-right: 20px;
+}
+
+.user-edit-icon {
+    color: #fff !important;
+    cursor: pointer;
+}
+
+.menu-item {
+    font-family: 'Montserrat', sans-serif !important;
+    font-weight: 600 !important;
+    color: #a76060 !important
+}
+
+.logout-cont {
+    background: transparent !important;
+    cursor: pointer !important;
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 20px !important;
+}
+
+.logout {
+    color: #0f0404 !important;
+    font-weight: 700 !important;
+
+
+}
+
+.logout:hover {
+    animation: pulse 1s ease-in-out infinite alternate;
+}
+
+
+@keyframes pulse {
+    from {
+        transform: scale(1);
+    }
+
+    to {
+        transform: scale(1.1);
+    }
+}

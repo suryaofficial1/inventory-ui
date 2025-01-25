@@ -1,0 +1,353 @@
+:root {
+  --primary-color: #0066a2;
+  --bg-white: #fff;
+}
+
+body {
+  margin: 0;
+  font-family: "Roboto", sans-serif;
+  background: #f7f8fc;
+}
+
+p {
+  margin: 0;
+}
+
+/* common css */
+
+.flex {
+  display: flex;
+}
+
+.center-item {
+  align-items: center;
+}
+
+.center-justify-items {
+  justify-items: center;
+}
+
+
+/* login/sign screen section */
+
+.login-container {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  height: 100vh;
+  padding: 0 20px;
+  background-color: var(--bg-white);
+}
+
+.login-logo {
+  width: 300px;
+  height: 300px;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+}
+
+.login-form {
+  border-radius: 10px;
+  padding: 40px;
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+}
+
+.login-mini-logo img {
+  width: 40px;
+  height: auto;
+  margin-bottom: 5px;
+}
+
+h1 {
+  font-size: 1.6rem;
+  color: #333;
+  margin-bottom: 5px;
+}
+
+p {
+  font-size: 0.8rem;
+  color: #666;
+  margin-bottom: 20px;
+}
+
+form {
+  margin-bottom: 20px;
+}
+
+.form-group {
+  margin-bottom: 15px;
+  text-align: left;
+}
+
+label {
+  display: block;
+  font-size: 0.9rem;
+  color: #333;
+  margin-bottom: 5px;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"] {
+  width: 100%;
+  padding: 8px;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.error {
+  color: red;
+  font-size: 0.8rem;
+}
+
+.form-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  font-size: 0.9rem;
+}
+
+.form-options-sign {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-bottom: 20px;
+  font-size: 0.9rem;
+}
+
+.form-options a {
+  color: var(--primary-color);
+  text-decoration: none;
+}
+
+.form-options-sign a {
+  color: var(--primary-color);
+  text-decoration: none;
+}
+
+.btn-primary {
+  width: 100%;
+  background: var(--primary-color);
+  color: #fff;
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1rem;
+  margin-bottom: 10px;
+}
+
+.btn-primary:hover {
+  background: #005290;
+}
+
+.sign-text {
+  color: var(--primary-color);
+  text-decoration: none;
+}
+
+/* For tablet and smaller screens */
+@media (max-width: 768px) {
+  .login-container {
+    flex-direction: column;
+    /* Stack the logo and form vertically */
+    justify-content: center;
+    /* Center content vertically */
+    justify-self: center;
+    /* Center content horizontally */
+  }
+
+  .login-logo {
+    display: none;
+    /* Hide the logo on smaller screens */
+  }
+
+  .login-form {
+    max-width: 100%;
+    /* Ensure the form takes up full width on small screens */
+    padding: 20px;
+    /* Add some padding for better spacing */
+    text-align: center;
+    /* Center the form text */
+  }
+}
+
+
+/* Reset Password section */
+
+/* General reset */
+
+
+.reset-password-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  align-content: center;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+.reset-password-card {
+  background: #ffffff;
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  width: 100%;
+  max-width: 400px;
+}
+
+.reset-password-card h2 {
+  font-size: 1.5rem;
+  color: #1e1e2f;
+  margin-bottom: 10px;
+}
+
+.reset-password-card p {
+  font-size: 0.9rem;
+  color: #6b6b81;
+  margin-bottom: 30px;
+}
+
+.reset-password-card form {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.reset-password-card input {
+  width: 100%;
+  padding: 12px;
+  font-size: 1rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  outline: none;
+  transition: border 0.2s;
+}
+
+.reset-password-card input:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+.reset-password-card button {
+  background: linear-gradient(90deg, #1e3a8a, #1e40af);
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  font-size: 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  width: 100%;
+  transition: background 0.3s;
+}
+
+.reset-password-card button:hover {
+  background: linear-gradient(90deg, #1e40af, #1e3a8a);
+}
+
+
+/* Dashboard section */
+
+.card-container {
+  padding: 20px;
+}
+
+.card-title {
+  font-size: 1.2rem;
+  color: #1e1e2f;
+  font-weight: bold;
+  margin-bottom: 15px;
+}
+
+.details {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.detail-item {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  width: 25%;
+  text-align: center;
+}
+
+.icon {
+  font-size: 1.07rem;
+  color: #6c63ff;
+  /* Adjust color to match the image */
+  margin-bottom: 8px;
+}
+
+.details-data {
+  display: flex;
+  flex-direction: column;
+}
+
+.value {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #1e1e2f;
+}
+
+.label {
+  font-size: 0.85rem;
+  color: #757575;
+}
+
+
+.top-selling-stock {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid #ccc;
+  padding: 20px;
+  border-radius: 5px;
+}
+
+.top-selling-stock h2 {
+  margin-bottom: 10px;
+  font-size: 1rem;
+}
+
+.table-header,
+.table-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+  margin-top: 10px;
+}
+
+.column {
+  flex: 1;
+  text-align: center;
+  padding: 10px;
+  border-bottom: 1px solid #ccc;
+  border-top: 1px solid #ccc;
+}
+
+.see-all {
+  padding: 1 0px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.see-all:hover {
+  background-color: #0056b3;
+}
