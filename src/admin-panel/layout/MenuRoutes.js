@@ -14,6 +14,7 @@ import TrendingUpOutlinedIcon from '@material-ui/icons/TrendingUpOutlined';
 import PurchaseList from "../pages/purchase/PurchaseList";
 import UserList from "../pages/users/UserList";
 import ReportsHome from "../pages/reports/ReportsList";
+import JsonUserList from "../pages/users/JsonUserList";
 
 
 
@@ -31,7 +32,7 @@ const MenuRoutes = [
         sidebarName: 'Users',
         navbarName: 'Users',
         icon: PersonAdd,
-        component: <UserList />,
+        component: <JsonUserList />,
         roles: ['Admin'] // Only Admin can access
     },
     {

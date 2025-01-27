@@ -16,7 +16,8 @@ const SingleUploader = ({ image, onChange }) => {
 
   const getImgUrl = (img) => {
     if (typeof img === "string") {
-      return domain + img
+      // return domain + img
+      return img    //only json data
     } else {
       return URL.createObjectURL(img)
     }
