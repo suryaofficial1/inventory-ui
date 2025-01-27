@@ -7,6 +7,7 @@ import { showMessage } from '../../../utils/message'
 import { sendGetRequest, sendPostRequest, sendPostRequestWithImage } from '../../../utils/network'
 import SingleUploader from '../../../common/uploader/SingleUploader'
 
+
 const UserAction = ({ onClose, successAction, title, selectedData = {}, readOnly = false }) => {
     const [roles, setRoles] = useState([]);
     const [departments, setDepartments] = useState([]);
@@ -33,6 +34,7 @@ const UserAction = ({ onClose, successAction, title, selectedData = {}, readOnly
         setFormsData((prev) => ({ ...prev, [name]: value }));
     };
 
+
     const handlePasswordChange = (e) => {
         const { name, value } = e.target;
         setPasswordData((prev) => ({ ...prev, [name]: value }));
@@ -41,8 +43,6 @@ const UserAction = ({ onClose, successAction, title, selectedData = {}, readOnly
             validatePasswords(name === "password" ? value : passwordData.password, name === "rePassword" ? value : passwordData.rePassword);
         }
     };
-
-
 
     const validatePasswords = (password, rePassword) => {
         const newErrors = { ...errors };
@@ -98,7 +98,7 @@ const UserAction = ({ onClose, successAction, title, selectedData = {}, readOnly
         if (!formsData.department) errors.department = "Department is required";
         if (!formsData.status) errors.status = "Status is required";
         if (passwordData.password && !passwordData.rePassword) errors.status = "Re-Password is required";
-        if (passwordData.password && passwordData.rePassword && passwordData.password !== passwordData.rePassword) errors.status = "Passwords do not match";
+        if ((passwordData.password && passwordData.rePassword) && (passwordData.password !== passwordData.rePassword)) errors.status = "Passwords do not match";
         if (!selectedData.id) {
             if (!passwordData.password) errors.password = "Password is required";
             if (!passwordData.rePassword) errors.rePassword = "Re-Password is required";

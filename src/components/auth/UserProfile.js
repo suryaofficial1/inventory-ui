@@ -1,33 +1,110 @@
-import { Button, Grid, MenuItem, TextField } from '@material-ui/core'
-import React, { useEffect } from 'react'
+import { Button, Grid, TextField, Typography } from '@material-ui/core'
+import React, { useEffect, useState } from 'react'
+import { useDispatch } from 'react-redux'
 import PopupAction from '../../common/PopupAction'
 import SingleUploader from '../../common/uploader/SingleUploader'
-import { GET_USER_BY_ID, UPDATE_USER_BY_ID } from '../../config/api-urls'
+import { GET_USER_BY_ID, UPDATE_PASSWORD_BY_ID, UPDATE_USER_BY_ID } from '../../config/api-urls'
 import { useLoader } from '../../hooks/useLoader'
 import { showMessage } from '../../utils/message'
-import { sendGetRequest, sendPostRequestWithImage } from '../../utils/network'
-import { useDispatch } from 'react-redux'
+import { sendGetRequest, sendPostRequest, sendPostRequestWithImage } from '../../utils/network'
 import { storeUserSession } from './StoreUserSession'
 
 const UserProfile = (props) => {
     const dispatch = useDispatch();
 
-    const [formsData, setFormsData] = React.useState({
+    const [formsData, setFormsData] = useState({
         name: '',
         email: '',
         profile: '',
         mobile: '',
         role: '',
         department: '',
-        status: '',
     });
+    const [passwordData, setPasswordData] = useState({
+        currentPassword: '',
+        password: '',
+        rePassword: ''
+    });
+    const [errors, setErrors] = useState({});
     const [{ start, stop }, Loader, loading] = useLoader();
 
     useEffect(() => {
         getUserDetails()
-    }, [])
+    }, []);
+
+
+    const handlePasswordChange = (e) => {
+        const { name, value } = e.target;
+        setPasswordData((prev) => ({ ...prev, [name]: value }));
+        // Real-time validation for specific fields
+        if (name === "password" || name === "rePassword") {
+            validatePasswords(name === "password" ? value : passwordData.password, name === "rePassword" ? value : passwordData.rePassword);
+        }
+    };
+
+    const validatePasswords = (password, rePassword) => {
+        const newErrors = { ...errors };
+        // Validate matching passwords
+        if (password && rePassword && password !== rePassword) {
+            newErrors.rePassword = "Passwords do not match";
+        } else {
+            delete newErrors.rePassword;
+        }
+
+        setErrors(newErrors);
+    };
+
+    const validation = () => {
+        const errors = {};
+        if (!formsData.name) errors.name = "Name is required";
+        if (!formsData.email) errors.email = "Email is required";
+        if (!formsData.mobile) errors.mobile = "Mobile is required";
+        if (!formsData.role) errors.role = "Role is required";
+        if (!formsData.department) errors.department = "Department is required";
+        if (Object.keys(errors).length > 0) {
+            showMessage("error", errors[Object.keys(errors)[0]]);
+            return true;
+        }
+        return false;
+    }
+
+    const validatePassword = () => {
+        const errors = {};
+        if (!passwordData.currentPassword) errors.currentPassword = "Current Password is required";
+        if (!passwordData.password) errors.password = "Password is required";
+        if (!passwordData.rePassword) errors.rePassword = "Re-Password is required";
+        if (passwordData.password && passwordData.rePassword && passwordData.password !== passwordData.rePassword) errors.status = "Passwords do not match";
+        if (Object.keys(errors).length > 0) {
+            showMessage("error", errors[Object.keys(errors)[0]]);
+            return true;
+        }
+        return false;
+    }
+    const updatePassword = () => {
+        if (validatePassword()) return;
+        const reqBody = {
+            currentPassword: passwordData.currentPassword,
+            newPassword: passwordData.password
+        }
+        sendPostRequest(UPDATE_PASSWORD_BY_ID(props.id), reqBody).then((res) => {
+            if (res.status === 200) {
+                setPasswordData({ currentPassword: '', password: '', rePassword: '' });
+                showMessage('success', `Password update successfully`);
+                props.onClose();
+            } else if (res.status === 401) {
+                showMessage('error', res.message);
+            } else if (res.status === 400) {
+                showMessage('error', res.data[0]);
+            } else if (res.status === 409) {
+                showMessage('error', res.message);
+            } else {
+                showMessage('error', "Something went wrong in update password");
+            }
+        })
+    }
 
     const submitAction = () => {
+        if (validation()) return;
         const formData = new FormData();
         Object.entries(formsData).forEach(([key, value]) => formData.append(key, value));
         start()
@@ -76,16 +153,24 @@ const UserProfile = (props) => {
         <PopupAction onClose={props.onClose} title={'Edit Profile'} width={500}
             actions={
                 <Button variant="contained" color="primary" onClick={submitAction}>
-                    Save
+                    Update
                 </Button>
             }
         >
             <Loader loading={loading} />
-            <Grid container spacing={3} style={{ padding: 20 }}>
+            <Grid container spacing={3} >
                 <Grid item xs={12}>
                     <SingleUploader readOnly={false}
                         image={formsData.profile}
                         onChange={handleImageChange} />
+                </Grid>
+                <Grid item xs={12}>
+                    <Typography variant="h6" gutterBottom>
+                        Personal Details
+                    </Typography>
+                    <Typography color='textSecondary' variant="caption" gutterBottom>
+                        Manage your personal information
+                    </Typography>
                 </Grid>
                 <Grid item xs={12}>
                     <TextField
@@ -149,20 +234,64 @@ const UserProfile = (props) => {
                         value={formsData.department}
                     />
                 </Grid>
-                <Grid item xs={12} sm={12}>
-                    <TextField fullWidth id="status"
-                        onChange={handleInputChange}
-                        name='status'
-                        label="Status"
-                        variant='outlined'
-                        size='small'
-                        value={formsData.status} select>
-                        <MenuItem value="1">Active</MenuItem>
-                        <MenuItem value="0">Inactive</MenuItem>
-
-                    </TextField>
+                <Grid item container xs={12} style={{ marginTop: '50px' }}>
+                    <Grid xs={12}>
+                        <Typography variant="h6" gutterBottom>
+                            Password
+                        </Typography>
+                        <Typography color='textSecondary' variant="caption" gutterBottom>
+                            Change your password
+                        </Typography>
+                    </Grid>
+                    <div style={{ padding: '10px 0px', }}>
+                        <Grid item container xs={12} spacing={2} >
+                            <Grid item xs={12}>
+                                <TextField
+                                    label="Current Password"
+                                    variant="outlined"
+                                    size='small'
+                                    name='currentPassword'
+                                    value={passwordData.currentPassword}
+                                    placeholder="Enter Current Password..."
+                                    onChange={handlePasswordChange}
+                                />
+                            </Grid>
+                            <Grid item xs={12} sm={6}>
+                                <TextField
+                                    label="Password"
+                                    variant="outlined"
+                                    fullWidth
+                                    size='small'
+                                    name='password'
+                                    value={passwordData.password}
+                                    placeholder="Enter Password..."
+                                    onChange={handlePasswordChange}
+                                />
+                            </Grid>
+                            <Grid item xs={12} sm={6}>
+                                <TextField
+                                    label="Re-Password"
+                                    variant="outlined"
+                                    fullWidth
+                                    size="small"
+                                    name="rePassword"
+                                    value={passwordData.rePassword}
+                                    placeholder="Enter Re-Password..."
+                                    onChange={handlePasswordChange}
+                                    error={!!errors.rePassword} // Show error state
+                                    helperText={errors.rePassword || ""} // Show error message
+                                />
+                            </Grid>
+                            <Grid sm={8}>
+                                <Button disabled={!passwordData.currentPassword} variant="outlined" color="primary" onClick={updatePassword}>
+                                    Update password
+                                </Button>
+                            </Grid>
+                        </Grid>
+                    </div>
                 </Grid>
             </Grid>
+
         </PopupAction >
     </>)
 }

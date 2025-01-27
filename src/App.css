@@ -1,6 +1,11 @@
 :root {
   --primary-color: #0066a2;
   --bg-white: #fff;
+  --menu-color: #0066a2;
+  --tab-color: #a76060;
+  --tab-background: #a7606047;
+  --text-white: #fff;
+  --header-background: #a76060;
 }
 
 body {
@@ -10,11 +15,19 @@ body {
 }
 
 p {
-  margin: 0;
+  margin: 0; 
+}
+h4 {
+  margin: 0; 
 }
 
 /* common css */
-
+.primary-color {
+  color: var(--primary-color);
+}
+.text-center {
+  text-align: center;
+}
 .flex {
   display: flex;
 }
@@ -27,6 +40,14 @@ p {
   justify-items: center;
 }
 
+.font-weight-600 {
+  font-weight: 600 !important;
+}
+
+.app-bar {
+  /* background: linear-gradient(90deg, #1e3a8a, #1e40af); */
+  background: var(--header-background) !important;
+}
 
 /* login/sign screen section */
 
@@ -314,7 +335,7 @@ input[type="password"] {
   display: flex;
   flex-direction: column;
   border: 1px solid #ccc;
-  padding: 20px;
+  /* padding: 20px; */
   border-radius: 5px;
 }
 
@@ -322,7 +343,9 @@ input[type="password"] {
   margin-bottom: 10px;
   font-size: 1rem;
 }
-
+.table-header {
+ background : var(--tab-background);
+}
 .table-header,
 .table-row {
   display: flex;
@@ -331,23 +354,100 @@ input[type="password"] {
   margin-top: 10px;
 }
 
+.table-row:nth-child(even) {
+  background-color: #f0f0f0;
+}
+
 .column {
   flex: 1;
   text-align: center;
-  padding: 10px;
+  padding: 8px;
   border-bottom: 1px solid #ccc;
   border-top: 1px solid #ccc;
+  font-size: 16px;
+  font-weight: 500;
+  white-space: nowrap;
+
+}
+.row {
+  flex: 1;
+  text-align: center;
+  padding: 6px;
+  border-bottom: 1px solid #ccc;
+  border-top: 1px solid #ccc;
+  font-size: 14px;
+  white-space: nowrap;
 }
 
 .see-all {
-  padding: 1 0px;
-  background-color: #007bff;
+  padding: 10px 15px;
+  background : var(--tab-color);
   color: white;
   border: none;
   border-radius: 5px;
-  cursor: pointer;
+  cursor: pointer;  
+  a{
+    text-decoration: none;
+    color: white;
+  }
 }
+
 
 .see-all:hover {
   background-color: #0056b3;
 }
+
+
+/* Report section */
+
+.tab-container {
+  background: var(--tab-background) !important;
+  padding: 5px !important;
+  margin-bottom: 4px !important;
+}
+.tab-menus {
+  color: var(--tab-color) !important;
+}
+
+.date-picker {
+margin-top: 10px !important;
+padding: 10px !important;
+}
+
+.filter-btn:hover {
+    background-color: var(--tab-background) !important;
+    border: 1px solid var(--tab-color) !important;
+    color: var(--tab-color);
+}
+
+
+
+.overview {
+  padding: 20px;
+}
+.overview-details {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.overview-icon {
+  font-size: 1rem;
+  color: #6c63ff;
+  /* Adjust color to match the image */
+  margin-bottom: 8px;
+}
+.overview-list {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  border-right: 1px solid #00000038;
+}
+
+.overview-info {
+  font-size: 0.9rem;
+  color: #6b6b81;
+  margin: 10px;
+}
+

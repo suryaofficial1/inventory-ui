@@ -130,8 +130,8 @@ const LayoutIndex = () => {
 
     const newHeader = () => {
         return (
-            <AppBar position="fixed">
-                <Toolbar className='flex' style={{ backgroundColor: '#a76060' }}>
+            <AppBar position="fixed" className='app-bar'>
+                <Toolbar className='flex'>
                     <div className='flex center-item' style={{ flex: 1, marginLeft: 20 }}>
                         <IconButton edge="start" color="inherit" onClick={toggleSidebar}>
                             <MenuIcon />
@@ -140,12 +140,12 @@ const LayoutIndex = () => {
                             {hash.replace('#', '').charAt(0).toUpperCase() + hash.slice(2)}
                         </Typography>
                     </div>
-                    <div className='user-profile'>
+                    <div className='user-profile' onClick={() => setEditUser(true)}>
                         <Avatar alt={user.name} src={domain + user.profile} style={{ width: 30, height: 30, margin: 5 }} />
                         <p className='user-name' >
                             {user.name}
                         </p>
-                        <p className='user-edit-icon' onClick={() => setEditUser(true)} >
+                        <p className='user-edit-icon' >
                             ▼
                         </p>
                     </div>

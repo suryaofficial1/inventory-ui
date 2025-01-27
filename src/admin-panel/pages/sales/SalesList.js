@@ -114,7 +114,7 @@ const SalesList = () => {
         },
         { field: 'pDesc', headerName: 'Product Desc', width: 220, resizable: false, sortable: false, },
 
-        { field: 'qty', headerName: 'quantity', width: 110, resizable: true, sortable: false },
+        { field: 'qty', headerName: 'Quantity', width: 110, resizable: true, sortable: false },
         { field: 'salesPrice', headerName: 'Sales Price', width: 110, resizable: true, sortable: false },
         {
             field: 'salesDate', headerName: 'Sales Date', width: 120, resizable: false, sortable: false,

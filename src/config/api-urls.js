@@ -1,10 +1,11 @@
-export const domain = 'http://localhost:8081';
+export const domain = 'http://localhost:8082';
 
 export const LOGIN = `${domain}/auth/login`;
 export const SEND_OTP = `${domain}/auth/send-otp`;
 export const VERIFY_OTP = `${domain}/auth/verify-otp`;
 export const GET_USER_BY_ID = (id) => `${domain}/auth/user/${id}`;
 export const UPDATE_USER_BY_ID = (id) => `${domain}/auth/update/${id}`;
+export const UPDATE_PASSWORD_BY_ID = (id) => `${domain}/auth/password/${id}`;
 
 export const USER_LIST = `${domain}/admin/users`;
 export const DELETE_USER = (id) => `${domain}/admin/${id}/user`;
@@ -41,3 +42,7 @@ export const SUPPLIERS = `${domain}/purchase/suppliers`;
 export const ADD_PURCHASE_DETAILS = `${domain}/purchase/purchase`;
 export const UPDATE_PURCHASE_DETAILS = (id) => `${domain}/purchase/purchase/${id}`;
 export const DELETE_PURCHASE = (id) => `${domain}/purchase/purchase/${id}`;
+
+export const CUSTOMERS_LIST = `${domain}/public/customers-list`;
+export const SUPPLIERS_LIST = `${domain}/public/suppliers-list`;
+export const PRODUCTS_LIST = `${domain}/public/products-list`;

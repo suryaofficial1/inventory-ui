@@ -2,13 +2,15 @@ import { Button, ButtonGroup, Card, Grid } from '@material-ui/core';
 import React, { useState } from "react";
 import { useDispatch, useSelector } from 'react-redux';
 
-import { List, Person } from '@material-ui/icons';
+import { CardGiftcard, List, Money, People, Person, Store } from '@material-ui/icons';
 import AttachMoneyIcon from '@material-ui/icons/AttachMoney';
 import LocalAtmIcon from '@material-ui/icons/LocalAtm';
 import TimelineIcon from '@material-ui/icons/Timeline';
 import TrendingUpIcon from '@material-ui/icons/TrendingUp';
 import { Bar, BarChart, CartesianGrid, Legend, Line, LineChart, Tooltip, XAxis, YAxis } from "recharts";
 import { logoutUser } from '../../../actions';
+import ReportTables from '../../../common/report-components/ReportTables';
+import OverviewCards from '../../../common/report-components/OverviewCards';
 
 const Dashboard = () => {
   const dispatch = useDispatch();
@@ -71,133 +73,53 @@ const Dashboard = () => {
   };
 
   const productData = [
-    { name: 'Surf Excel', soldQuantity: 30, remainingQuantity: 12, price: 100 },
-    { name: 'Rin', soldQuantity: 21, remainingQuantity: 15, price: 207 },
-    { name: 'Parle G', soldQuantity: 19, remainingQuantity: 17, price: 105 },
+    { name: 'Surf Excel', "Sold quantity": 30, "Remaining quantity": 12, "Price" : 100 },
+    { name: 'Colgate', "Sold quantity": 12, "Remaining quantity": 5, "Price" : 50 },
+    { name: 'Dove', "Sold quantity": 10, "Remaining quantity": 3, "Price" : 30 },
+    { name: 'Pepsodent', "Sold quantity": 8, "Remaining quantity": 2, "Price" : 20 },
+    { name: 'Colgate', "Sold quantity": 12, "Remaining quantity": 5, "Price" : 50 },
+    { name: 'Dove', "Sold quantity": 10, "Remaining quantity": 3, "Price" : 30 },
+    { name: 'Pepsodent', "Sold quantity": 8, "Remaining quantity": 2, "Price" : 20 },
   ];
+
+  const overviewData = [
+    {title: "Customer", value: "50", icon: <People />},
+    {title: "Product", value: "50", icon: <Store />},
+    {title: "Order", value: "50", icon: <CardGiftcard />},
+    {title: "Sales", value: "50", icon: <Money />}
+  ]
+
+  const purchaseOverviewData = [
+    {title: "Purchase", value: "₹832", icon: <Money />},
+    {title: "Cost", value: "₹18,300", icon: <Money />},
+    {title: "Cancel", value: "₹868", icon: <Money />},
+    {title: "Return", value: "₹17,432", icon: <Money />},
+  ]
+
+  const inventorySummary =[
+    {title: "Quantity in Hand", value: "50", icon: <AttachMoneyIcon />},
+    {title: "To be received", value: "50", icon: <TrendingUpIcon />},
+  ]
+
+  const productSummary =[
+    {title: "Suppliers", value: "50", icon: <Person />},
+    {title: "Categories", value: "50", icon: <List />}
+  ]
 
   return (
     <>
       <Grid container spacing={1}>
         <Grid item xs={12} sm={7}>
-          <Card>
-            <div className="card-container">
-              <p className="card-title">Sales Overview</p>
-              <div className="details">
-                <div className="detail-item">
-                  <AttachMoneyIcon className="icon" />
-                  <div className="details-data">
-                    <p className="value">₹832</p>
-                    <p className="label">Sales</p>
-                  </div>
-                </div>
-                <div className="detail-item">
-                  <TrendingUpIcon className="icon" />
-                  <div className="details-data">
-                    <p className="value">₹18,300</p>
-                    <p className="label">Revenue</p>
-                  </div>
-                </div>
-                <div className="detail-item">
-                  <TimelineIcon className="icon" />
-                  <div className="details-data">
-                    <p className="value">₹868</p>
-                    <p className="label">Profit</p>
-                  </div>
-                </div>
-                <div className="detail-item">
-                  <LocalAtmIcon className="icon" />
-                  <div className="details-data">
-                    <p className="value">₹17,432</p>
-                    <p className="label">Cost</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </Card>
+          <OverviewCards title="Sales Overview" data={overviewData} />
         </Grid>
         <Grid item xs={12} sm={5}>
-          <Card>
-            <div className="card-container">
-              <p className="card-title">Inventory Summary</p>
-              <div className="details">
-                <div className="detail-item">
-                  <AttachMoneyIcon className="icon" />
-                  <div className="details-data">
-                    <p className="value">₹832</p>
-                    <p className="label">Quantity in Hand</p>
-                  </div>
-                </div>
-                <div className="detail-item">
-                  <TrendingUpIcon className="icon" />
-                  <div className="details-data">
-                    <p className="value">₹18,300</p>
-                    <p className="label">To be received</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </Card>
+          <OverviewCards title="Inventory Summary" data={inventorySummary} />
         </Grid>
         <Grid item xs={12} sm={7}>
-          <Card>
-            <div className="card-container">
-              <p className="card-title">Purchase Overview</p>
-              <div className="details">
-                <div className="detail-item">
-                  <AttachMoneyIcon className="icon" />
-                  <div className="details-data">
-                    <p className="value">₹832</p>
-                    <p className="label">Purchase</p>
-                  </div>
-                </div>
-                <div className="detail-item">
-                  <TrendingUpIcon className="icon" />
-                  <div className="details-data">
-                    <p className="value">₹18,300</p>
-                    <p className="label">Cost</p>
-                  </div>
-                </div>
-                <div className="detail-item">
-                  <TimelineIcon className="icon" />
-                  <div className="details-data">
-                    <p className="value">₹868</p>
-                    <p className="label">Cancel</p>
-                  </div>
-                </div>
-                <div className="detail-item">
-                  <LocalAtmIcon className="icon" />
-                  <div className="details-data">
-                    <p className="value">₹17,432</p>
-                    <p className="label">Return</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </Card>
+          <OverviewCards title="Purchase Overview" data={purchaseOverviewData} />
         </Grid>
         <Grid item xs={12} sm={5}>
-          <Card>
-            <div className="card-container">
-              <p className="card-title">Product Summary</p>
-              <div className="details">
-                <div className="detail-item">
-                  <Person className="icon" />
-                  <div className="details-data">
-                    <p className="value">32</p>
-                    <p className="label">Number of Suppliers</p>
-                  </div>
-                </div>
-                <div className="detail-item">
-                  <List className="icon" />
-                  <div className="details-data">
-                    <p className="value">300</p>
-                    <p className="label">Number of Categories</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </Card>
+          <OverviewCards title="Product Summary" data={productSummary} />
         </Grid>
         <Grid item xs={12} sm={7}>
           <div style={{ padding: "20px", background: "#fff", borderRadius: "8px" }}>
@@ -254,8 +176,14 @@ const Dashboard = () => {
           </div>
         </Grid>
         <Grid sm={12}>
-          <div className="top-selling-stock">
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+          <ReportTables title="Top Selling Stock" 
+          headers={["name", "Sold quantity", "Remaining quantity", "Price"]} 
+          rows={productData}
+          showAll="See All"
+          showAllLink="#sales"
+          />
+          {/* <div className="top-selling-stock">
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: 20,  marginBottom: "20px" }}>
               <h2>Top Selling Stock</h2>
               <button className="see-all">See All</button>
             </div>
@@ -274,7 +202,7 @@ const Dashboard = () => {
                 <div className="column">₹{item.price}</div>
               </div>
             ))}
-          </div>
+          </div> */}
         </Grid>
       </Grid>
     </>
