@@ -46,3 +46,16 @@ export const DELETE_PURCHASE = (id) => `${domain}/purchase/purchase/${id}`;
 export const CUSTOMERS_LIST = `${domain}/public/customers-list`;
 export const SUPPLIERS_LIST = `${domain}/public/suppliers-list`;
 export const PRODUCTS_LIST = `${domain}/public/products-list`;
+
+export const PRODUCTION_LIST = `${domain}/production/production-list`;
+export const ADD_PRODUCTION_DETAILS = `${domain}/production/production`;
+export const UPDATE_PRODUCTION_DETAILS = (id) => `${domain}/production/production/${id}`;
+export const DELETE_PRODUCTION = (id) => `${domain}/production/production/${id}`;
+
+export const MATERIYAL_LIST = `${domain}/material/material-list`;
+export const ADD_MATERIYAL_DETAILS = `${domain}/material/material`;
+export const UPDATE_MATERIYAL_DETAILS = (id) => `${domain}/material/material/${id}`;
+export const DELETE_MATERIYAL = (id) => `${domain}/material/material/${id}`;
+
+
+export const SALES_OVERVIEW = `${domain}/report/salse-overview`;

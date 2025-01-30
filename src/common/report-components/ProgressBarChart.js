@@ -18,6 +18,7 @@ const BorderLinearProgress = withStyles((theme) => ({
 }))(LinearProgress);
 
 const ProgressBarChart = ({ title, productData }) => {
+    
     return (
         <>
             <Paper elevation={1} style={{ padding: "20px", height: 400 }} className="quantity-chart">
@@ -27,7 +28,7 @@ const ProgressBarChart = ({ title, productData }) => {
                         <div style={{ margin: 15 }} key={index}>
                             <div style={{ display: "flex", justifyContent: "space-between" }}>
 
-                                <label>{item.pName}</label>
+                                <label>{item.name}</label>
                                 <label>{item.quantity}</label>
                             </div>
                             <BorderLinearProgress variant="determinate" value={item.quantity} />

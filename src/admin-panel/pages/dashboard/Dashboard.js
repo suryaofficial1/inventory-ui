@@ -138,7 +138,7 @@ const Dashboard = () => {
               </ButtonGroup>
             </div>
             <BarChart width={500} height={300} data={data[filter]}>
-              <CartesianGrid strokeDasharray="3 3" />
+              <CartesianGrid strokeDasharray="3 3 3" />
               <XAxis dataKey="name" />
               <YAxis />
               <Tooltip />

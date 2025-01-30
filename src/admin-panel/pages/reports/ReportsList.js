@@ -18,7 +18,12 @@ const ReportsHome = () => {
     const [suppliers, setSuppliers] = useState([]);
     const [{ start, stop }, Loader, loading] = useLoader();
     const user = useSelector((state) => state.user);
-    const [formsData, setFormData] = useState({});
+    const [formsData, setFormData] = useState({
+        cName: '',
+        pName : '',
+        startDate: '',
+        endDate: ''
+    });
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -95,7 +100,7 @@ const ReportsHome = () => {
             </Paper>
             <ReportFilter formsData={formsData}
              handleInputChange={handleInputChange} selectedTab={selectedTab} customers={customers} products={products} suppliers={suppliers} />
-            {selectedTab === 0 && <SalesReport />}
+            {selectedTab === 0 && <SalesReport formsData={formsData}/>}
             {selectedTab === 1 && <PurchaseReport />}
             {selectedTab === 2 && <StockReport />}
             {selectedTab === 3 && <SalesAndPurchase />}

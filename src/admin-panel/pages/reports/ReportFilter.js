@@ -1,7 +1,7 @@
-import { Button, Grid, InputAdornment, MenuItem, TextField } from '@material-ui/core'
-import { Filter, SearchOutlined } from '@material-ui/icons';
+import { Button, Grid, TextField } from '@material-ui/core';
+import { SearchOutlined } from '@material-ui/icons';
 import { Autocomplete } from '@material-ui/lab';
-import React, { useState } from 'react'
+import React, { useState } from 'react';
 import DatePicker, { DateObject } from 'react-multi-date-picker';
 
 const format = "DD-MM-YYYY";
@@ -11,6 +11,13 @@ const ReportFilter = ({ selectedTab, customers, products, suppliers, formsData, 
         new DateObject().set(),
         new DateObject().set()
     ]);
+
+    const handelDateChanges = () => {
+
+    }
+    const handleListChanges = (e, value) => {
+        console.log("handleListChanges", value)
+    }
 
     return (
         <Grid container spacing={1} justifyContent='center' alignItems='center' alignContent='center'>
@@ -22,6 +29,7 @@ const ReportFilter = ({ selectedTab, customers, products, suppliers, formsData, 
                         size='small'
                         id="customer"
                         options={customers}
+                        onChange={(e, value) => handleListChanges(e, value)}
                         getOptionLabel={(option) => option.name}
                         renderInput={(params) => (
                             <TextField
@@ -42,6 +50,7 @@ const ReportFilter = ({ selectedTab, customers, products, suppliers, formsData, 
                         size='small'
                         id="Supplier"
                         options={suppliers}
+                        onChange={(e, value) => handleListChanges(e, value)}
                         getOptionLabel={(option) => option.name}
                         renderInput={(params) => (
                             <TextField
@@ -64,6 +73,7 @@ const ReportFilter = ({ selectedTab, customers, products, suppliers, formsData, 
                     size='small'
                     id="Product"
                     options={products}
+                    onChange={(e, value) => handleListChanges(e, value)}
                     getOptionLabel={(option) => option.name}
                     renderInput={(params) => (
                         <TextField
@@ -80,7 +90,7 @@ const ReportFilter = ({ selectedTab, customers, products, suppliers, formsData, 
             </Grid>
             <Grid item xs={12} sm={3} align="center">
                 <DatePicker
-                    style={{ height: "auto", padding: 9,  marginTop: 8, width: "100%" }}
+                    style={{ height: "auto", padding: 9, marginTop: 8, width: "100%" }}
                     className='date-picker'
                     value={dates}
                     onChange={setDates}

@@ -85,7 +85,7 @@ const LayoutIndex = () => {
                         <>
                             <ListItem button key={index} onClick={() => setExpand({ ...expand, [index]: !expand[index] })}>
                                 <ListItemIcon><prop.icon /></ListItemIcon>
-                                <ListItemText primary={<Typography variant="subtitle1" color="inherit" style={{ fontFamily: 'Montserrat', fontWeight: "900", }}>{prop.sidebarName}</Typography>}></ListItemText>
+                                <ListItemText primary={<Typography variant="subtitle1" color="inherit" className='menu-item'>{prop.sidebarName}</Typography>}></ListItemText>
                                 <ListItemAvatar className="text-center">
                                     {prop.submenu && (
                                         expand[index] ? (
@@ -104,7 +104,7 @@ const LayoutIndex = () => {
                                             return <Link to={sub.path} style={{ textDecoration: 'none' }} key={index} onClick={handleClose}>
                                                 <ListItem button key={index}>
                                                     <ListItemIcon><sub.icon /></ListItemIcon>
-                                                    <ListItemText primary={<Typography variant="subtitle1" color="inherit" style={{ fontFamily: 'Montserrat', fontWeight: "900" }}>{sub.sidebarName}</Typography>}></ListItemText>
+                                                    <ListItemText primary={<Typography variant="subtitle1" color="inherit" className='sub-menu-item'>{sub.sidebarName}</Typography>}></ListItemText>
                                                 </ListItem>
                                             </Link>
                                         })}
