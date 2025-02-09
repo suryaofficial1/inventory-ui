@@ -72,6 +72,13 @@ const Dashboard = () => {
     ],
   };
 
+  const columnMapping = {
+    "Name": "name",
+    "Sold quantity": "Sold quantity",
+    "Remaining quantity": "Remaining quantity",
+    "Pricee": "Price",
+  };
+
   const productData = [
     { name: 'Surf Excel', "Sold quantity": 30, "Remaining quantity": 12, "Price" : 100 },
     { name: 'Colgate', "Sold quantity": 12, "Remaining quantity": 5, "Price" : 50 },
@@ -181,6 +188,8 @@ const Dashboard = () => {
           rows={productData}
           showAll="See All"
           showAllLink="#sales"
+          columnMapping={columnMapping}
+          
           />
           {/* <div className="top-selling-stock">
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: 20,  marginBottom: "20px" }}>

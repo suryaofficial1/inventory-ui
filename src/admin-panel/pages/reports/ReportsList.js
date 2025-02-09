@@ -11,23 +11,25 @@ import SalesAndPurchase from './SalesAndPurchase';
 import SalesReport from './SalesReport';
 import StockReport from './StockReport';
 
-const ReportsHome = () => {
+const ReportsList = () => {
     const [selectedTab, setSelectedTab] = useState(0);
     const [customers, setCustomers] = useState([]);
     const [products, setProducts] = useState([]);
     const [suppliers, setSuppliers] = useState([]);
-    const [{ start, stop }, Loader, loading] = useLoader();
+    const [{ start, stop }, Loader] = useLoader();
     const user = useSelector((state) => state.user);
+
     const [formsData, setFormData] = useState({
-        cName: '',
-        pName : '',
-        startDate: '',
-        endDate: ''
+        cId: '',
+        sId: '',
+        pId: '',
+        from: '',
+        to: '',
     });
 
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setFormData((prev) => ({ ...prev, [name]: value }));
+    const onFilter = (filters) => {
+        console.log("Applying filters: ", filters);
+        setFormData(filters);
     };
 
     const handleTabChange = (event, newValue) => {
@@ -35,51 +37,38 @@ const ReportsHome = () => {
     };
 
     useEffect(() => {
-        getCustomers();
-        getProducts();
-        getSuppliers();
-    }, [])
+        fetchData();
+    }, []);
 
-    const getCustomers = () => {
-        start()
-        sendGetRequest(CUSTOMERS_LIST, "token")
-            .then(res => {
-                if (res.status === 200) {
-                    setCustomers(res.data);
-                } else {
-                    console.log("Error in get customers", res.data)
-                }
-            }).catch(err => {
-                console.log(err)
-            }).finally(stop)
-    }
-    const getProducts = () => {
-        start()
-        sendGetRequest(PRODUCTS_LIST, "token")
-            .then(res => {
-                if (res.status === 200) {
-                    setProducts(res.data);
-                } else {
-                    console.log("Error in get products", res.data)
-                }
-            }).catch(err => {
-                console.log(err)
-            }).finally(stop)
-    }
-    const getSuppliers = () => {
-        start()
-        sendGetRequest(SUPPLIERS_LIST, "token")
-            .then(res => {
-                if (res.status === 200) {
-                    setSuppliers(res.data);
-                } else {
-                    console.log("Error in get suppliers", res.data)
-                }
-            }).catch(err => {
-                console.log(err)
-            }).finally(stop)
-    }
+    const fetchData = async () => {
+        try {
+            start();
+            const [customersRes, productsRes, suppliersRes] = await Promise.all([
+                sendGetRequest(CUSTOMERS_LIST, "token"),
+                sendGetRequest(PRODUCTS_LIST, "token"),
+                sendGetRequest(SUPPLIERS_LIST, "token")
+            ]);
+            if (customersRes.status === 200) setCustomers(customersRes.data);
+            if (productsRes.status === 200) setProducts(productsRes.data);
+            if (suppliersRes.status === 200) setSuppliers(suppliersRes.data);
+        } catch (error) {
+            console.error("Error fetching data", error);
+        } finally {
+            stop();
+        }
+    };
+    
 
+    const renderReportComponent = () => {
+        const reportComponents = [
+            <SalesReport formsData={formsData} />,
+            <PurchaseReport formsData={formsData} />,
+            <StockReport formsData={formsData} />,
+            <SalesAndPurchase formsData={formsData} />,
+            <FIFOReport formsData={formsData} />
+        ];
+        return reportComponents[selectedTab];
+    };
 
     return (
         <>
@@ -91,22 +80,25 @@ const ReportsHome = () => {
                     textColor="primary"
                     centered
                 >
-                    <Tab label="Sales Report" className='tab-menus' />
-                    <Tab label="Purchase Report" className='tab-menus' />
-                    <Tab label="Stock Report" className='tab-menus' />
-                    <Tab label="Sales & purchase charts" className='tab-menus' />
-                    <Tab label="FIFO Report" className='tab-menus' />
+                    <Tab label="Sales Report" />
+                    <Tab label="Purchase Report" />
+                    <Tab label="Stock Report" />
+                    <Tab label="Sales & Purchase Charts" />
+                    <Tab label="FIFO Report" />
                 </Tabs>
             </Paper>
-            <ReportFilter formsData={formsData}
-             handleInputChange={handleInputChange} selectedTab={selectedTab} customers={customers} products={products} suppliers={suppliers} />
-            {selectedTab === 0 && <SalesReport formsData={formsData}/>}
-            {selectedTab === 1 && <PurchaseReport />}
-            {selectedTab === 2 && <StockReport />}
-            {selectedTab === 3 && <SalesAndPurchase />}
-            {selectedTab === 4 && <FIFOReport />}
+            <ReportFilter
+                formsData={formsData}
+                setFormData={setFormData}
+                selectedTab={selectedTab}
+                customers={customers}
+                products={products}
+                suppliers={suppliers}
+                onFilter={onFilter}
+            />
+            {renderReportComponent()}
         </>
     );
 };
 
-export default ReportsHome;
+export default ReportsList;

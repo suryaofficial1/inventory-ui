@@ -59,7 +59,6 @@ const ProductoinAction = ({ onClose, successAction, title, selectedData = {}, re
         const { name, value } = e.target;
         setFormData((prev) => ({ ...prev, [name]: value }));
     };
-    console.log("formsData", formsData)
 
     const validation = () => {
         const errors = {};

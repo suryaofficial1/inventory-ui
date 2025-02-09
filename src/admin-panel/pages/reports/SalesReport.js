@@ -1,51 +1,41 @@
-import { Grid } from '@material-ui/core';
+import { Card, Grid, Typography } from '@material-ui/core';
 import React, { useEffect, useState } from "react";
-import { CardGiftcard, Money, People, Store } from '@material-ui/icons';
-import OverviewCards from '../../../common/report-components/OverviewCards';
-import PeiChart from '../../../common/report-components/PeiChart';
-import ProgressBarChart from '../../../common/report-components/ProgressBarChart';
-import ReportTables from '../../../common/report-components/ReportTables';
-import SingleBarChart from '../../../common/report-components/SingleBarChart';
 import { sendGetRequest } from '../../../utils/network';
 import { SALES_OVERVIEW } from '../../../config/api-urls';
 import { useLoader } from '../../../hooks/useLoader';
-import { useSelector } from 'react-redux';
+import OverviewCards from '../../../common/report-components/OverviewCards';
+import SingleBarChart from '../../../common/report-components/SingleBarChart';
+import PeiChart from '../../../common/report-components/PeiChart';
+import ProgressBarChart from '../../../common/report-components/ProgressBarChart';
+import ReportTables from '../../../common/report-components/ReportTables';
+import { CardGiftcard, Money, People, Store } from '@material-ui/icons';
 
+const SalesReport = ({ formsData }) => {
+  const [{ start, stop }, Loader] = useLoader();
+  const [salesData, setSalesData] = useState([]);
 
-const SalesReport = (formsData) => {
-  console.log("formsData", formsData)
-  const [{ start, stop }, Loader, loading] = useLoader();
-  const user = useSelector((state) => state.user);
-
-  const [salesData, setSalesData] = useState([])
-  const [filter, setFilter] = useState({ from: '', to: '' });
-
+  console.log("fil -->", formsData)
   useEffect(() => {
-    getSales();
-  }, []);
-  const getSales = () => {
-    start()
-    sendGetRequest(`${SALES_OVERVIEW}?from=${filter.from}&to=${filter.to}&pName=${filter.pName}`, "token")
-      .then(res => {
-        if (res.status === 200) {
-          setSalesData(res.data)
-        } else {
-          console.log(res)
-        }
-      }).catch(err => {
-        console.log(err)
-      }).finally(stop)
-  }
+    fetchSalesData();
 
+  }, [formsData]);
 
-  const fromDate = "2024-11-12";
-  const toDate = "2025-04-10";
-
+  const fetchSalesData = async () => {
+    try {
+      start();
+      const res = await sendGetRequest(`${SALES_OVERVIEW}?from=${formsData.from}&to=${formsData.to}&pId=${formsData.pId}&cId=${formsData.cId}`, "token");
+      if (res.status === 200) {
+        setSalesData(res.data);
+      }
+    } catch (err) {
+      console.error("Error fetching sales data", err);
+    } finally {
+      stop();
+    }
+  };
 
 
   const customOverViewData = (data) => {
-    console.log("data", data);
-
     if (!Array.isArray(data) || data.length === 0) {
       return [];
     }
@@ -67,7 +57,7 @@ const SalesReport = (formsData) => {
   };
 
   const columnMapping = {
-    id: "id",
+    "id": "id",
     "Customer Name": "cName",
     "Product Name": "pName",
     "Quantity": "qty",
@@ -90,6 +80,28 @@ const SalesReport = (formsData) => {
 
   return (
     <Grid container spacing={1}>
+      <Grid item sm={12}>
+        <Card elevation={1} style={{padding: 10}}>
+        <Typography variant='h4' gutterBottom>
+           <b> Sales Report by Customer </b> 
+          </Typography>
+          {formsData.cId && <Typography variant='subtitle1' gutterBottom >
+            <b>Custom Name</b> : {formsData.cId}
+          </Typography>}
+          {formsData.pId && <Typography variant='subtitle1' gutterBottom >
+            <b> Product Name</b> : {formsData.pId}
+          </Typography>}
+          {formsData.from && <>
+            <Typography variant='subtitle1' gutterBottom >
+            <b>Start Date</b> : {formsData.from}
+          </Typography>
+          <Typography variant='subtitle1' gutterBottom >
+            <b>End Date</b> : {formsData.to}
+          </Typography>
+          </>
+          }
+        </Card>
+      </Grid>
       <Grid item sm={12}>
         <OverviewCards title="Sales Overview" data={customOverViewData(salesData.overView)} />
       </Grid>

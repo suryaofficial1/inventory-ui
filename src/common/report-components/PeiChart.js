@@ -11,7 +11,6 @@ const PeiChart = ({ title, data = [] }) => {
   
   // Convert data into Google Charts format
   const chartData = [["Unit", "Quantity"], ...data && data.map(({ unit, quantity }) => [unit, quantity])];
-  console.log("chartData", chartData);
 
   const options = {
     title: title || "Unit Distribution",

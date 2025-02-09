@@ -59,3 +59,4 @@ export const DELETE_MATERIYAL = (id) => `${domain}/material/material/${id}`;
 
 
 export const SALES_OVERVIEW = `${domain}/report/salse-overview`;
+export const PURCHASE_REPORT = `${domain}/report/purchase`;

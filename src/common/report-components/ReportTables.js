@@ -1,7 +1,6 @@
 import React from "react";
 
 const ReportTables = ({ title, headers, rows, showAll, showAllLink, columnMapping, formatCell }) => {
-  console.log("rows", rows);
 
   return (
     <div className="top-selling-stock">

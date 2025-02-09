@@ -4,67 +4,46 @@ import { Autocomplete } from '@material-ui/lab';
 import React, { useState } from 'react';
 import DatePicker, { DateObject } from 'react-multi-date-picker';
 
-const format = "DD-MM-YYYY";
-const ReportFilter = ({ selectedTab, customers, products, suppliers, formsData, handleInputChange }) => {
+const format = "YYYY-MM-DD";
 
-    const [dates, setDates] = useState([
-        new DateObject().set(),
-        new DateObject().set()
-    ]);
+const ReportFilter = ({ selectedTab, customers, products, suppliers, onFilter }) => {
+    const [dates, setDates] = useState([new DateObject().set(), new DateObject().set()]);
+    const [formsData, setFormData] = useState({
+        cId: '',
+        sId: '',
+        pId: '',
+        from: '',
+        to: '',
 
-    const handelDateChanges = () => {
+    })
 
-    }
-    const handleListChanges = (e, value) => {
-        console.log("handleListChanges", value)
-    }
+    const handleListChanges = (name, value) => {
+        setFormData((prev) => ({ ...prev, [name]: value?.id || "" }));
+    };
+
 
     return (
         <Grid container spacing={1} justifyContent='center' alignItems='center' alignContent='center'>
             <Grid item xs={12} sm={3}>
-                {selectedTab === 0 ?
-                    <Autocomplete
-                        fullWidth
-                        disableClearable
-                        size='small'
-                        id="customer"
-                        options={customers}
-                        onChange={(e, value) => handleListChanges(e, value)}
-                        getOptionLabel={(option) => option.name}
-                        renderInput={(params) => (
-                            <TextField
-                                {...params}
-                                label="Select Customer"
-                                size='small'
-                                placeholder='Enter customer name ...'
-                                margin="normal"
-                                variant="outlined"
-                                InputProps={{ ...params.InputProps, type: 'search' }}
-                            />
-                        )}
-                    />
-                    :
-                    <Autocomplete
-                        fullWidth
-                        disableClearable
-                        size='small'
-                        id="Supplier"
-                        options={suppliers}
-                        onChange={(e, value) => handleListChanges(e, value)}
-                        getOptionLabel={(option) => option.name}
-                        renderInput={(params) => (
-                            <TextField
-                                {...params}
-                                label="Select Supplier"
-                                size='small'
-                                placeholder='Enter supplier name ...'
-                                margin="normal"
-                                variant="outlined"
-                                InputProps={{ ...params.InputProps, type: 'search' }}
-                            />
-                        )}
-                    />
-                }
+                <Autocomplete
+                    fullWidth
+                    disableClearable
+                    size='small'
+                    id="customer"
+                    options={selectedTab === 0 ? customers : suppliers}
+                    onChange={(e, value) => handleListChanges(selectedTab === 0 ? "cId" : "sId", value)}
+                    getOptionLabel={(option) => option.id + "-" + option.name}
+                    renderInput={(params) => (
+                        <TextField
+                            {...params}
+                            label={selectedTab === 0 ? "Select Customer" : "Select Supplier"}
+                            size='small'
+                            margin="normal"
+                            variant="outlined"
+                            InputProps={{ ...params.InputProps, type: 'search' }}
+                        />
+                    )}
+                />
             </Grid>
             <Grid item xs={12} sm={3}>
                 <Autocomplete
@@ -73,31 +52,33 @@ const ReportFilter = ({ selectedTab, customers, products, suppliers, formsData, 
                     size='small'
                     id="Product"
                     options={products}
-                    onChange={(e, value) => handleListChanges(e, value)}
+                    onChange={(e, value) => handleListChanges("pId", value)}
                     getOptionLabel={(option) => option.name}
                     renderInput={(params) => (
-                        <TextField
-                            {...params}
-                            label="Select Product"
+                        <TextField {...params} label="Select Product"
                             size='small'
-                            placeholder='Enter product name ...'
                             margin="normal"
                             variant="outlined"
-                            InputProps={{ ...params.InputProps, type: 'search' }}
                         />
                     )}
                 />
             </Grid>
             <Grid item xs={12} sm={3} align="center">
+
                 <DatePicker
-                    style={{ height: "auto", padding: 9, marginTop: 8, width: "100%" }}
-                    className='date-picker'
+                    style={{ width: "100%", padding: "9px", marginTop: "8px" }}
                     value={dates}
-                    onChange={setDates}
+                    onChange={(dateRange) => {
+                        setDates(dateRange); // Update local state for DatePicker UI
+                        setFormData((prev) => ({
+                            ...prev,
+                            from: dateRange[0]?.format(format) || "",
+                            to: dateRange[1]?.format(format) || ""
+                        }));
+                    }}
                     range
                     format={format}
                     calendarPosition="bottom-center"
-                    InputProps={{ style: { padding: 15, marginTop: 8, width: "100%" } }}
                 />
             </Grid>
             <Grid item xs={12} sm={3} align="center">
@@ -106,10 +87,13 @@ const ReportFilter = ({ selectedTab, customers, products, suppliers, formsData, 
                     startIcon={<SearchOutlined />}
                     variant='outlined'
                     color='primary'
-                >Filter</Button>
+                    onClick={() => onFilter(formsData)}
+                >
+                    Filter
+                </Button>
             </Grid>
         </Grid>
-    )
-}
+    );
+};
 
-export default ReportFilter
+export default ReportFilter;

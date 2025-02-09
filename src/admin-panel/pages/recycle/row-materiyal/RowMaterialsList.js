@@ -83,7 +83,7 @@ const RowMaterialsList = () => {
                     getMaterialsList();
                     showMessage('success', 'Material record deleted successfully');
                 } else {
-                    console.log(res)
+                    showMessage("error", 'Somthing went wrong on delete!')
                 }
             }).catch(err => {
                 console.log(err)

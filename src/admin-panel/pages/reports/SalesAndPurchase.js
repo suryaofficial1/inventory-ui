@@ -107,7 +107,7 @@ const SalesAndPurchase = () => {
 
     const SalesRows = [
         {
-            id: 1,
+            "id": 1,
             "Customer Name": "John Doe",
             Quantity: 15,
             "Sales Price": 1200,
@@ -116,7 +116,7 @@ const SalesAndPurchase = () => {
             Status: "Completed",
         },
         {
-            id: 2,
+            "id": 2,
             "Customer Name": "Jane Smith",
             "Product Desc": "Stainless Steel Pipe",
             Quantity: 25,
@@ -126,7 +126,7 @@ const SalesAndPurchase = () => {
             Status: "Pending",
         },
         {
-            id: 3,
+            "id": 3,
             "Customer Name": "Michael Johnson",
             "Product Desc": "Copper Cable",
             Quantity: 40,
@@ -136,7 +136,7 @@ const SalesAndPurchase = () => {
             Status: "Completed",
         },
         {
-            id: 4,
+            "id": 4,
             "Customer Name": "Emily Davis",
             "Product Desc": "Plastic Sheets",
             Quantity: 100,
@@ -146,7 +146,7 @@ const SalesAndPurchase = () => {
             Status: "Completed",
         },
         {
-            id: 5,
+            "id": 5,
             "Customer Name": "Chris Brown",
             "Product Desc": "PVC Pipe",
             Quantity: 30,
@@ -156,7 +156,7 @@ const SalesAndPurchase = () => {
             Status: "In Progress",
         },
         {
-            id: 6,
+            "id": 6,
             "Customer Name": "Sophia Taylor",
             "Product Desc": "Aluminum Foil",
             Quantity: 20,
@@ -166,7 +166,7 @@ const SalesAndPurchase = () => {
             Status: "Completed",
         },
         {
-            id: 7,
+            "id": 7,
             "Customer Name": "James Anderson",
             "Product Desc": "Ceramic Tiles",
             Quantity: 60,
@@ -176,7 +176,7 @@ const SalesAndPurchase = () => {
             Status: "Pending",
         },
         {
-            id: 8,
+            "id": 8,
             "Customer Name": "Olivia Martinez",
             "Product Desc": "Wooden Panels",
             Quantity: 35,
@@ -186,7 +186,7 @@ const SalesAndPurchase = () => {
             Status: "Completed",
         },
         {
-            id: 9,
+            "id": 9,
             "Customer Name": "William Lee",
             "Product Desc": "Glass Bottles",
             Quantity: 50,
@@ -196,7 +196,7 @@ const SalesAndPurchase = () => {
             Status: "Completed",
         },
         {
-            id: 10,
+            "id": 10,
             "Customer Name": "Isabella Wilson",
             "Product Desc": "Rubber Mats",
             Quantity: 45,
@@ -206,7 +206,7 @@ const SalesAndPurchase = () => {
             Status: "In Progress",
         },
         {
-            id: 11,
+            "id": 11,
             "Customer Name": "Liam White",
             "Product Desc": "Concrete Blocks",
             Quantity: 70,
@@ -216,7 +216,7 @@ const SalesAndPurchase = () => {
             Status: "Completed",
         },
         {
-            id: 12,
+            "id": 12,
             "Customer Name": "Emma Thomas",
             "Product Desc": "Paint Cans",
             Quantity: 25,
@@ -229,7 +229,7 @@ const SalesAndPurchase = () => {
 
     const PurchaseRows = [
         {
-            id: 1,
+            "id": 1,
             "Supplier Name": "John Doe",
             Quantity: 15,
             "Price": 1200,
@@ -238,7 +238,7 @@ const SalesAndPurchase = () => {
             Status: "Completed",
         },
         {
-            id: 2,
+            "id": 2,
             "Supplier Name": "Jane Smith",
             "Product Desc": "Stainless Steel Pipe",
             Quantity: 25,
@@ -248,7 +248,7 @@ const SalesAndPurchase = () => {
             Status: "Pending",
         },
         {
-            id: 3,
+            "id": 3,
             "Supplier Name": "Michael Johnson",
             "Product Desc": "Copper Cable",
             Quantity: 40,
@@ -258,7 +258,7 @@ const SalesAndPurchase = () => {
             Status: "Completed",
         },
         {
-            id: 4,
+            "id": 4,
             "Supplier Name": "Emily Davis",
             "Product Desc": "Plastic Sheets",
             Quantity: 100,
@@ -268,7 +268,7 @@ const SalesAndPurchase = () => {
             Status: "Completed",
         },
         {
-            id: 5,
+            "id": 5,
             "Supplier Name": "Chris Brown",
             "Product Desc": "PVC Pipe",
             Quantity: 30,
@@ -278,7 +278,7 @@ const SalesAndPurchase = () => {
             Status: "In Progress",
         },
         {
-            id: 6,
+            "id": 6,
             "Supplier Name": "Sophia Taylor",
             "Product Desc": "Aluminum Foil",
             Quantity: 20,
@@ -288,7 +288,7 @@ const SalesAndPurchase = () => {
             Status: "Completed",
         },
         {
-            id: 7,
+            "id": 7,
             "Supplier Name": "James Anderson",
             "Product Desc": "Ceramic Tiles",
             Quantity: 60,
@@ -298,7 +298,7 @@ const SalesAndPurchase = () => {
             Status: "Pending",
         },
         {
-            id: 8,
+            "id": 8,
             "Supplier Name": "Olivia Martinez",
             "Product Desc": "Wooden Panels",
             Quantity: 35,
@@ -308,7 +308,7 @@ const SalesAndPurchase = () => {
             Status: "Completed",
         },
         {
-            id: 9,
+            "id": 9,
             "Supplier Name": "William Lee",
             "Product Desc": "Glass Bottles",
             Quantity: 50,
@@ -318,7 +318,7 @@ const SalesAndPurchase = () => {
             Status: "Completed",
         },
         {
-            id: 10,
+            "id": 10,
             "Supplier Name": "Isabella Wilson",
             "Product Desc": "Rubber Mats",
             Quantity: 45,
@@ -328,7 +328,7 @@ const SalesAndPurchase = () => {
             Status: "In Progress",
         },
         {
-            id: 11,
+            "id": 11,
             "Supplier Name": "Liam White",
             "Product Desc": "Concrete Blocks",
             Quantity: 70,
@@ -338,7 +338,7 @@ const SalesAndPurchase = () => {
             Status: "Completed",
         },
         {
-            id: 12,
+            "id": 12,
             "Supplier Name": "Emma Thomas",
             "Product Desc": "Paint Cans",
             Quantity: 25,
@@ -372,22 +372,22 @@ const SalesAndPurchase = () => {
                 <Grid item xs={12} sm={6} >
                     <ProgressBarChart title="Product Purchase by quantity" productData={PurchaseProductData} />
                 </Grid>
-                <Grid item xs={12}>
+                {/* <Grid item xs={12}>
                     <ReportTables title="Top Selling Stock"
                         headers={["id", "Customer Name", "Quantity", "Sales Price", "Sales Date", "Unit", "Status"]}
                         rows={SalesRows}
                         showAll="See All"
                         showAllLink="#sales"
                     />
-                </Grid>
-                <Grid item xs={12}>
+                </Grid> */}
+                {/* <Grid item xs={12}>
                     <ReportTables title="Top Purchased Stock"
                         headers={["id", "Supplier Name", "Quantity", "Price", "Date", "Unit", "Status"]}
                         rows={PurchaseRows}
                         showAll="See All"
                         showAllLink="#purchase"
                     />
-                </Grid>
+                </Grid> */}
             </Grid>
         </>
     )
