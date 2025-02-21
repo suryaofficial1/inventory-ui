@@ -1,4 +1,4 @@
-export const domain = 'http://localhost:8082';
+export const domain = 'http://192.169.178.213:5001';
 
 export const LOGIN = `${domain}/auth/login`;
 export const SEND_OTP = `${domain}/auth/send-otp`;
