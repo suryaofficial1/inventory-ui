@@ -1,4 +1,4 @@
-export const domain = 'http://192.169.178.213:5001';
+export const domain = 'https://inventory.supraindustries.in';
 
 export const LOGIN = `${domain}/auth/login`;
 export const SEND_OTP = `${domain}/auth/send-otp`;

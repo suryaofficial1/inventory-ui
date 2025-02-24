@@ -39,6 +39,7 @@ const Login = () => {
       password: password
     }
     start()
+    console.log(LOGIN)
     sendPostRequest(LOGIN, reqData).then((res) => {
       if (res.status === 200) {
         storeUserSession(dispatch, res.data);
