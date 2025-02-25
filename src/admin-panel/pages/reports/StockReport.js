@@ -1,14 +1,25 @@
-import { Grid } from '@material-ui/core';
-import React from "react";
+import { Grid, Typography } from '@material-ui/core';
+import React, { useEffect } from "react";
 import { CardGiftcard, Money, People, Store } from '@material-ui/icons';
 import OverviewCards from '../../../common/report-components/OverviewCards';
 import PeiChart from '../../../common/report-components/PeiChart';
 import ProgressBarChart from '../../../common/report-components/ProgressBarChart';
 import ReportTables from '../../../common/report-components/ReportTables';
 import SingleBarChart from '../../../common/report-components/SingleBarChart';
+import { useLoader } from '../../../hooks/useLoader';
 
 
 const StockReport = () => {
+    const [{ start, stop,  }, Loader,] = useLoader();
+  
+    useEffect(() => {
+      start()
+      setTimeout(() =>{
+        stop()
+      },2000)
+  
+    }, []);
+
   const data = {
     daily: [
       { date: "2024-11-12", Sales: 3000 },
@@ -210,28 +221,34 @@ const StockReport = () => {
 
 
   return (
-    <Grid container spacing={1}>
-      <Grid item sm={12}>
-        <OverviewCards title="Product Overview" data={overviewData} />
-      </Grid>
-      <Grid item sm={12}>
-        <SingleBarChart title="Product Report" filteredData={filteredData} />
-      </Grid>
-      <Grid item xs={12} sm={6}>
-        <PeiChart title="Product Product by Unit" PeiData={PeiData} />
-      </Grid>
-      <Grid item xs={12} sm={6} >
-        <ProgressBarChart title="Product Product by quantity" productData={productData} />
-      </Grid>
-      <Grid item xs={12}>
-        <ReportTables title="Top Selling/Purchase Stock"
-          headers={["id", "Supplier Name", "Quantity", "Price", "Date", "Unit", "Status"]}
-          rows={rows}
-          showAll="See All"
-          showAllLink="#purchase"
-        />
-      </Grid>
-    </Grid>
+    <>
+    <Loader />
+    <div className='flex center-justify-items' >
+      <Typography variant='subtitle1'>...inProgress</Typography>
+    </div>
+    </>
+    // <Grid container spacing={1}>
+    //   <Grid item sm={12}>
+    //     <OverviewCards title="Product Overview" data={overviewData} />
+    //   </Grid>
+    //   <Grid item sm={12}>
+    //     <SingleBarChart title="Product Report" filteredData={filteredData} />
+    //   </Grid>
+    //   <Grid item xs={12} sm={6}>
+    //     <PeiChart title="Product Product by Unit" PeiData={PeiData} />
+    //   </Grid>
+    //   <Grid item xs={12} sm={6} >
+    //     <ProgressBarChart title="Product Product by quantity" productData={productData} />
+    //   </Grid>
+    //   <Grid item xs={12}>
+    //     <ReportTables title="Top Selling/Purchase Stock"
+    //       headers={["id", "Supplier Name", "Quantity", "Price", "Date", "Unit", "Status"]}
+    //       rows={rows}
+    //       showAll="See All"
+    //       showAllLink="#purchase"
+    //     />
+    //   </Grid>
+    // </Grid>
   )
 }
 

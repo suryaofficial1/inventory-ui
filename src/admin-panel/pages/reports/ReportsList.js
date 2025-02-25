@@ -20,16 +20,28 @@ const ReportsList = () => {
     const user = useSelector((state) => state.user);
 
     const [formsData, setFormData] = useState({
-        cId: '',
-        sId: '',
-        pId: '',
+        customer: '',
+        supplier: '',
+        product: '',
         from: '',
-        to: '',
+        to: ''
     });
 
     const onFilter = (filters) => {
         console.log("Applying filters: ", filters);
         setFormData(filters);
+    };
+
+    const reset = () => {
+        setFormData({
+            customer: '',
+            supplier: '',
+            product: '',
+            from: '',
+            to: '',
+            reset: true
+        });
+
     };
 
     const handleTabChange = (event, newValue) => {
@@ -57,7 +69,7 @@ const ReportsList = () => {
             stop();
         }
     };
-    
+
 
     const renderReportComponent = () => {
         const reportComponents = [
@@ -95,6 +107,7 @@ const ReportsList = () => {
                 products={products}
                 suppliers={suppliers}
                 onFilter={onFilter}
+                reset={reset}
             />
             {renderReportComponent()}
         </>

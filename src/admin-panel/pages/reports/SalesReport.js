@@ -1,4 +1,4 @@
-import { Card, Grid, Typography } from '@material-ui/core';
+import { Button, Card, Grid, Typography } from '@material-ui/core';
 import React, { useEffect, useState } from "react";
 import { sendGetRequest } from '../../../utils/network';
 import { SALES_OVERVIEW } from '../../../config/api-urls';
@@ -9,10 +9,14 @@ import PeiChart from '../../../common/report-components/PeiChart';
 import ProgressBarChart from '../../../common/report-components/ProgressBarChart';
 import ReportTables from '../../../common/report-components/ReportTables';
 import { CardGiftcard, Money, People, Store } from '@material-ui/icons';
+import { useRef } from 'react';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 
 const SalesReport = ({ formsData }) => {
   const [{ start, stop }, Loader] = useLoader();
   const [salesData, setSalesData] = useState([]);
+  const pdfRef = useRef();
 
   console.log("fil -->", formsData)
   useEffect(() => {
@@ -23,7 +27,7 @@ const SalesReport = ({ formsData }) => {
   const fetchSalesData = async () => {
     try {
       start();
-      const res = await sendGetRequest(`${SALES_OVERVIEW}?from=${formsData.from}&to=${formsData.to}&pId=${formsData.pId}&cId=${formsData.cId}`, "token");
+      const res = await sendGetRequest(`${SALES_OVERVIEW}?from=${formsData.from}&to=${formsData.to}&pId=${formsData?.product ? product.id : ""}&cId=${formsData?.customer ? customer.id : ""}`, "token");
       if (res.status === 200) {
         setSalesData(res.data);
       }
@@ -78,28 +82,70 @@ const SalesReport = ({ formsData }) => {
     return value;
   };
 
-  return (
-    <Grid container spacing={1}>
+  const downloadReport = () => {
+    const input = pdfRef.current
+    html2canvas(input).then((convas) => {
+      const imgData = convas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4', true);
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const imgWidth = convas.width;
+      const imgHeight = convas.height;
+      const ration = Math.min(pdfWidth / imgWidth, pdfHeight / imgHeight);
+      const imgX = (pdfWidth - imgWidth * ration) / 2;
+      const imgY = 30;
+      pdf.addImage(imgData, 'PNG', imgX, imgY, imgWidth * ration, imgHeight * ration);
+      pdf.save('invoice.pdf')
+    })
+  }
+
+  return (<>
+    <Loader />
+    <Grid container spacing={1} ref={pdfRef}>
       <Grid item sm={12}>
-        <Card elevation={1} style={{padding: 10}}>
-        <Typography variant='h4' gutterBottom>
-           <b> Sales Report by Customer </b> 
-          </Typography>
-          {formsData.cId && <Typography variant='subtitle1' gutterBottom >
-            <b>Custom Name</b> : {formsData.cId}
-          </Typography>}
-          {formsData.pId && <Typography variant='subtitle1' gutterBottom >
-            <b> Product Name</b> : {formsData.pId}
-          </Typography>}
-          {formsData.from && <>
-            <Typography variant='subtitle1' gutterBottom >
-            <b>Start Date</b> : {formsData.from}
-          </Typography>
-          <Typography variant='subtitle1' gutterBottom >
-            <b>End Date</b> : {formsData.to}
-          </Typography>
-          </>
-          }
+        <Card
+          elevation={1}
+          style={{
+            padding: 10,
+            height: 170,
+            position: "relative",
+            overflow: "hidden"
+          }}
+        >
+          <div
+            style={{
+              position: "absolute",
+              top: 0, left: 0, width: "100%", height: "100%",
+              backgroundImage: `url("/images/login-logo-3.png")`,
+              backgroundSize: "contain",
+              backgroundRepeat: "no-repeat",
+              backgroundPosition: "center",
+              opacity: 0.6, // Watermark effect
+              zIndex: 0
+            }}
+          />
+          <div className='flex space-bw'>
+            <div>
+              <Typography variant='h4' gutterBottom>
+                <b> Sales Reports {formsData.customer.name ? "by" + " " + formsData.customer.name : ''} </b>
+              </Typography>
+              {formsData.product && <Typography variant='subtitle1' gutterBottom >
+                <b> Product Name</b> : {formsData.product.name}
+              </Typography>}
+              {formsData.from && <>
+                <Typography variant='subtitle1' gutterBottom >
+                  <b>Start Date</b> : {formsData.from}
+                </Typography>
+                <Typography variant='subtitle1' gutterBottom >
+                  <b>End Date</b> : {formsData.to}
+                </Typography>
+              </>
+              }
+            </div>
+            <div>
+              <Button variant='outlined' color='primary' onClick={downloadReport}>Download Report</Button>
+            </div>
+          </div>
         </Card>
       </Grid>
       <Grid item sm={12}>
@@ -125,6 +171,7 @@ const SalesReport = ({ formsData }) => {
         />
       </Grid>
     </Grid>
+  </>
   )
 }
 

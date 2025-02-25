@@ -39,6 +39,9 @@ h4 {
 .center-justify-items {
   justify-items: center;
 }
+.space-bw {
+  justify-content: space-between;
+}
 
 .font-weight-600 {
   font-weight: 600 !important;
@@ -419,6 +422,13 @@ padding: 10px !important;
     border: 1px solid var(--tab-color) !important;
     color: var(--tab-color);
 }
+.reset-filter-btn {
+   margin: 8px !important;
+    /* background-color: var(--tab-background) !important; */
+    border: 1px solid var(--tab-color) !important;
+    color: var(--tab-color);
+}
+
 
 
 
