@@ -1,7 +1,6 @@
-import { Delete, Edit, Visibility } from '@material-ui/icons'
+import { Delete, Edit, Visibility } from '@material-ui/icons';
 import { makeStyles } from '@material-ui/styles';
-import React from 'react'
-import { roleBasePolicy } from '../../utils/Constent';
+import React from 'react';
 import { useSelector } from 'react-redux';
 const useStyles = makeStyles({
     actionIcons: {

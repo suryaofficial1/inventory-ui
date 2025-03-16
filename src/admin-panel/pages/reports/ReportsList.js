@@ -5,11 +5,10 @@ import { CUSTOMERS_LIST, PRODUCTS_LIST, SUPPLIERS_LIST } from '../../../config/a
 import { useLoader } from '../../../hooks/useLoader';
 import { sendGetRequest } from '../../../utils/network';
 import FIFOReport from './FIFOReport';
-import PurchaseReport from './PurchaseReport';
 import ReportFilter from './ReportFilter';
-import SalesAndPurchase from './SalesAndPurchase';
-import SalesReport from './SalesReport';
 import StockReport from './StockReport';
+import PurchaseReportList from './purchase-report/PurchaseReportList';
+import SalesReportList from './sales-report/SalesReportList';
 
 const ReportsList = () => {
     const [selectedTab, setSelectedTab] = useState(0);
@@ -56,9 +55,9 @@ const ReportsList = () => {
         try {
             start();
             const [customersRes, productsRes, suppliersRes] = await Promise.all([
-                sendGetRequest(CUSTOMERS_LIST, "token"),
-                sendGetRequest(PRODUCTS_LIST, "token"),
-                sendGetRequest(SUPPLIERS_LIST, "token")
+                sendGetRequest(CUSTOMERS_LIST, user.token),
+                sendGetRequest(PRODUCTS_LIST, user.token),
+                sendGetRequest(SUPPLIERS_LIST, user.token)
             ]);
             if (customersRes.status === 200) setCustomers(customersRes.data);
             if (productsRes.status === 200) setProducts(productsRes.data);
@@ -73,10 +72,9 @@ const ReportsList = () => {
 
     const renderReportComponent = () => {
         const reportComponents = [
-            <SalesReport formsData={formsData} />,
-            <PurchaseReport formsData={formsData} />,
+            <SalesReportList formsData={formsData} />,
+            <PurchaseReportList formsData={formsData} />,
             <StockReport formsData={formsData} />,
-            <SalesAndPurchase formsData={formsData} />,
             <FIFOReport formsData={formsData} />
         ];
         return reportComponents[selectedTab];
@@ -95,7 +93,6 @@ const ReportsList = () => {
                     <Tab label="Sales Report" />
                     <Tab label="Purchase Report" />
                     <Tab label="Stock Report" />
-                    <Tab label="Sales & Purchase Charts" />
                     <Tab label="FIFO Report" />
                 </Tabs>
             </Paper>

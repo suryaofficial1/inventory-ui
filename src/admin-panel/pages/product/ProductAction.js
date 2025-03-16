@@ -1,10 +1,12 @@
 import { Button, Grid, MenuItem, TextField } from '@material-ui/core'
 import React, { useState } from 'react'
+import { useSelector } from 'react-redux'
 import PopupAction from '../../../common/PopupAction'
+import UnitSelect from '../../../common/select-box/UnitSelect'
 import { ADD_PRODUCT, UPDATE_PRODUCT } from '../../../config/api-urls'
 import { useLoader } from '../../../hooks/useLoader'
 import { showMessage } from '../../../utils/message'
-import { sendPostRequest } from '../../../utils/network'
+import { sendPostRequestWithAuth } from '../../../utils/network'
 
 const ProductAction = ({ onClose, successAction, title, selectedData = {}, readOnly = false }) => {
     const [formsData, setFormData] = useState(() => ({
@@ -15,6 +17,7 @@ const ProductAction = ({ onClose, successAction, title, selectedData = {}, readO
         unit: selectedData.unit || '',
         status: selectedData.status || '1',
     }));
+    const user = useSelector((state) => state.user);
 
     const [{ start, stop }, Loader] = useLoader();
 
@@ -39,9 +42,7 @@ const ProductAction = ({ onClose, successAction, title, selectedData = {}, readO
     }
 
     const submitAction = () => {
-
         if (validation()) return;
-
         const reqData = {
             name: formsData.name,
             description: formsData.description,
@@ -53,7 +54,7 @@ const ProductAction = ({ onClose, successAction, title, selectedData = {}, readO
         const url = selectedData.id ? UPDATE_PRODUCT(selectedData.id) : ADD_PRODUCT;
         const action = selectedData.id ? 'updated' : 'added';
         start()
-        sendPostRequest(url, reqData, true).then((res) => {
+        sendPostRequestWithAuth(url, reqData, user.token).then((res) => {
             if (res.status === 200) {
                 successAction()
                 showMessage('success', `Product successfully ${action}`);
@@ -115,7 +116,9 @@ const ProductAction = ({ onClose, successAction, title, selectedData = {}, readO
                         />
                     </Grid>
                     <Grid item xs={6}>
-                        <TextField
+
+                        <UnitSelect onChange={handleInputChange} value={formsData.unit} readOnly={readOnly} />
+                        {/* <TextField
                             label="Unit"
                             variant="outlined"
                             fullWidth
@@ -127,7 +130,7 @@ const ProductAction = ({ onClose, successAction, title, selectedData = {}, readO
                                 readOnly: readOnly,
                             }}
                             onChange={handleInputChange}
-                        />
+                        /> */}
                     </Grid>
                     <Grid item xs={6}>
                         <TextField

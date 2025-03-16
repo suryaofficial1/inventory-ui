@@ -9,10 +9,13 @@ import SingleBarChart from '../../../common/report-components/SingleBarChart';
 import { PURCHASE_REPORT } from '../../../config/api-urls';
 import { useLoader } from '../../../hooks/useLoader';
 import { sendGetRequest } from '../../../utils/network';
+import { useSelector } from 'react-redux';
 
 const PurchaseReport = ({ formsData }) => {
   const [{ start, stop }, Loader] = useLoader();
   const [salesData, setSalesData] = useState([]);
+  const user = useSelector((state) => state.user);
+
 
   console.log("fil -->", formsData)
   useEffect(() => {
@@ -23,7 +26,7 @@ const PurchaseReport = ({ formsData }) => {
   const fetchSalesData = async () => {
     try {
       start();
-      const res = await sendGetRequest(`${PURCHASE_REPORT}?from=${formsData.from}&to=${formsData.to}&pId=${formsData.pId}&sId=${formsData.sId}`, "token");
+      const res = await sendGetRequest(`${PURCHASE_REPORT}?from=${formsData.from}&to=${formsData.to}&pId=${formsData.pId}&sId=${formsData.sId}`, user.token);
       if (res.status === 200) {
         setSalesData(res.data);
       }

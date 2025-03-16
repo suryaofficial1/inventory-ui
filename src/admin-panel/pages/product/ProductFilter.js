@@ -1,24 +1,23 @@
-import { Grid, TextField } from '@material-ui/core';
+import { Grid } from '@material-ui/core';
 import React from 'react';
+import ProductSpellSearch from '../../../common/select-box/ProductSpellSearch';
 
-const ProductFilter = (props) => {
-    const handleChange = (e) => {
-        props.setFilter({ ...props.filter, [e.target.name]: e.target.value });
+const ProductFilter = ({ filter, setFilter, reset }) => {
+
+    const handleChange = (value) => {
+        setFilter({ ...filter, name: value });
+    };
+
+    const handleReset = () => {
+        setFilter({ name: '' });
+        handleChange('');
+        reset();
     };
 
     return (
         <Grid container spacing={1}>
-            <Grid item xs={12} sm={3}>
-                <TextField
-                    size="small"
-                    label="Name"
-                    variant="outlined"
-                    fullWidth
-                    margin="normal"
-                    name="name"
-                    value={props.filter.name}
-                    onChange={handleChange}
-                />
+            <Grid item xs={12} sm={6}>
+                <ProductSpellSearch onChangeAction={handleChange} value={filter.name} onReset={handleReset} />
             </Grid>
         </Grid>
     );

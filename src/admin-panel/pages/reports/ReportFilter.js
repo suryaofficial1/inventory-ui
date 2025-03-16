@@ -1,9 +1,9 @@
-import { Button, FormControl, Grid, InputLabel, TextField, Typography } from '@material-ui/core';
+import { Button, Grid, TextField } from '@material-ui/core';
 import { SearchOutlined } from '@material-ui/icons';
+import RotateLeftIcon from '@material-ui/icons/RotateLeft';
 import { Autocomplete } from '@material-ui/lab';
 import React, { useState } from 'react';
 import DatePicker, { DateObject } from 'react-multi-date-picker';
-import RotateLeftIcon from '@material-ui/icons/RotateLeft';
 
 const format = "YYYY-MM-DD";
 
@@ -19,8 +19,11 @@ const ReportFilter = ({ selectedTab, customers, products, suppliers, onFilter, r
     })
 
     const handleListChanges = (name, value) => {
-        console.log("name", name, value)
-        setFormData((prev) => ({ ...prev, [name]: value || "" }));
+        if (name) {
+            setFormData((prev) => ({ ...prev, [name]: value || "" }));
+        } else {
+            setFormData({});
+        }
     };
 
     const resetFilters = () => {
@@ -31,11 +34,10 @@ const ReportFilter = ({ selectedTab, customers, products, suppliers, onFilter, r
             from: '',
             to: ''
         });
-        setDates([new DateObject().add(-3, "days"), new DateObject().set()]); // Reset DatePicker
+        handleListChanges('')
+        setDates([new DateObject().add(-3, "days"), new DateObject().set()]);
         reset();
     };
-
-
 
     return (
         <Grid container spacing={1} justifyContent='center' alignItems='center' alignContent='center'>
@@ -45,6 +47,7 @@ const ReportFilter = ({ selectedTab, customers, products, suppliers, onFilter, r
                     disableClearable
                     size='small'
                     id="customer"
+                    value={selectedTab === 0 ? formsData?.customer ? formsData?.customer : null : formsData?.supplier ? formsData?.supplier : null || null}
                     options={selectedTab === 0 ? customers : suppliers}
                     onChange={(e, value) => handleListChanges(selectedTab === 0 ? "customer" : "supplier", value)}
                     getOptionLabel={(option) => option.id + "-" + option.name}
@@ -66,6 +69,7 @@ const ReportFilter = ({ selectedTab, customers, products, suppliers, onFilter, r
                     disableClearable
                     size='small'
                     id="Product"
+                    value={formsData.product || null}
                     options={products}
                     onChange={(e, value) => handleListChanges("product", value)}
                     getOptionLabel={(option) => option.name}
@@ -79,42 +83,24 @@ const ReportFilter = ({ selectedTab, customers, products, suppliers, onFilter, r
                 />
             </Grid>
             <Grid item xs={12} sm={3} align="center">
-
-
-                <FormControl fullWidth>
-                    <InputLabel shrink>Date Range</InputLabel>
-                    <DatePicker
-                        style={{ width: "100%", padding: "9px", marginTop: "8px" }}
-                        value={dates}
-                        onChange={(dateRange) => {
-                            setDates(dateRange);
-                            setFormData((prev) => ({
-                                ...prev,
-                                from: dateRange[0]?.format(format) || "",
-                                to: dateRange[1]?.format(format) || ""
-                            }));
-                        }}
-                        range
-                        format={format}
-                        calendarPosition="bottom-center"
-                    />
-                </FormControl>
-
-                {/* <DatePicker
+                <DatePicker
                     style={{ width: "100%", padding: "9px", marginTop: "8px" }}
                     value={dates}
                     onChange={(dateRange) => {
-                        setDates(dateRange); // Update local state for DatePicker UI
+                        const validDateRange = dateRange && dateRange.length ? dateRange : [];
+
+                        setDates(validDateRange);
+
                         setFormData((prev) => ({
                             ...prev,
-                            from: dateRange[0]?.format(format) || "",
-                            to: dateRange[1]?.format(format) || ""
+                            from: validDateRange[0]?.format(format) || "",
+                            to: validDateRange[1]?.format(format) || ""
                         }));
                     }}
                     range
                     format={format}
                     calendarPosition="bottom-center"
-                /> */}
+                />
             </Grid>
             <Grid item xs={12} sm={3} align="center">
                 <Button

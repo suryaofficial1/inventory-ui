@@ -131,6 +131,9 @@ input[type="password"] {
   color: red;
   font-size: 0.8rem;
 }
+.pointer-cursor {
+  cursor: pointer;
+}
 
 .form-options {
   display: flex;
@@ -460,4 +463,23 @@ padding: 10px !important;
   color: #6b6b81;
   margin: 10px;
 }
+
+.even-row {
+  background-color: #f9f9f9 !important; /* Light grey for even rows */
+}
+
+.odd-row {
+  background-color: #fdeded !important; /* White for odd rows */
+}
+
+.viewDetails {
+  width: 92% !important;
+  border: 1px solid #b3acac !important;
+  margin: 2px !important;
+  display: flex !important;
+  padding: 12px !important;
+  align-items: center !important;
+  border-radius: 5px !important;
+}
+
 

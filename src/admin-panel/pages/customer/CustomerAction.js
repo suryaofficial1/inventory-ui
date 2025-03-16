@@ -1,21 +1,24 @@
 import { Button, Grid, MenuItem, TextField } from '@material-ui/core'
 import React, { useState } from 'react'
+import { useSelector } from 'react-redux'
 import PopupAction from '../../../common/PopupAction'
 import { ADD_CUSTOMER, UPDATE_CUSTOMER } from '../../../config/api-urls'
 import { useLoader } from '../../../hooks/useLoader'
 import { showMessage } from '../../../utils/message'
-import { sendPostRequest } from '../../../utils/network'
+import { sendPostRequestWithAuth } from '../../../utils/network'
 
 const CustomerAction = ({ onClose, successAction, title, selectedData = {}, readOnly = false }) => {
     const [formsData, setFormData] = useState(() => ({
         name: selectedData.name || '',
-        cCode: selectedData.cCode || '',
+        vCode: selectedData.vCode || '',
         address: selectedData.address || '',
         location: selectedData.location || '',
         contact: selectedData.contact || '',
         gstin: selectedData.gstin || '',
         status: selectedData.status || '1',
     }));
+    const user = useSelector((state) => state.user);
+
 
     const [{ start, stop }, Loader] = useLoader();
 
@@ -27,6 +30,7 @@ const CustomerAction = ({ onClose, successAction, title, selectedData = {}, read
     const validation = () => {
         const errors = {};
         if (!formsData.name) errors.name = "Name is required";
+        if (!formsData.vCode) errors.name = "Vender code     is required";
         if (!formsData.address) errors.address = "Address is required";
         if (!formsData.location) errors.location = "Location is required";
         if (!formsData.contact) errors.contact = "Contact is required";
@@ -44,6 +48,7 @@ const CustomerAction = ({ onClose, successAction, title, selectedData = {}, read
 
         const reqData = {
             name: formsData.name,
+            vCode: formsData.vCode,
             address: formsData.address,
             location: formsData.location,
             contact: formsData.contact,
@@ -53,7 +58,7 @@ const CustomerAction = ({ onClose, successAction, title, selectedData = {}, read
         const url = selectedData.id ? UPDATE_CUSTOMER(selectedData.id) : ADD_CUSTOMER;
         const action = selectedData.id ? 'updated' : 'added';
         start()
-        sendPostRequest(url, reqData, true).then((res) => {
+        sendPostRequestWithAuth(url, reqData, user.token).then((res) => {
             if (res.status === 200) {
                 successAction()
                 showMessage('success', `Customer successfully ${action}`);
@@ -99,21 +104,21 @@ const CustomerAction = ({ onClose, successAction, title, selectedData = {}, read
                             onChange={handleInputChange}
                         />
                     </Grid>
-                    {formsData.cCode && <Grid item xs={6}>
+                    <Grid item xs={6}>
                         <TextField
-                            label="Customer Code"
+                            label="Vender Code"
                             variant="outlined"
                             fullWidth
                             size='small'
-                            name='cCode'
+                            name='vCode'
                             InputProps={{
-                                readOnly: true,
+                                readOnly: readOnly,
                             }}
-                            value={formsData.cCode}
-                            placeholder="Enter Customer Code..."
+                            value={formsData.vCode}
+                            placeholder="Enter Vender Code..."
                             onChange={handleInputChange}
                         />
-                    </Grid>}
+                    </Grid>
 
                     <Grid item xs={6}>
                         <TextField
@@ -145,7 +150,7 @@ const CustomerAction = ({ onClose, successAction, title, selectedData = {}, read
                             onChange={handleInputChange}
                         />
                     </Grid>
-                    <Grid item xs={6}>
+                    <Grid item xs={12}>
                         <TextField
                             label="GSTIN"
                             variant="outlined"

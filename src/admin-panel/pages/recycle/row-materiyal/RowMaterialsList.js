@@ -101,7 +101,7 @@ const RowMaterialsList = () => {
         },
 
         {
-            field: 'materials', headerName: 'Row Material', width: 150, resizable: false, sortable: false,
+            field: 'materials', headerName: 'Raw Material', width: 150, resizable: false, sortable: false,
             renderCell: (params) => (
                 params.row.materials ? <Chip label={JSON.parse(params.row.materials).join(', ')} /> : ""
             )

@@ -2,16 +2,17 @@ import { Button } from '@material-ui/core';
 import { DataGrid } from '@material-ui/data-grid';
 import { Add, Refresh, Search } from '@material-ui/icons';
 import { makeStyles } from '@material-ui/styles';
+import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import Swal from 'sweetalert2';
 import ActionButton from '../../../common/action-button/ActionButton';
-import { DELETE_SUPPLIER, SUPPLIER_LIST } from '../../../config/api-urls';
+import { DELETE_RETURN_PURCHASE, PURCHASE_RETURN_LIST } from '../../../config/api-urls';
 import { useLoader } from '../../../hooks/useLoader';
 import { roleBasePolicy } from '../../../utils/Constent';
 import { sendDeleteRequest, sendGetRequest } from '../../../utils/network';
-import Filter from './Filter';
-import SupplierAction from './SupplierAction';
+import Action from './Action';
+import PurchaseFilter from './Filter';
 
 const useStyles = makeStyles({
     actionIcons: {
@@ -20,7 +21,7 @@ const useStyles = makeStyles({
         cursor: 'pointer',
     },
     addBtn: {
-        padding: 10
+        padding: 10,
     },
     actionButton: {
         padding: "5px 15px",
@@ -28,47 +29,51 @@ const useStyles = makeStyles({
         borderRadius: 0,
         borderTopLeftRadius: 10,
         borderTopRightRadius: 10,
-    }
+    },
 });
 
-const SupplierList = () => {
+const ReturnList = () => {
     const classes = useStyles();
 
     const [page, setPage] = useState(0);
     const [rows, setRows] = useState([]);
-    const [filter, setFilter] = useState({ name: '', vendorCode: '', location: '', gstin: '' });
-    const [tempFilter, setTempFilter] = useState({ name: '', vendorCode: '', location: '', gstin: '' }); // Temporary filter for user input
+    const [filter, setFilter] = useState({ pName: '', sName: '' });
+    const [tempFilter, setTempFilter] = useState({ pName: '', sName: '' });
     const [totalRecords, setTotalRecords] = useState(0);
     const [open, setOpen] = useState(false);
     const [editData, setEditData] = useState({});
     const [readOnly, setReadOnly] = useState(false);
+    const [conform, setConform] = useState({});
     const [{ start, stop }, Loader, loading] = useLoader();
     const user = useSelector((state) => state.user);
 
+
     useEffect(() => {
-        getSupplier();
+        getReturnList();
     }, [page, filter]);
-    const getSupplier = () => {
-        start()
-        sendGetRequest(`${SUPPLIER_LIST}?name=${filter.name}&vendorCode=${filter.vendorCode}&location=${filter.location}&gstin=${filter.gstin}&page=${page + 1}&per_page=10`, user.token)
-            .then(res => {
+
+    const getReturnList = () => {
+        start();
+        sendGetRequest(`${PURCHASE_RETURN_LIST}?pName=${filter?.pName ? filter?.pName.name : ""}&sName=${filter?.sName ? filter?.sName.name : ""}&page=${page + 1}&per_page=10`, user.token)
+            .then((res) => {
                 if (res.status === 200) {
-                    setRows(res.data.rows)
-                    setTotalRecords(res.data.total)
+                    setRows(res.data.rows);
+                    setTotalRecords(res.data.total);
                 } else {
-                    console.log(res)
+                    console.log("Error in get return purchase list", res.data);
                 }
-            }).catch(err => {
-                console.log(err)
-            }).finally(stop)
-    }
+            })
+            .catch((err) => {
+                console.log(err);
+            })
+            .finally(stop);
+    };
 
     const onClose = () => {
         setOpen(!open);
         setReadOnly(false);
         setEditData({});
     };
-
 
     const handleAction = (row, mode) => {
         setOpen(true);
@@ -96,13 +101,13 @@ const SupplierList = () => {
 
     const deleteData = (row) => {
         start();
-        sendDeleteRequest(`${DELETE_SUPPLIER(row.id)}`, user.token)
+        sendDeleteRequest(`${DELETE_RETURN_PURCHASE(row.id)}`, user.token)
             .then((res) => {
                 if (res.status === 200) {
-                    getSupplier();
-                    Swal.fire("Supplier deleted successfully!", "", "success");
+                    getReturnList();
+                    Swal.fire("Return Purchase record deleted successfully!", "", "success");
                 } else {
-                    console.log("Error in delete supplier", res.data);
+                    console.log("Error in delete purchase return", res.data);
                 }
             })
             .catch((err) => {
@@ -112,32 +117,36 @@ const SupplierList = () => {
     };
 
 
-
     const columns = [
+        { field: 'id', headerName: '#Id', width: 80, sortable: true },
+        { field: 'invoiceNo', headerName: 'Invoice No', width: 130, sortable: false },
+        { field: 'bNumber', headerName: 'Batch Number', width: 160, sortable: false },
         {
-            field: 'id',
-            headerName: '#Id',
-            width: 80,
-            sortable: true,
+            field: 'supplierName', headerName: 'Supplier Name', width: 200, sortable: true,
+            renderCell: (params) => (
+                params.row.supplier.name ? params.row.supplier.name : ""
+            )
         },
-
-        { field: 'name', headerName: 'Name', width: 140, resizable: false, sortable: false, },
-        { field: 'vendorCode', headerName: 'Vendor code', width: 120, resizable: false, sortable: false },
         {
-            field: 'address', headerName: 'Address', width: 200, resizable: true, sortable: false,
+            field: 'product', headerName: 'Product', width: 200, resizable: false, sortable: false,
+            renderCell: (params) => (
+                params.row.product.name ? params.row.product.name : ''
+            )
+        },
+        {
+            field: 'rDesc', headerName: 'desc', width: 200,
             renderCell: (params) => {
                 return (
-                    params.row.address ? <textarea readOnly>{params.row.address}</textarea> : ''
+                    params.row.rDesc ? <textarea readOnly>{params.row.rDesc}</textarea> : ''
                 )
             }
         },
-        { field: 'location', headerName: 'location', width: 110, resizable: true, sortable: false },
-        { field: 'contact', headerName: 'Contact', width: 110, resizable: true, sortable: false },
-        { field: 'gstin', headerName: 'GSTIN', width: 180, resizable: true, sortable: false },
+        { field: 'qty', headerName: 'Quantity', width: 120 },
+        { field: 'price', headerName: 'Price', width: 120 },
         {
-            field: 'status', headerName: 'Status', width: 100, resizable: true, sortable: false,
+            field: 'returnDate', headerName: 'Return Date', width: 150,
             renderCell: (params) => (
-                (params.row.status === 1) ? <span style={{ color: "green" }}>Active</span> : <span style={{ color: "red" }}>Inactive</span>
+                params.row.returnDate ? moment(params.row.returnDate).local().format('DD-MM-YYYY') : ''
             )
         },
         {
@@ -154,23 +163,27 @@ const SupplierList = () => {
 
     const applyFilter = () => {
         setFilter(tempFilter);
-        setPage(0)
-    }
+        setPage(0);
+    };
 
-    const resetAllData = ({ name = "", vendorCode = "", location = "", gstin = '' }) => {
-        setFilter({ ...filter, name, vendorCode, location, gstin });
-        setTempFilter({ name: '', vendorCode: '', location: '', gstin: '' });
-        setPage(0)
-    }
+    const resetAllData = () => {
+        setFilter({ pName: null, sName: null });
+        setTempFilter({ pName: null, sName: null });
+        setPage(0);
+    };
 
     return (
-        <div >
+        <div>
             <Loader />
             <div className={classes.addBtn}>
-                <Filter reset={resetAllData} filter={tempFilter} setFilter={setTempFilter} />
+                <PurchaseFilter reset={resetAllData} filter={tempFilter} setFilter={setTempFilter} />
             </div>
             <div>
-                {roleBasePolicy(user?.role) && <Button startIcon={<Add />} className={classes.actionButton} variant="contained" color="primary" onClick={() => setOpen(!open)}>Add Supplier</Button>}
+                {roleBasePolicy(user?.role) && <Button startIcon={<Add />} className={classes.actionButton}
+                    variant="contained" color="primary" onClick={() => setOpen(!open)}>
+                    Add Return Purchase
+                </Button>
+                }
                 <Button startIcon={<Search />} className={classes.actionButton} variant="contained" color="primary" onClick={applyFilter}>Search</Button>
                 <Button startIcon={<Refresh />} className={classes.actionButton} variant="contained" color="secondary" onClick={resetAllData}>Reset</Button>
             </div>
@@ -188,15 +201,15 @@ const SupplierList = () => {
                 disableColumnFilter
             />
 
-            {open && <SupplierAction
+            {open && <Action
                 selectedData={editData}
                 readOnly={readOnly}
                 onClose={onClose}
-                successAction={getSupplier}
-                title={readOnly ? 'View Supplier' : editData.id ? 'Edit Supplier' : 'Add Supplier'}
+                successAction={getReturnList}
+                title={readOnly ? 'View  Return Purchase Details' : editData.id ? 'Edit Return Purchase Detail' : 'Add Return Purchase Detail'}
             />}
         </div>
     );
 };
 
-export default SupplierList;
+export default ReturnList;

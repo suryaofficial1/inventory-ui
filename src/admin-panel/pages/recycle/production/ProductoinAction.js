@@ -1,11 +1,11 @@
 import { Button, Grid, MenuItem, TextField } from '@material-ui/core'
+import moment from 'moment'
 import React, { useEffect, useState } from 'react'
 import PopupAction from '../../../../common/PopupAction'
 import { ADD_PRODUCTION_DETAILS, CUSTOMERS_LIST, PRODUCTS_LIST, UPDATE_PRODUCTION_DETAILS } from '../../../../config/api-urls'
 import { useLoader } from '../../../../hooks/useLoader'
 import { showMessage } from '../../../../utils/message'
 import { sendGetRequest, sendPostRequest } from '../../../../utils/network'
-import moment from 'moment'
 
 const ProductoinAction = ({ onClose, successAction, title, selectedData = {}, readOnly = false }) => {
     const [formsData, setFormData] = useState(() => ({
@@ -145,7 +145,7 @@ const ProductoinAction = ({ onClose, successAction, title, selectedData = {}, re
                             size='small'
                             value={formsData.product} select>
                             {products.map((item) => (
-                                <MenuItem value={item.id}>{item.name}-{item.pCode}</MenuItem>
+                                <MenuItem value={item.id}>{item.name}</MenuItem>
                             ))}
                         </TextField>
                     </Grid>

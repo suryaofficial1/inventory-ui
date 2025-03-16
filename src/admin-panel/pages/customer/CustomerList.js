@@ -3,10 +3,11 @@ import { DataGrid } from '@material-ui/data-grid';
 import { Add, Delete, Edit, Refresh, Search, Visibility } from '@material-ui/icons';
 import { makeStyles } from '@material-ui/styles';
 import React, { useEffect, useState } from 'react';
-import { DELETE_CUSTOMER, CUSTOMER_LIST } from '../../../config/api-urls';
-import { sendDeleteRequest, sendGetRequest } from '../../../utils/network';
+import { useSelector } from 'react-redux';
+import Swal from 'sweetalert2';
+import { CUSTOMER_LIST, DELETE_CUSTOMER } from '../../../config/api-urls';
 import { useLoader } from '../../../hooks/useLoader';
-import { showMessage } from '../../../utils/message';
+import { sendDeleteRequest, sendGetRequest } from '../../../utils/network';
 import CustomerAction from './CustomerAction';
 import Filter from './Filter';
 
@@ -33,13 +34,15 @@ const CustomerList = () => {
 
     const [page, setPage] = useState(0);
     const [rows, setRows] = useState([]);
-    const [filter, setFilter] = useState({ name: '', cCode: '', location: '', gstin: '' });
-    const [tempFilter, setTempFilter] = useState({ name: '', cCode: '', location: '', gstin: '' }); // Temporary filter for user input
+    const [filter, setFilter] = useState({ name: '' });
+    const [tempFilter, setTempFilter] = useState({ name: '' }); // Temporary filter for user input
     const [totalRecords, setTotalRecords] = useState(0);
     const [open, setOpen] = useState(false);
     const [editData, setEditData] = useState({});
     const [readOnly, setReadOnly] = useState(false);
     const [{ start, stop }, Loader, loading] = useLoader();
+    const user = useSelector((state) => state.user);
+
 
 
     useEffect(() => {
@@ -47,7 +50,7 @@ const CustomerList = () => {
     }, [page, filter]);
     const getCustomer = () => {
         start()
-        sendGetRequest(`${CUSTOMER_LIST}?name=${filter.name}&cCode=${filter.cCode}&location=${filter.location}&gstin=${filter.gstin}&page=${page + 1}&per_page=10`, "token")
+        sendGetRequest(`${CUSTOMER_LIST}?name=${filter?.name ? filter?.name.name : ""}&page=${page + 1}&per_page=10`, user.token)
             .then(res => {
                 if (res.status === 200) {
                     setRows(res.data.rows)
@@ -74,19 +77,39 @@ const CustomerList = () => {
     };
 
     const deleteAction = (row) => {
-        start()
-        sendDeleteRequest(`${DELETE_CUSTOMER(row.id)}`, "token")
-            .then(res => {
+        Swal.fire({
+            title: "Are you sure?",
+            text: "This will also delete related records! You won't be able to revert this!",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#3085d6",
+            cancelButtonColor: "#d33",
+            confirmButtonText: "Yes, delete it!"
+        }).then((result) => {
+            if (result.isConfirmed) {
+                deleteData(row)
+            } else if (result.dismiss) {
+                Swal.fire("Changes are not saved", "", "info");
+            }
+        });
+    };
+
+    const deleteData = (row) => {
+        start();
+        sendDeleteRequest(`${DELETE_CUSTOMER(row.id)}`, user.token)
+            .then((res) => {
                 if (res.status === 200) {
                     getCustomer();
-                    showMessage('success', 'Customer deleted successfully');
+                    Swal.fire("Customer deleted successfully!", "", "success");
                 } else {
-                    console.log("Error in delete customer ", res.data)
+                    console.log("Error in delete customer", res.data);
                 }
-            }).catch(err => {
-                console.log(err)
-            }).finally(stop)
-    }
+            })
+            .catch((err) => {
+                console.log(err);
+            })
+            .finally(stop);
+    };
 
     const columns = [
         {
@@ -96,12 +119,12 @@ const CustomerList = () => {
             sortable: true,
         },
 
-        { field: 'name', headerName: 'Name', width: 120, resizable: false, sortable: false, },
-        { field: 'cCode', headerName: 'Customer code', width: 120, resizable: false, sortable: false, },
+        { field: 'name', headerName: 'Name', width: 160, resizable: false, sortable: false, },
+        { field: 'vCode', headerName: 'Vender code', width: 140, resizable: false, sortable: false, },
         { field: 'address', headerName: 'Address', width: 180, resizable: true, sortable: false },
         { field: 'location', headerName: 'location', width: 110, resizable: true, sortable: false },
         { field: 'contact', headerName: 'Contact', width: 110, resizable: true, sortable: false },
-        { field: 'gstin', headerName: 'GSTIN', width: 140, resizable: true, sortable: false },
+        { field: 'gstin', headerName: 'GSTIN', width: 200, resizable: true, sortable: false },
         {
             field: 'status', headerName: 'Status', width: 100, resizable: true, sortable: false,
             renderCell: (params) => (
@@ -125,9 +148,9 @@ const CustomerList = () => {
         setPage(0)
     }
 
-    const resetAllData = ({ name = "", cCode = "", location = "", gstin = '' }) => {
-        setFilter({ ...filter, name, cCode, location, gstin });
-        setTempFilter({ name: '', cCode: '', location: '', gstin: '' });
+    const resetAllData = () => {
+        setFilter({ ...filter, name: null });
+        setTempFilter({ name: null });
         setPage(0)
     }
 

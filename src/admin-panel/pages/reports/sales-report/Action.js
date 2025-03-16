@@ -1,7 +1,6 @@
 import { Button, Grid, MenuItem, TextField } from '@material-ui/core'
 import moment from 'moment'
 import React, { useState } from 'react'
-import { useSelector } from 'react-redux'
 import PopupAction from '../../../common/PopupAction'
 import CustomerSpellSearch from '../../../common/select-box/CustomerSpellSearch'
 import ProductSpellSearch from '../../../common/select-box/ProductSpellSearch'
@@ -9,9 +8,9 @@ import UnitSelect from '../../../common/select-box/UnitSelect'
 import { ADD_SALES_DETAILS, UPDATE_SALES_DETAILS } from '../../../config/api-urls'
 import { useLoader } from '../../../hooks/useLoader'
 import { showMessage } from '../../../utils/message'
-import { sendPostRequestWithAuth } from '../../../utils/network'
+import { sendPostRequest } from '../../../utils/network'
 
-const SalesAction = ({ onClose, successAction, title, selectedData = {}, readOnly = false }) => {
+const Action = ({ onClose, successAction, title, selectedData = {}, readOnly = false }) => {
     const [formsData, setFormsData] = useState(() => ({
         customer: selectedData?.customer ? selectedData.customer : '' || '',
         product: selectedData?.product ? selectedData.product : '' || '',
@@ -24,8 +23,6 @@ const SalesAction = ({ onClose, successAction, title, selectedData = {}, readOnl
         status: selectedData.status || '1',
     }));
     const [{ start, stop }, Loader] = useLoader();
-    const user = useSelector((state) => state.user);
-
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -68,7 +65,7 @@ const SalesAction = ({ onClose, successAction, title, selectedData = {}, readOnl
         const url = selectedData.id ? UPDATE_SALES_DETAILS(selectedData.id) : ADD_SALES_DETAILS;
         const action = selectedData.id ? 'updated' : 'added';
         start()
-        sendPostRequestWithAuth(url, reqData, user.token).then((res) => {
+        sendPostRequest(url, reqData, true).then((res) => {
             if (res.status === 200) {
                 successAction()
                 showMessage('success', `Product successfully ${action}`);
@@ -135,6 +132,7 @@ const SalesAction = ({ onClose, successAction, title, selectedData = {}, readOnl
                             onChange={handleInputChange}
                         />
                     </Grid>
+
                     <Grid item xs={6}>
                         <TextField
                             variant="outlined"
@@ -149,7 +147,7 @@ const SalesAction = ({ onClose, successAction, title, selectedData = {}, readOnl
                                 shrink: true,
                             }}
                             inputProps={{
-                                format: "yy/MM/dd"
+                                format: "MM/dd/yy"
                             }}
                         />
                     </Grid>
@@ -171,6 +169,7 @@ const SalesAction = ({ onClose, successAction, title, selectedData = {}, readOnl
                             onChange={handleInputChange}
                         />
                     </Grid>
+
                     <Grid item xs={6}>
                         <TextField
                             label="Quantity"
@@ -222,4 +221,4 @@ const SalesAction = ({ onClose, successAction, title, selectedData = {}, readOnl
     )
 }
 
-export default SalesAction;
+export default Action;

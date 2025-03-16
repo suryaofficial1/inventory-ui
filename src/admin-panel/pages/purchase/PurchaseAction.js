@@ -1,83 +1,88 @@
-import React, { useEffect } from 'react';
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Grid, MenuItem, TextField } from '@material-ui/core';
-import { makeStyles } from '@material-ui/styles';
-import { useState } from 'react';
-import PopupAction from '../../../common/PopupAction';
+import { Button, Grid, MenuItem, TextField } from '@material-ui/core';
 import moment from 'moment';
+import React, { useState } from 'react';
+import { useSelector } from 'react-redux';
+import PopupAction from '../../../common/PopupAction';
+import ProductSpellSearch from '../../../common/select-box/ProductSpellSearch';
+import SupplierSpellSearch from '../../../common/select-box/SupplierSpellSearch';
+import UnitSelect from '../../../common/select-box/UnitSelect';
+import { ADD_PURCHASE_DETAILS, UPDATE_PURCHASE_DETAILS } from '../../../config/api-urls';
 import { useLoader } from '../../../hooks/useLoader';
-import { ADD_PURCHASE_DETAILS, PRODUCTS, SUPPLIERS, UPDATE_PURCHASE_DETAILS } from '../../../config/api-urls';
-import { sendGetRequest, sendPostRequest } from '../../../utils/network';
 import { showMessage } from '../../../utils/message';
+import { sendPostRequestWithAuth } from '../../../utils/network';
 
-const useStyles = makeStyles({
-  formField: {
-    marginBottom: 15,
-    width: '100%',
-  },
-});
 
-const PurchaseAction = ({ onClose, successAction, title, selectedData = {}, readOnly = false }) => {
-  const classes = useStyles();
+const PurchaseAction = ({ onClose, successAction, title, selectedData = {}, returns = false, readOnly = false }) => {
   const [formsData, setFormsData] = useState({
-    supplier: selectedData?.supplier ? selectedData.supplier.id : '' || '',
-    product: selectedData?.product ? selectedData.product.id : '' || '',
-    purchaseDate: moment(selectedData.purchaseDate).local().format('YYYY-MM-DD') || '',
+    supplier: selectedData?.supplier || {},
+    product: selectedData?.product || {},
+    purchaseDate: selectedData?.purchaseDate
+      ? moment(selectedData.purchaseDate).local().format('YYYY-MM-DD')
+      : moment().local().format('YYYY-MM-DD'),
+    expiryDate: selectedData?.expiryDate
+      ? moment(selectedData.expiryDate).local().format('YYYY-MM-DD')
+      : moment().add(3, 'months').local().format('YYYY-MM-DD'),
     description: selectedData?.description || '',
+    invoiceNo: selectedData?.invoiceNo || '',
+    bNumber: selectedData?.bNumber || '',
     purchaseOrder: selectedData?.purchaseOrder || '',
     qty: selectedData?.qty || '',
     unit: selectedData?.unit || '',
     price: selectedData?.price || '',
     status: selectedData?.status || '1',
   });
-  const [suppliers, setSuppliers] = useState([]);
-  const [products, setProducts] = useState([]);
+
+  const [errors, setErrors] = useState({});
   const [{ start, stop }, Loader] = useLoader();
+  const user = useSelector((state) => state.user);
 
-  useEffect(() => {
-    getSuppliers();
-    getProducts();
-  }, []);
 
-  const getSuppliers = () => {
-    start()
-    sendGetRequest(SUPPLIERS, "token")
-      .then(res => {
-        if (res.status === 200) {
-          setSuppliers(res.data);
-        } else {
-          console.log("Error in get suppliers", res.data)
-        }
-      }).catch(err => {
-        console.log(err)
-      }).finally(stop)
-  }
-  const getProducts = () => {
-    start()
-    sendGetRequest(PRODUCTS, "token")
-      .then(res => {
-        if (res.status === 200) {
-          setProducts(res.data);
-        } else {
-          console.log("Error in get products", res.data)
-        }
-      }).catch(err => {
-        console.log(err)
-      }).finally(stop)
-  }
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormsData({ ...formsData, [name]: value });
-  };
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormsData({ ...formsData, [name]: value });
+
+    if (name === "purchaseDate") {
+      console.log("value", value);
+
+      // Convert value (purchaseDate) to a Date object
+      const purchaseDate = new Date(value);
+
+      // Add 90 days
+      purchaseDate.setDate(purchaseDate.getDate() + 90);
+      console.log("purchaseDate", purchaseDate);
+
+      // Format the date to YYYY-MM-DD
+      const expiryDate = purchaseDate.toISOString().split("T")[0];
+      console.log("expiryDate", expiryDate);
+
+      setFormsData({ ...formsData, ["purchaseDate"]: value, ["expiryDate"]: expiryDate, });
+    } else if (name === "qty") {
+      const numericValue = Number(value); // Convert to number
+
+      if (numericValue > selectedData.qty) {
+        setErrors({ ...errors, "qty": `Quantity cannot be increased beyond : ${selectedData.qty}` })
+        return;
+      }
+
+      setFormsData((prev) => ({
+        ...prev,
+        [name]: numericValue, // Update qty if within limit
+      }));
+    }
+    else {
+      setFormsData({ ...formsData, [name]: value });
+    }
+
   };
+
 
   const validation = () => {
     const errors = {};
-    if (!formsData.supplier) errors.supplier = "Customer is required";
-    if (!formsData.product) errors.product = "Product is required";
+    if (!formsData?.supplier?.id) errors.supplier = "Supplier is required";
+    if (!formsData?.product?.id) errors.product = "Product is required";
+    if (!formsData.invoiceNo) errors.invoiceNo = "Invoice No is required";
+    if (!formsData.bNumber) errors.bNumber = "Batch No is required";
     if (!formsData.purchaseDate) errors.purchaseDate = "Purchase Date is required";
+    if (!formsData.expiryDate) errors.expiryDate = "Expiry Date is required";
     if (!formsData.price) errors.price = "Purchase Price is required";
     if (!formsData.unit) errors.unit = "Unit is required";
     if (!formsData.qty) errors.qty = "Quantity is required";
@@ -93,9 +98,12 @@ const PurchaseAction = ({ onClose, successAction, title, selectedData = {}, read
   const submitAction = () => {
     if (validation()) return;
     const reqData = {
-      supplier: formsData.supplier,
-      product: formsData.product,
+      supplier: formsData.supplier.id,
+      product: formsData.product.id,
+      invoiceNo: formsData.invoiceNo,
+      bNumber: formsData.bNumber,
       purchaseDate: formsData.purchaseDate,
+      expiryDate: formsData.expiryDate,
       price: formsData.price,
       unit: formsData.unit,
       qty: formsData.qty,
@@ -105,7 +113,7 @@ const PurchaseAction = ({ onClose, successAction, title, selectedData = {}, read
     const url = selectedData.id ? UPDATE_PURCHASE_DETAILS(selectedData.id) : ADD_PURCHASE_DETAILS;
     const action = selectedData.id ? 'updated' : 'added';
     start()
-    sendPostRequest(url, reqData, true).then((res) => {
+    sendPostRequestWithAuth(url, reqData, user.token).then((res) => {
       if (res.status === 200) {
         successAction()
         showMessage('success', `Purchase successfully ${action}`);
@@ -123,6 +131,20 @@ const PurchaseAction = ({ onClose, successAction, title, selectedData = {}, read
     }).finally(() => stop())
   }
 
+  const handleSupplierChange = (e) => {
+    setFormsData({ ...formsData, ["supplier"]: e });
+  };
+
+  const handleProductChange = (e) => {
+    setFormsData({ ...formsData, ["product"]: e });
+  };
+
+  const handleReset = () => {
+    setFormsData({ ...formsData, ["supplier"]: '', ['product']: '' });
+    handleSupplierChange('')
+    handleProductChange('')
+  };
+
   return (
     <>
       <Loader />
@@ -130,7 +152,7 @@ const PurchaseAction = ({ onClose, successAction, title, selectedData = {}, read
         actions={
           !readOnly && (
             <Button variant="contained" color="primary" onClick={submitAction}>
-              Save
+              {selectedData.id ? "Update" : "Submit"}
             </Button>
           )
         }
@@ -138,47 +160,44 @@ const PurchaseAction = ({ onClose, successAction, title, selectedData = {}, read
 
         <Grid container spacing={3} style={{ padding: 20 }}>
           <Grid item xs={6}>
-            <TextField fullWidth id="Supplier"
-              onChange={handleInputChange}
-              name='supplier'
-              label="Supplier"
-              variant='outlined'
-              size='small'
-              value={formsData.supplier} select>
-              {suppliers.map((item) => (
-                <MenuItem value={item.id}>{item.name}</MenuItem>
-              ))}
-            </TextField>
+
+            <SupplierSpellSearch onChange={handleSupplierChange} value={formsData.supplier} onReset={handleReset} />
           </Grid>
           <Grid item xs={6}>
-            <TextField fullWidth id="Product"
-              onChange={handleInputChange}
-              name='product'
-              label="Product"
-              variant='outlined'
-              size='small'
-              value={formsData.product} select>
-              {products.map((item) => (
-                <MenuItem value={item.id}>{item.name}-{item.pCode}</MenuItem>
-              ))}
-            </TextField>
+            <ProductSpellSearch onChangeAction={handleProductChange} value={formsData.product} onReset={handleReset} />
           </Grid>
           <Grid item xs={6}>
             <TextField
+              label="Invoice No"
               variant="outlined"
               fullWidth
-              name="purchaseDate"
-              value={formsData.purchaseDate}
+              name='invoiceNo'
+              size='small'
+              value={formsData.invoiceNo}
+              placeholder="Enter Invoice No..."
+              InputProps={{
+                readOnly: readOnly,
+              }}
               onChange={handleInputChange}
-              label="Purchase Date"
-              type="date"
-              InputLabelProps={{
-                shrink: true,
-              }}
-              inputProps={{
-                format: "MM/dd/yy"
-              }}
             />
+          </Grid>
+          <Grid item xs={6}>
+            <TextField
+              label="Batch Number"
+              variant="outlined"
+              fullWidth
+              name='bNumber'
+              size='small'
+              value={formsData.bNumber}
+              placeholder="Enter bNumber..."
+              InputProps={{
+                readOnly: readOnly,
+              }}
+              onChange={handleInputChange}
+            />
+          </Grid>
+          <Grid item xs={6}>
+            <UnitSelect onChange={handleInputChange} value={formsData.unit} readOnly={readOnly} />
           </Grid>
           <Grid item xs={6}>
             <TextField
@@ -197,21 +216,6 @@ const PurchaseAction = ({ onClose, successAction, title, selectedData = {}, read
           </Grid>
           <Grid item xs={6}>
             <TextField
-              label="Unit"
-              variant="outlined"
-              fullWidth
-              name='unit'
-              size='small'
-              value={formsData.unit}
-              placeholder="Enter Unit..."
-              InputProps={{
-                readOnly: readOnly,
-              }}
-              onChange={handleInputChange}
-            />
-          </Grid>
-          <Grid item xs={6}>
-            <TextField
               label="Quantity"
               variant="outlined"
               fullWidth
@@ -222,7 +226,45 @@ const PurchaseAction = ({ onClose, successAction, title, selectedData = {}, read
               InputProps={{
                 readOnly: readOnly,
               }}
+              error={errors.qty} helperText={errors.qty}
               onChange={handleInputChange}
+            />
+          </Grid>
+          <Grid item xs={6}>
+            <TextField
+              variant="outlined"
+              fullWidth
+              name="purchaseDate"
+              value={formsData.purchaseDate}
+              onChange={handleInputChange}
+              label="Purchase Date"
+              type="date"
+              InputLabelProps={{
+                shrink: true,
+              }}
+              inputProps={{
+                format: "MM/dd/yy",
+                readOnly: readOnly,
+              }}
+            />
+          </Grid>
+          <Grid item xs={6}>
+            <TextField
+              variant="outlined"
+              fullWidth
+              name="expiryDate"
+              color='secondary'
+              value={formsData.expiryDate}
+              onChange={handleInputChange}
+              label="Expiry Date"
+              type="date"
+              InputLabelProps={{
+                shrink: true,
+              }}
+              inputProps={{
+                format: "MM/dd/yy",
+                readOnly: readOnly,
+              }}
             />
           </Grid>
           <Grid item xs={12}>

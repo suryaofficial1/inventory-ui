@@ -3,17 +3,13 @@ import React from "react";
 import Chart from "react-google-charts";
 
 const PeiChart = ({ title, data = [] }) => {
-  
-  // Check if data is an array and has data
   if (!Array.isArray(data) || data.length === 0) {
     return <p style={{ textAlign: "center", color: "red" }}>No data available</p>;
   }
-  
-  // Convert data into Google Charts format
-  const chartData = [["Unit", "Quantity"], ...data && data.map(({ unit, quantity }) => [unit, quantity])];
+  const chartData = [["product", "qty"], ...data.map(({ product, qty }) => [product.name, Number(qty)])];
 
   const options = {
-    title: title || "Unit Distribution",
+    title: "",
     pieHole: 0.4,
     is3D: true,
     pieStartAngle: 100,
@@ -26,13 +22,12 @@ const PeiChart = ({ title, data = [] }) => {
         fontSize: 14,
       },
     },
-    // colors: ["#8AD1C2", "#9F8AD1", "#D18A99", "#BCD18A", "#D1C28A"], // Custom colors
   };
 
   return (
     <Paper elevation={1} className="overview" style={{ padding: "20px" }}>
       <h3>{title || "Pie Chart"}</h3>
-      <Chart chartType="PieChart" data={chartData} options={options} width={"100%"} height={"340px"} />
+      <Chart chartType="PieChart" data={chartData} options={options} width={"100%"} height={"350px"} />
     </Paper>
   );
 };

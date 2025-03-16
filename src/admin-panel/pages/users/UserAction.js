@@ -1,11 +1,13 @@
 import { Button, Grid, MenuItem, TextField, Typography } from '@material-ui/core'
 import React, { useEffect, useState } from 'react'
+import { useSelector } from 'react-redux'
 import PopupAction from '../../../common/PopupAction'
+import SingleUploader from '../../../common/uploader/SingleUploader'
 import { ADD_USER, DEPARTMENT_LIST, ROLE_LIST, UPDATE_USER } from '../../../config/api-urls'
 import { useLoader } from '../../../hooks/useLoader'
 import { showMessage } from '../../../utils/message'
-import { sendGetRequest, sendPostRequest, sendPostRequestWithImage } from '../../../utils/network'
-import SingleUploader from '../../../common/uploader/SingleUploader'
+import { sendGetRequest, sendPostRequestWithImage } from '../../../utils/network'
+import { validateContactNumber, validateEmail } from '../../../utils/validation'
 
 
 const UserAction = ({ onClose, successAction, title, selectedData = {}, readOnly = false }) => {
@@ -27,6 +29,8 @@ const UserAction = ({ onClose, successAction, title, selectedData = {}, readOnly
     const [errors, setErrors] = useState({});
 
     const [{ start, stop }, Loader] = useLoader();
+    const user = useSelector((state) => state.user);
+
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -67,7 +71,7 @@ const UserAction = ({ onClose, successAction, title, selectedData = {}, readOnly
 
     const getRole = () => {
         start();
-        sendGetRequest(ROLE_LIST, 'token').then(res => {
+        sendGetRequest(ROLE_LIST, user.token).then(res => {
             if (res.status === 200) {
                 setRoles(res.data);
             } else {
@@ -79,7 +83,7 @@ const UserAction = ({ onClose, successAction, title, selectedData = {}, readOnly
     }
     const getDepartment = () => {
         start();
-        sendGetRequest(DEPARTMENT_LIST, 'token').then(res => {
+        sendGetRequest(DEPARTMENT_LIST, user.token).then(res => {
             if (res.status === 200) {
                 setDepartments(res.data);
             } else {
@@ -91,25 +95,52 @@ const UserAction = ({ onClose, successAction, title, selectedData = {}, readOnly
     }
     const validation = () => {
         const errors = {};
+
         if (!formsData.name) errors.name = "Name is required";
-        if (!formsData.email) errors.email = "Email is required";
-        if (!formsData.mobile) errors.mobile = "Mobile is required";
+        if (!formsData.email) {
+            errors.email = "Email is required"
+        } else {
+            const emailValidation = validateEmail(formsData.email);
+            if (emailValidation.error) {
+                errors.email = emailValidation.message;
+            }
+        }
+
+        // Validate mobile number
+        if (!formsData.mobile) {
+            errors.mobile = "Mobile is required";
+        } else {
+            const mobileValidation = validateContactNumber(formsData.mobile);
+            if (mobileValidation.error) {
+                errors.mobile = mobileValidation.message;
+            }
+        }
+
         if (!formsData.role) errors.role = "Role is required";
         if (!formsData.department) errors.department = "Department is required";
         if (!formsData.status) errors.status = "Status is required";
-        if (passwordData.password && !passwordData.rePassword) errors.status = "Re-Password is required";
-        if ((passwordData.password && passwordData.rePassword) && (passwordData.password !== passwordData.rePassword)) errors.status = "Passwords do not match";
+
+        if (passwordData.password && !passwordData.rePassword) {
+            errors.rePassword = "Re-Password is required";
+        }
+
+        if (passwordData.password && passwordData.rePassword && passwordData.password !== passwordData.rePassword) {
+            errors.rePassword = "Passwords do not match";
+        }
+
         if (!selectedData.id) {
             if (!passwordData.password) errors.password = "Password is required";
             if (!passwordData.rePassword) errors.rePassword = "Re-Password is required";
-
         }
+
         if (Object.keys(errors).length > 0) {
             showMessage("error", errors[Object.keys(errors)[0]]);
             return true;
         }
+
         return false;
-    }
+    };
+
 
     const submitAction = () => {
         if (validation()) return;
@@ -121,7 +152,7 @@ const UserAction = ({ onClose, successAction, title, selectedData = {}, readOnly
         const url = selectedData.id ? UPDATE_USER(selectedData.id) : ADD_USER;
         const action = selectedData.id ? 'updated' : 'added';
         start()
-        sendPostRequestWithImage(url, formData, true).then((res) => {
+        sendPostRequestWithImage(url, formData, true, user.token).then((res) => {
             if (res.status === 200) {
                 successAction()
                 showMessage('success', `User successfully ${action}`);

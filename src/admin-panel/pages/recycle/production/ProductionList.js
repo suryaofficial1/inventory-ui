@@ -111,7 +111,7 @@ const ProductionList = () => {
         {
             field: 'product', headerName: 'Product', width: 160, resizable: false, sortable: false,
             renderCell: (params) => (
-                params.row.product.name ? params.row.product.name + " - " + params.row.product.pCode : ''
+                params.row.product.name ? params.row.product.name : ''
             )
         },
         { field: 'pDesc', headerName: 'Product Desc', width: 220, resizable: false, sortable: false,

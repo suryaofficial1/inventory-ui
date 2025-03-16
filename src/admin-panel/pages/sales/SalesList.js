@@ -1,18 +1,18 @@
 import { Button } from '@material-ui/core';
 import { DataGrid } from '@material-ui/data-grid';
-import { Add, Delete, Edit, Refresh, Search, Visibility } from '@material-ui/icons';
+import { Add, Refresh, Search } from '@material-ui/icons';
 import { makeStyles } from '@material-ui/styles';
+import moment from 'moment';
 import React, { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
+import Swal from 'sweetalert2';
+import ActionButton from '../../../common/action-button/ActionButton';
 import { DELETE_SALES, SALES_LIST } from '../../../config/api-urls';
 import { useLoader } from '../../../hooks/useLoader';
-import { showMessage } from '../../../utils/message';
-import { sendDeleteRequest, sendGetRequest } from '../../../utils/network';
-import SalesFilter from './SalesFilter';
-import SalesAction from './SalesAction';
-import moment from 'moment';
 import { roleBasePolicy } from '../../../utils/Constent';
-import { useSelector } from 'react-redux';
-import ActionButton from '../../../common/action-button/ActionButton';
+import { sendDeleteRequest, sendGetRequest } from '../../../utils/network';
+import SalesAction from './SalesAction';
+import SalesFilter from './SalesFilter';
 
 const useStyles = makeStyles({
     actionIcons: {
@@ -51,7 +51,7 @@ const SalesList = () => {
     }, [page, filter]);
     const getSalesList = () => {
         start()
-        sendGetRequest(`${SALES_LIST}?cName=${filter.cName}&pName=${filter.pName}&page=${page + 1}&per_page=10`, "token")
+        sendGetRequest(`${SALES_LIST}?cName=${filter?.cName ? filter?.cName.name : ""}&pName=${filter?.pName ? filter?.pName.name : ""}&page=${page + 1}&per_page=10`, user.token)
             .then(res => {
                 if (res.status === 200) {
                     setRows(res.data.rows)
@@ -78,19 +78,39 @@ const SalesList = () => {
     };
 
     const deleteAction = (row) => {
-        start()
-        sendDeleteRequest(`${DELETE_SALES(row.id)}`, "token")
-            .then(res => {
+        Swal.fire({
+            title: "Are you sure?",
+            text: "This will also delete related records! You won't be able to revert this!",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#3085d6",
+            cancelButtonColor: "#d33",
+            confirmButtonText: "Yes, delete it!"
+        }).then((result) => {
+            if (result.isConfirmed) {
+                deleteData(row)
+            } else if (result.dismiss) {
+                Swal.fire("Changes are not saved", "", "info");
+            }
+        });
+    };
+
+    const deleteData = (row) => {
+        start();
+        sendDeleteRequest(`${DELETE_SALES(row.id)}`, user.token)
+            .then((res) => {
                 if (res.status === 200) {
                     getSalesList();
-                    showMessage('success', 'Sales record deleted successfully');
+                    Swal.fire("Sales record deleted successfully!", "", "success");
                 } else {
-                    console.log(res)
+                    console.log("Error in delete Sales", res.data);
                 }
-            }).catch(err => {
-                console.log(err)
-            }).finally(stop)
-    }
+            })
+            .catch((err) => {
+                console.log(err);
+            })
+            .finally(stop);
+    };
 
     const columns = [
         {
@@ -99,7 +119,7 @@ const SalesList = () => {
             width: 80,
             sortable: true,
         },
-
+        { field: 'invoiceNo', headerName: 'Invoice No', width: 130, sortable: false },
         {
             field: 'customer', headerName: 'Customer Name', width: 120, resizable: false, sortable: false,
             renderCell: (params) => (
@@ -109,10 +129,17 @@ const SalesList = () => {
         {
             field: 'product', headerName: 'Product', width: 120, resizable: false, sortable: false,
             renderCell: (params) => (
-                params.row.product.name ? params.row.product.name + " - " + params.row.product.pCode : ''
+                params.row.product.name ? params.row.product.name : ''
             )
         },
-        { field: 'pDesc', headerName: 'Product Desc', width: 220, resizable: false, sortable: false, },
+        {
+            field: 'pDesc', headerName: 'Product Desc', width: 220, resizable: false, sortable: false,
+            renderCell: (params) => {
+                return (
+                    params.row.pDesc ? <textarea readOnly>{params.row.pDesc}</textarea> : ''
+                )
+            }
+        },
 
         { field: 'qty', headerName: 'Quantity', width: 110, resizable: true, sortable: false },
         { field: 'salesPrice', headerName: 'Sales Price', width: 110, resizable: true, sortable: false },
@@ -147,8 +174,8 @@ const SalesList = () => {
     }
 
     const resetAllData = () => {
-        setFilter({ cName: '', pName: '' });
-        setTempFilter({ cName: '', pName: '' });
+        setFilter({ cName: null, pName: null });
+        setTempFilter({ cName: null, pName: null });
         setPage(0)
     }
 

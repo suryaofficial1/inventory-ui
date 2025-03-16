@@ -4,12 +4,13 @@ import { Add, Refresh, Search } from '@material-ui/icons';
 import { makeStyles } from '@material-ui/styles';
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
+import Swal from 'sweetalert2';
 import ActionButton from '../../../common/action-button/ActionButton';
 import { DELETE_USER, domain, USER_LIST } from '../../../config/api-urls';
 import { useLoader } from '../../../hooks/useLoader';
 import { roleBasePolicy } from '../../../utils/Constent';
-import { showMessage } from '../../../utils/message';
 import { sendDeleteRequest, sendGetRequest } from '../../../utils/network';
+import Filter from './Filter';
 import UserAction from './UserAction';
 
 const useStyles = makeStyles({
@@ -35,8 +36,8 @@ const UserList = () => {
 
   const [page, setPage] = useState(0);
   const [rows, setRows] = useState([]);
-  const [filter, setFilter] = useState({ name: '' });
-  const [tempFilter, setTempFilter] = useState({ name: '' });
+  const [filter, setFilter] = useState({ name: '', email: '', mobile: '' });
+  const [tempFilter, setTempFilter] = useState({ name: '', email: '', mobile: '' });
   const [totalRecords, setTotalRecords] = useState(0);
   const [open, setOpen] = useState(false);
   const [editData, setEditData] = useState({});
@@ -48,9 +49,10 @@ const UserList = () => {
   useEffect(() => {
     getUsers();
   }, [page, filter]);
+
   const getUsers = () => {
-    start()
-    sendGetRequest(`${USER_LIST}?name=${filter.name}&page=${page + 1}&per_page=10`, "token")
+    start();
+    sendGetRequest(`${USER_LIST}?name=${filter.name}&email=${filter.email}&mobile=${filter.mobile}&page=${page + 1}&per_page=10`, user.token)
       .then(res => {
         if (res.status === 200) {
           setRows(res.data.rows)
@@ -77,19 +79,39 @@ const UserList = () => {
   };
 
   const deleteAction = (row) => {
-    start()
-    sendDeleteRequest(`${DELETE_USER(row.id)}`, "token")
-      .then(res => {
+    Swal.fire({
+      title: "Are you sure?",
+      text: "This will also delete related records! You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, delete it!"
+    }).then((result) => {
+      if (result.isConfirmed) {
+        deleteData(row)
+      } else if (result.dismiss) {
+        Swal.fire("Changes are not saved", "", "info");
+      }
+    });
+  };
+
+  const deleteData = (row) => {
+    start();
+    sendDeleteRequest(`${DELETE_USER(row.id)}`, user.token)
+      .then((res) => {
         if (res.status === 200) {
           getUsers();
-          showMessage('success', 'User deleted successfully');
+          Swal.fire("User deleted successfully!", "", "success");
         } else {
-          console.log(res)
+          console.log("Error in delete User", res.data);
         }
-      }).catch(err => {
-        console.log(err)
-      }).finally(stop)
-  }
+      })
+      .catch((err) => {
+        console.log(err);
+      })
+      .finally(stop);
+  };
 
   const columns = [
     {
@@ -127,7 +149,7 @@ const UserList = () => {
         params.row.department[0].name
       )
     },
-    { field: 'email', headerName: 'Email', width: 140, resizable: true, sortable: false },
+    { field: 'email', headerName: 'Email', width: 200, resizable: true, sortable: false },
     { field: 'mobile', headerName: 'Mobile', width: 130, resizable: true, sortable: false },
     {
       field: 'status', headerName: 'Status', width: 100, resizable: true, sortable: false,
@@ -148,22 +170,24 @@ const UserList = () => {
   ];
 
   const applyFilter = () => {
+    console.log("user_config", tempFilter)
     setFilter(tempFilter);
     setPage(0)
   }
 
   const resetAllData = () => {
-    setFilter({ name: '' });
-    setTempFilter({ name: '', });
+    setFilter({ name: '', email: '', mobile: '' });
+    setTempFilter({ name: '', email: '', mobile: '' });
     setPage(0)
   }
+
 
   return (
     <div >
       <Loader />
-      {/* <div className={classes.addBtn}>
-                <Filter reset={resetAllData} filter={tempFilter} setFilter={setTempFilter} />
-            </div> */}
+      <div className={classes.addBtn}>
+        <Filter reset={resetAllData} filter={tempFilter} setFilter={setTempFilter} />
+      </div>
       <div>
         {roleBasePolicy(user?.role) && <Button startIcon={<Add />} className={classes.actionButton} variant="contained" color="primary" onClick={() => setOpen(!open)}>Add User</Button>}
         <Button startIcon={<Search />} className={classes.actionButton} variant="contained" color="primary" onClick={applyFilter}>Search</Button>

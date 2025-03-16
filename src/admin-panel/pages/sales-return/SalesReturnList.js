@@ -2,16 +2,17 @@ import { Button } from '@material-ui/core';
 import { DataGrid } from '@material-ui/data-grid';
 import { Add, Refresh, Search } from '@material-ui/icons';
 import { makeStyles } from '@material-ui/styles';
+import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import Swal from 'sweetalert2';
 import ActionButton from '../../../common/action-button/ActionButton';
-import { DELETE_SUPPLIER, SUPPLIER_LIST } from '../../../config/api-urls';
+import { DELETE_RETURN_SALES, SALES_RETURN_LIST } from '../../../config/api-urls';
 import { useLoader } from '../../../hooks/useLoader';
 import { roleBasePolicy } from '../../../utils/Constent';
 import { sendDeleteRequest, sendGetRequest } from '../../../utils/network';
-import Filter from './Filter';
-import SupplierAction from './SupplierAction';
+import Action from './Action';
+import ReturnFilter from './ReturnFilter';
 
 const useStyles = makeStyles({
     actionIcons: {
@@ -31,13 +32,13 @@ const useStyles = makeStyles({
     }
 });
 
-const SupplierList = () => {
+const SalesReturnList = () => {
     const classes = useStyles();
 
     const [page, setPage] = useState(0);
     const [rows, setRows] = useState([]);
-    const [filter, setFilter] = useState({ name: '', vendorCode: '', location: '', gstin: '' });
-    const [tempFilter, setTempFilter] = useState({ name: '', vendorCode: '', location: '', gstin: '' }); // Temporary filter for user input
+    const [filter, setFilter] = useState({ cName: '', pName: '' });
+    const [tempFilter, setTempFilter] = useState({ cName: '', pName: '' });
     const [totalRecords, setTotalRecords] = useState(0);
     const [open, setOpen] = useState(false);
     const [editData, setEditData] = useState({});
@@ -46,11 +47,11 @@ const SupplierList = () => {
     const user = useSelector((state) => state.user);
 
     useEffect(() => {
-        getSupplier();
+        getSalesList();
     }, [page, filter]);
-    const getSupplier = () => {
+    const getSalesList = () => {
         start()
-        sendGetRequest(`${SUPPLIER_LIST}?name=${filter.name}&vendorCode=${filter.vendorCode}&location=${filter.location}&gstin=${filter.gstin}&page=${page + 1}&per_page=10`, user.token)
+        sendGetRequest(`${SALES_RETURN_LIST}?cName=${filter?.cName ? filter?.cName.name : ""}&pName=${filter?.pName ? filter?.pName.name : ""}&page=${page + 1}&per_page=10`, user.token)
             .then(res => {
                 if (res.status === 200) {
                     setRows(res.data.rows)
@@ -76,6 +77,7 @@ const SupplierList = () => {
         setReadOnly(mode === 'view');
     };
 
+
     const deleteAction = (row) => {
         Swal.fire({
             title: "Are you sure?",
@@ -96,13 +98,13 @@ const SupplierList = () => {
 
     const deleteData = (row) => {
         start();
-        sendDeleteRequest(`${DELETE_SUPPLIER(row.id)}`, user.token)
+        sendDeleteRequest(`${DELETE_RETURN_SALES(row.id)}`, user.token)
             .then((res) => {
                 if (res.status === 200) {
-                    getSupplier();
-                    Swal.fire("Supplier deleted successfully!", "", "success");
+                    getSalesList();
+                    Swal.fire("Return Sales record deleted successfully!", "", "success");
                 } else {
-                    console.log("Error in delete supplier", res.data);
+                    console.log("Error in delete return Sales", res.data);
                 }
             })
             .catch((err) => {
@@ -111,8 +113,6 @@ const SupplierList = () => {
             .finally(stop);
     };
 
-
-
     const columns = [
         {
             field: 'id',
@@ -120,20 +120,39 @@ const SupplierList = () => {
             width: 80,
             sortable: true,
         },
+        { field: 'invoiceNo', headerName: 'Invoice No', width: 130, sortable: false },
 
-        { field: 'name', headerName: 'Name', width: 140, resizable: false, sortable: false, },
-        { field: 'vendorCode', headerName: 'Vendor code', width: 120, resizable: false, sortable: false },
+
         {
-            field: 'address', headerName: 'Address', width: 200, resizable: true, sortable: false,
+            field: 'customer', headerName: 'Customer Name', width: 150, resizable: true, sortable: false,
+            renderCell: (params) => (
+                params.row.customer.name ? params.row.customer.name : ""
+            )
+        },
+        {
+            field: 'product', headerName: 'Product', width: 150, resizable: true, sortable: false,
+            renderCell: (params) => (
+                params.row.product.name ? params.row.product.name : ''
+            )
+        },
+        {
+            field: 'rDesc', headerName: 'Description', width: 220, resizable: false, sortable: false,
             renderCell: (params) => {
                 return (
-                    params.row.address ? <textarea readOnly>{params.row.address}</textarea> : ''
+                    params.row.rDesc ? <textarea readOnly>{params.row.rDesc}</textarea> : ''
                 )
             }
         },
-        { field: 'location', headerName: 'location', width: 110, resizable: true, sortable: false },
-        { field: 'contact', headerName: 'Contact', width: 110, resizable: true, sortable: false },
-        { field: 'gstin', headerName: 'GSTIN', width: 180, resizable: true, sortable: false },
+
+        { field: 'qty', headerName: 'Quantity', width: 110, resizable: true, sortable: false },
+        { field: 'salesPrice', headerName: 'Sales Price', width: 110, resizable: true, sortable: false },
+        {
+            field: 'returnDate', headerName: 'Return Date', width: 120, resizable: false, sortable: false,
+            renderCell: (params) => (
+                params.row.returnDate ? moment(params.row.returnDate).local().format('DD-MM-YYYY') : ''
+            )
+        },
+        { field: 'unit', headerName: 'Unit', width: 110, resizable: true, sortable: false },
         {
             field: 'status', headerName: 'Status', width: 100, resizable: true, sortable: false,
             renderCell: (params) => (
@@ -157,9 +176,9 @@ const SupplierList = () => {
         setPage(0)
     }
 
-    const resetAllData = ({ name = "", vendorCode = "", location = "", gstin = '' }) => {
-        setFilter({ ...filter, name, vendorCode, location, gstin });
-        setTempFilter({ name: '', vendorCode: '', location: '', gstin: '' });
+    const resetAllData = () => {
+        setFilter({ cName: null, pName: null });
+        setTempFilter({ cName: null, pName: null });
         setPage(0)
     }
 
@@ -167,10 +186,10 @@ const SupplierList = () => {
         <div >
             <Loader />
             <div className={classes.addBtn}>
-                <Filter reset={resetAllData} filter={tempFilter} setFilter={setTempFilter} />
+                <ReturnFilter reset={resetAllData} filter={tempFilter} setFilter={setTempFilter} />
             </div>
             <div>
-                {roleBasePolicy(user?.role) && <Button startIcon={<Add />} className={classes.actionButton} variant="contained" color="primary" onClick={() => setOpen(!open)}>Add Supplier</Button>}
+                {roleBasePolicy(user?.role) && <Button startIcon={<Add />} className={classes.actionButton} variant="contained" color="primary" onClick={() => setOpen(!open)}>Add Return Sales</Button>}
                 <Button startIcon={<Search />} className={classes.actionButton} variant="contained" color="primary" onClick={applyFilter}>Search</Button>
                 <Button startIcon={<Refresh />} className={classes.actionButton} variant="contained" color="secondary" onClick={resetAllData}>Reset</Button>
             </div>
@@ -188,15 +207,15 @@ const SupplierList = () => {
                 disableColumnFilter
             />
 
-            {open && <SupplierAction
+            {open && <Action
                 selectedData={editData}
                 readOnly={readOnly}
                 onClose={onClose}
-                successAction={getSupplier}
-                title={readOnly ? 'View Supplier' : editData.id ? 'Edit Supplier' : 'Add Supplier'}
+                successAction={getSalesList}
+                title={readOnly ? 'View Return Sales Details' : editData.id ? 'Edit Return Sales Detail' : 'Add Return Sales Detail'}
             />}
         </div>
     );
 };
 
-export default SupplierList;
+export default SalesReturnList;

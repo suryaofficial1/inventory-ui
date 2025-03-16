@@ -1,16 +1,11 @@
-import { Button, ButtonGroup, Card, Grid } from '@material-ui/core';
+import { Grid, Typography } from '@material-ui/core';
 import React, { useState } from "react";
 import { useDispatch, useSelector } from 'react-redux';
 
 import { CardGiftcard, List, Money, People, Person, Store } from '@material-ui/icons';
 import AttachMoneyIcon from '@material-ui/icons/AttachMoney';
-import LocalAtmIcon from '@material-ui/icons/LocalAtm';
-import TimelineIcon from '@material-ui/icons/Timeline';
 import TrendingUpIcon from '@material-ui/icons/TrendingUp';
-import { Bar, BarChart, CartesianGrid, Legend, Line, LineChart, Tooltip, XAxis, YAxis } from "recharts";
 import { logoutUser } from '../../../actions';
-import ReportTables from '../../../common/report-components/ReportTables';
-import OverviewCards from '../../../common/report-components/OverviewCards';
 
 const Dashboard = () => {
   const dispatch = useDispatch();
@@ -80,43 +75,46 @@ const Dashboard = () => {
   };
 
   const productData = [
-    { name: 'Surf Excel', "Sold quantity": 30, "Remaining quantity": 12, "Price" : 100 },
-    { name: 'Colgate', "Sold quantity": 12, "Remaining quantity": 5, "Price" : 50 },
-    { name: 'Dove', "Sold quantity": 10, "Remaining quantity": 3, "Price" : 30 },
-    { name: 'Pepsodent', "Sold quantity": 8, "Remaining quantity": 2, "Price" : 20 },
-    { name: 'Colgate', "Sold quantity": 12, "Remaining quantity": 5, "Price" : 50 },
-    { name: 'Dove', "Sold quantity": 10, "Remaining quantity": 3, "Price" : 30 },
-    { name: 'Pepsodent', "Sold quantity": 8, "Remaining quantity": 2, "Price" : 20 },
+    { name: 'Surf Excel', "Sold quantity": 30, "Remaining quantity": 12, "Price": 100 },
+    { name: 'Colgate', "Sold quantity": 12, "Remaining quantity": 5, "Price": 50 },
+    { name: 'Dove', "Sold quantity": 10, "Remaining quantity": 3, "Price": 30 },
+    { name: 'Pepsodent', "Sold quantity": 8, "Remaining quantity": 2, "Price": 20 },
+    { name: 'Colgate', "Sold quantity": 12, "Remaining quantity": 5, "Price": 50 },
+    { name: 'Dove', "Sold quantity": 10, "Remaining quantity": 3, "Price": 30 },
+    { name: 'Pepsodent', "Sold quantity": 8, "Remaining quantity": 2, "Price": 20 },
   ];
 
   const overviewData = [
-    {title: "Customer", value: "50", icon: <People />},
-    {title: "Product", value: "50", icon: <Store />},
-    {title: "Order", value: "50", icon: <CardGiftcard />},
-    {title: "Sales", value: "50", icon: <Money />}
+    { title: "Customer", value: "50", icon: <People /> },
+    { title: "Product", value: "50", icon: <Store /> },
+    { title: "Order", value: "50", icon: <CardGiftcard /> },
+    { title: "Sales", value: "50", icon: <Money /> }
   ]
 
   const purchaseOverviewData = [
-    {title: "Purchase", value: "₹832", icon: <Money />},
-    {title: "Cost", value: "₹18,300", icon: <Money />},
-    {title: "Cancel", value: "₹868", icon: <Money />},
-    {title: "Return", value: "₹17,432", icon: <Money />},
+    { title: "Purchase", value: "₹832", icon: <Money /> },
+    { title: "Cost", value: "₹18,300", icon: <Money /> },
+    { title: "Cancel", value: "₹868", icon: <Money /> },
+    { title: "Return", value: "₹17,432", icon: <Money /> },
   ]
 
-  const inventorySummary =[
-    {title: "Quantity in Hand", value: "50", icon: <AttachMoneyIcon />},
-    {title: "To be received", value: "50", icon: <TrendingUpIcon />},
+  const inventorySummary = [
+    { title: "Quantity in Hand", value: "50", icon: <AttachMoneyIcon /> },
+    { title: "To be received", value: "50", icon: <TrendingUpIcon /> },
   ]
 
-  const productSummary =[
-    {title: "Suppliers", value: "50", icon: <Person />},
-    {title: "Categories", value: "50", icon: <List />}
+  const productSummary = [
+    { title: "Suppliers", value: "50", icon: <Person /> },
+    { title: "Categories", value: "50", icon: <List /> }
   ]
 
   return (
     <>
       <Grid container spacing={1}>
-        <Grid item xs={12} sm={7}>
+        <Grid item sm={12} align="center">
+          <Typography variant='h4' color='error'>In Progress</Typography>
+        </Grid>
+        {/* <Grid item xs={12} sm={7}>
           <OverviewCards title="Sales Overview" data={overviewData} />
         </Grid>
         <Grid item xs={12} sm={5}>
@@ -191,28 +189,8 @@ const Dashboard = () => {
           columnMapping={columnMapping}
           
           />
-          {/* <div className="top-selling-stock">
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: 20,  marginBottom: "20px" }}>
-              <h2>Top Selling Stock</h2>
-              <button className="see-all">See All</button>
-            </div>
-
-            <div className="table-header">
-              <div className="column">Name</div>
-              <div className="column">Sold Quantity</div>
-              <div className="column">Remaining Quantity</div>
-              <div className="column">Price</div>
-            </div>
-            {productData.map((item) => (
-              <div key={item.name} className="table-row">
-                <div className="column">{item.name}</div>
-                <div className="column">{item.soldQuantity}</div>
-                <div className="column">{item.remainingQuantity}</div>
-                <div className="column">₹{item.price}</div>
-              </div>
-            ))}
-          </div> */}
-        </Grid>
+          
+        </Grid> */}
       </Grid>
     </>
   )

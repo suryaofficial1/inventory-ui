@@ -1,12 +1,13 @@
 import { Button, Grid, TextField, Typography } from '@material-ui/core'
 import React, { useEffect, useState } from 'react'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import PopupAction from '../../common/PopupAction'
 import SingleUploader from '../../common/uploader/SingleUploader'
 import { GET_USER_BY_ID, UPDATE_PASSWORD_BY_ID, UPDATE_USER_BY_ID } from '../../config/api-urls'
 import { useLoader } from '../../hooks/useLoader'
 import { showMessage } from '../../utils/message'
 import { sendGetRequest, sendPostRequest, sendPostRequestWithImage } from '../../utils/network'
+import { validateContactNumber, validateEmail } from '../../utils/validation'
 import { storeUserSession } from './StoreUserSession'
 
 const UserProfile = (props) => {
@@ -27,6 +28,8 @@ const UserProfile = (props) => {
     });
     const [errors, setErrors] = useState({});
     const [{ start, stop }, Loader, loading] = useLoader();
+    const user = useSelector((state) => state.user);
+
 
     useEffect(() => {
         getUserDetails()
@@ -56,17 +59,35 @@ const UserProfile = (props) => {
 
     const validation = () => {
         const errors = {};
+
         if (!formsData.name) errors.name = "Name is required";
-        if (!formsData.email) errors.email = "Email is required";
-        if (!formsData.mobile) errors.mobile = "Mobile is required";
+        if (!formsData.email) {
+            errors.email = "Email is required"
+        } else {
+            const emailValidation = validateEmail(formsData.email);
+            if (emailValidation.error) {
+                errors.email = emailValidation.message;
+            }
+        }
+        if (!formsData.mobile) {
+            errors.mobile = "Mobile is required";
+        } else {
+            const mobileValidation = validateContactNumber(formsData.mobile);
+            if (mobileValidation.error) {
+                errors.mobile = mobileValidation.message;
+            }
+        }
         if (!formsData.role) errors.role = "Role is required";
         if (!formsData.department) errors.department = "Department is required";
+        if (!formsData.status) errors.status = "Status is required";
+
         if (Object.keys(errors).length > 0) {
             showMessage("error", errors[Object.keys(errors)[0]]);
             return true;
         }
+
         return false;
-    }
+    };
 
     const validatePassword = () => {
         const errors = {};
@@ -138,7 +159,7 @@ const UserProfile = (props) => {
 
     const getUserDetails = () => {
         start()
-        sendGetRequest(GET_USER_BY_ID(props.id), "token")
+        sendGetRequest(GET_USER_BY_ID(props.id), user.token)
             .then(res => {
                 if (res.status === 200) {
                     setFormsData((prev) => ({ ...prev, name: res.data.name, email: res.data.email, profile: res.data.profile, mobile: res.data.mobile, role: res.data.role, department: res.data.department, status: res.data.status }));

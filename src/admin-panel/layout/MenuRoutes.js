@@ -11,10 +11,12 @@ import React from "react";
 import CustomerList from "../pages/customer/CustomerList";
 import Dashboard from '../pages/dashboard/Dashboard';
 import ProductList from '../pages/product/ProductList';
+import ReturnList from '../pages/purchase-return/ReturnList';
 import PurchaseList from "../pages/purchase/PurchaseList";
 import ProductionList from "../pages/recycle/production/ProductionList";
 import RowMaterialsList from "../pages/recycle/row-materiyal/RowMaterialsList";
 import ReportsHome from "../pages/reports/ReportsList";
+import SalesReturnList from '../pages/sales-return/SalesReturnList';
 import SalesList from "../pages/sales/SalesList";
 import SupplierList from "../pages/supplier/SupplierList";
 import UserList from "../pages/users/UserList";
@@ -39,19 +41,19 @@ const MenuRoutes = [
         roles: ['Admin'] // Only Admin can access
     },
     {
-        path: '#suppliers',
-        sidebarName: 'Suppliers',
-        navbarName: 'Suppliers',
-        icon: PeopleSharpIcon,
-        component: <SupplierList />,
-        roles: ['Admin', 'Store manager'] // Admin and Store manager can access
-    },
-    {
         path: '#products',
         sidebarName: 'Products',
         navbarName: 'Products',
         icon: AddShoppingCartIcon,
         component: <ProductList />,
+        roles: ['Admin', 'Store manager'] // Admin and Store manager can access
+    },
+    {
+        path: '#suppliers',
+        sidebarName: 'Suppliers',
+        navbarName: 'Suppliers',
+        icon: PeopleSharpIcon,
+        component: <SupplierList />,
         roles: ['Admin', 'Store manager'] // Admin and Store manager can access
     },
     {
@@ -68,9 +70,9 @@ const MenuRoutes = [
         icon: AutorenewIcon,
         submenu: [
             {
-                path: '#row-material',
-                sidebarName: 'Row material',
-                navbarName: 'Row material',
+                path: '#raw-material',
+                sidebarName: 'Raw material',
+                navbarName: 'Raw material',
                 icon: NewReleasesIcon,
                 component: <RowMaterialsList />,
             },
@@ -83,21 +85,48 @@ const MenuRoutes = [
             },
         ]
     },
+
     {
-        path: '#sales',
-        sidebarName: 'Sales',
-        navbarName: 'Sales',
-        icon: TrendingUpOutlinedIcon,
-        component: <SalesList />,
-        roles: ['Admin', 'Store manager', 'User'] // Accessible to all roles
-    },
-    {
-        path: '#purchase',
         sidebarName: 'Purchase',
         navbarName: 'Purchase',
-        icon: TrendingUpOutlinedIcon,
-        component: <PurchaseList />,
-        roles: ['Admin', 'Store manager', 'User'] // Accessible to all roles
+        icon: AutorenewIcon,
+        submenu: [
+            {
+                path: '#purchase-list',
+                sidebarName: 'List',
+                navbarName: 'List',
+                icon: NewReleasesIcon,
+                component: <PurchaseList />,
+            },
+            {
+                path: '#purchase-return',
+                sidebarName: 'Return',
+                navbarName: 'Return',
+                icon: OutdoorGrillIcon,
+                component: <ReturnList />,
+            },
+        ]
+    },
+    {
+        sidebarName: 'Sales',
+        navbarName: 'Sales',
+        icon: AutorenewIcon,
+        submenu: [
+            {
+                path: '#sales-list',
+                sidebarName: 'List',
+                navbarName: 'List',
+                icon: NewReleasesIcon,
+                component: <SalesList />,
+            },
+            {
+                path: '#sales-return',
+                sidebarName: 'Return',
+                navbarName: 'Return',
+                icon: OutdoorGrillIcon,
+                component: <SalesReturnList />,
+            },
+        ]
     },
     {
         path: '#reports',

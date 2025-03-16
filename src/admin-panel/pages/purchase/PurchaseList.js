@@ -1,18 +1,19 @@
 import { Button } from '@material-ui/core';
 import { DataGrid } from '@material-ui/data-grid';
-import { Add, Delete, Edit, Refresh, Search, Visibility } from '@material-ui/icons';
+import { Add, Refresh, Search } from '@material-ui/icons';
 import { makeStyles } from '@material-ui/styles';
+import moment from 'moment';
 import React, { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
+import Swal from 'sweetalert2';
+import ActionButton from '../../../common/action-button/ActionButton';
 import { DELETE_PURCHASE, PURCHASE_LIST } from '../../../config/api-urls';
 import { useLoader } from '../../../hooks/useLoader';
-import { showMessage } from '../../../utils/message';
-import { sendDeleteRequest, sendGetRequest } from '../../../utils/network';
-import PurchaseFilter from './PurchaseFilter';
-import PurchaseAction from './PurchaseAction';
-import moment from 'moment';
-import ActionButton from '../../../common/action-button/ActionButton';
 import { roleBasePolicy } from '../../../utils/Constent';
-import { useSelector } from 'react-redux';
+import { sendDeleteRequest, sendGetRequest } from '../../../utils/network';
+import PurchaseAction from './PurchaseAction';
+import PurchaseFilter from './PurchaseFilter';
+
 
 const useStyles = makeStyles({
     actionIcons: {
@@ -37,8 +38,8 @@ const PurchaseList = () => {
 
     const [page, setPage] = useState(0);
     const [rows, setRows] = useState([]);
-    const [filter, setFilter] = useState({ pName: '', sName: '', });
-    const [tempFilter, setTempFilter] = useState({ pName: '', sName: '', });
+    const [filter, setFilter] = useState({ pName: '', sName: '' });
+    const [tempFilter, setTempFilter] = useState({ pName: '', sName: '' });
     const [totalRecords, setTotalRecords] = useState(0);
     const [open, setOpen] = useState(false);
     const [editData, setEditData] = useState({});
@@ -53,13 +54,13 @@ const PurchaseList = () => {
 
     const getPurchaseList = () => {
         start();
-        sendGetRequest(`${PURCHASE_LIST}?pName=${filter.pName}&sName=${filter.sName}&page=${page + 1}&per_page=10`, "token")
+        sendGetRequest(`${PURCHASE_LIST}?pName=${filter?.pName ? filter?.pName.name : ""}&sName=${filter?.sName ? filter?.sName.name : ""}&page=${page + 1}&per_page=10`, user.token)
             .then((res) => {
                 if (res.status === 200) {
                     setRows(res.data.rows);
                     setTotalRecords(res.data.total);
                 } else {
-                    console.log("Erorr in get purchase list", res.data);
+                    console.log("Error in get purchase list", res.data);
                 }
             })
             .catch((err) => {
@@ -81,12 +82,30 @@ const PurchaseList = () => {
     };
 
     const deleteAction = (row) => {
+        Swal.fire({
+            title: "Are you sure?",
+            text: "This will also delete related records! You won't be able to revert this!",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#3085d6",
+            cancelButtonColor: "#d33",
+            confirmButtonText: "Yes, delete it!"
+        }).then((result) => {
+            if (result.isConfirmed) {
+                deleteData(row)
+            } else if (result.dismiss) {
+                Swal.fire("Changes are not saved", "", "info");
+            }
+        });
+    };
+    const deleteData = (row) => {
         start();
-        sendDeleteRequest(`${DELETE_PURCHASE(row.id)}`, "token")
+        sendDeleteRequest(`${DELETE_PURCHASE(row.id)}`, user.token)
             .then((res) => {
                 if (res.status === 200) {
                     getPurchaseList();
-                    showMessage('success', 'Purchase record deleted successfully');
+                    Swal.fire("Purchase record deleted successfully!", "", "success");
+                    // showMessage('warning', 'Purchase record deleted successfully');
                 } else {
                     console.log("Error in delete purchase", res.data);
                 }
@@ -99,16 +118,18 @@ const PurchaseList = () => {
 
     const columns = [
         { field: 'id', headerName: '#Id', width: 80, sortable: true },
+        { field: 'invoiceNo', headerName: 'Invoice No', width: 130, sortable: false },
+        { field: 'bNumber', headerName: 'Batch No', width: 130, sortable: false },
         {
-            field: 'supplierName', headerName: 'Supplier Name', width: 150, sortable: true,
+            field: 'supplierName', headerName: 'Supplier Name', width: 200, sortable: true,
             renderCell: (params) => (
                 params.row.supplier.name ? params.row.supplier.name : ""
             )
         },
         {
-            field: 'product', headerName: 'Product', width: 120, resizable: false, sortable: false,
+            field: 'product', headerName: 'Product', width: 200, resizable: false, sortable: false,
             renderCell: (params) => (
-                params.row.product.name ? params.row.product.name + " - " + params.row.product.pCode : ''
+                params.row.product.name ? params.row.product.name : ''
             )
         },
         { field: 'description', headerName: 'Description', width: 200 },
@@ -118,6 +139,12 @@ const PurchaseList = () => {
             field: 'purchaseDate', headerName: 'Purchase Date', width: 150,
             renderCell: (params) => (
                 params.row.purchaseDate ? moment(params.row.purchaseDate).local().format('DD-MM-YYYY') : ''
+            )
+        },
+        {
+            field: 'expiryDate', headerName: 'Expiry Date', width: 150,
+            renderCell: (params) => (
+                params.row.expiryDate ? moment(params.row.expiryDate).local().format('DD-MM-YYYY') : ''
             )
         },
         {
@@ -138,8 +165,8 @@ const PurchaseList = () => {
     };
 
     const resetAllData = () => {
-        setFilter({ pName: '', sName: '', });
-        setTempFilter({ pName: '', sName: '', });
+        setFilter({ pName: null, sName: null });
+        setTempFilter({ pName: null, sName: null });
         setPage(0);
     };
 
@@ -155,13 +182,13 @@ const PurchaseList = () => {
                 <Button startIcon={<Refresh />} className={classes.actionButton} variant="contained" color="secondary" onClick={resetAllData}>Reset</Button>
             </div>
             <DataGrid autoHeight pagination style={{ background: "#fff", width: "100%" }}
+                loading={loading}
                 rows={rows}
                 columns={columns}
                 page={page}
                 pageSize={10}
                 rowsPerPageOptions={[10]}
                 rowCount={(totalRecords) ? totalRecords : 100}
-                loading={loading}
                 paginationMode="server"
                 onPageChange={(newPage) => setPage(newPage)}
                 disableColumnMenu

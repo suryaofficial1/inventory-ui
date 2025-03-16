@@ -1,28 +1,28 @@
 import { Grid } from '@material-ui/core';
 import React from 'react';
+import CustomerSpellSearch from '../../../common/select-box/CustomerSpellSearch';
 import ProductSpellSearch from '../../../common/select-box/ProductSpellSearch';
-import SupplierSpellSearch from '../../../common/select-box/SupplierSpellSearch';
 
-const PurchaseFilter = ({ filter, setFilter, reset }) => {
+const ReturnFilter = ({ filter, setFilter, reset }) => {
 
-    const handleSupplierChange = (e) => {
-        setFilter({ ...filter, "sName": e });
+    const handleCustomerChange = (e) => {
+        setFilter({ ...filter, "cName": e });
     };
     const handleProductChange = (e) => {
         setFilter({ ...filter, "pName": e });
     };
 
     const handleReset = () => {
-        setFilter({ pName: '', sName: '' });
+        setFilter({ pName: '', cName: '' });
         handleProductChange('');
-        handleSupplierChange('')
+        handleCustomerChange('')
         reset();
     };
 
     return (
         <Grid container spacing={1}>
             <Grid item xs={12} sm={6}>
-                <SupplierSpellSearch onChange={handleSupplierChange} value={filter.sName} onReset={handleReset} />
+                <CustomerSpellSearch onChange={handleCustomerChange} value={filter.cName} onReset={handleReset} />
             </Grid>
             <Grid item xs={12} sm={6}>
                 <ProductSpellSearch onChangeAction={handleProductChange} value={filter.pName} onReset={handleReset} />
@@ -31,4 +31,4 @@ const PurchaseFilter = ({ filter, setFilter, reset }) => {
     );
 };
 
-export default PurchaseFilter;
+export default ReturnFilter;
