@@ -47,9 +47,10 @@ const CustomerSpellSearch = ({ onChange, value }) => {
                 renderInput={(params) => (
                     <TextField
                         {...params}
-                        label="Search customer..."
+                        label="Select customer..."
                         variant="outlined"
                         size="small"
+                        placeholder='Search customer'
                     />
                 )}
             />

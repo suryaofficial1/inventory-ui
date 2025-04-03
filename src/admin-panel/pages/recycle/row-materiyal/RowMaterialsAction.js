@@ -130,9 +130,9 @@ const RowMaterialsAction = ({ onClose, successAction, title, selectedData = {}, 
                             variant="outlined"
                             placeholder="Type and press enter materials..."
                             fullWidth
-                            className={classes.root} // Apply styles to input
+                            className={classes.root} 
                             chipProps={{
-                                className: classes.chip, // Apply styles to each chip
+                                className: classes.chip, 
                             }}
                             InputProps={{
                                 readOnly: readOnly,

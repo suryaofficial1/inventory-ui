@@ -3,6 +3,7 @@ import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import PopupAction from '../../../common/PopupAction';
+import QtyAction from '../../../common/quntity-update/QtyAction';
 import ProductSpellSearch from '../../../common/select-box/ProductSpellSearch';
 import SupplierSpellSearch from '../../../common/select-box/SupplierSpellSearch';
 import UnitSelect from '../../../common/select-box/UnitSelect';
@@ -26,32 +27,14 @@ const Action = ({ onClose, successAction, title, selectedData = {}, returns = fa
     unit: selectedData?.unit || '',
     price: selectedData?.price || '',
   });
-  const [selectedInvoice, setSelectedInvoice] = useState({});
 
-  const [errors, setErrors] = useState({});
+  const [selectedInvoice, setSelectedInvoice] = useState({});
   const [{ start, stop }, Loader] = useLoader();
   const user = useSelector((state) => state.user);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-
-    if (name === "qty") {
-      const numericValue = Number(value);
-
-      if (numericValue > selectedInvoice.qty) {
-        setErrors({ ...errors, "qty": `Quantity cannot be increased beyond : ${selectedInvoice.qty}` })
-        return;
-      }
-
-      setFormsData((prev) => ({
-        ...prev,
-        [name]: numericValue,
-      }));
-    }
-    else {
-      setFormsData({ ...formsData, [name]: value });
-    }
-
+    setFormsData({ ...formsData, [name]: value });
   };
 
   useEffect(() => {
@@ -183,13 +166,17 @@ const Action = ({ onClose, successAction, title, selectedData = {}, returns = fa
   };
 
   const handleProductChange = (e) => {
-    setFormsData({ ...formsData, ["product"]: e });
+    setFormsData({ ...formsData, ["product"]: e, ["qty"]: '' });
   };
 
   const handleReset = () => {
     setFormsData({ ...formsData, ["supplier"]: '', ['product']: '' });
     handleSupplierChange('')
     handleProductChange('')
+  };
+
+  const qtyHandleChange = (value) => {
+    setFormsData({ ...formsData, ["qty"]: value });
   };
 
   console.log("form", formsData)
@@ -269,22 +256,17 @@ const Action = ({ onClose, successAction, title, selectedData = {}, returns = fa
               onChange={handleInputChange}
             />
           </Grid>
-          <Grid item xs={6}>
-            <TextField
-              label="Return Quantity"
-              variant="outlined"
-              fullWidth
-              name='qty'
-              size='small'
+          <Grid item xs={12}>
+            <QtyAction
               value={formsData.qty}
-              placeholder="Enter Return Quantity..."
-              InputProps={{
-                readOnly: readOnly,
-              }}
-              error={errors.qty} helperText={errors.qty}
-              onChange={handleInputChange}
+              setter={qtyHandleChange}
+              productId={formsData?.product?.id}
+              readOnly={readOnly}
+              by="purchase"
+              type="return"
             />
           </Grid>
+
           <Grid item xs={12}>
             <TextField
               label="Description"

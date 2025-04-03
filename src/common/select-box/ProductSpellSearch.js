@@ -40,6 +40,7 @@ const ProductSpellSearch = ({ onChangeAction, value, onReset }) => {
             <Autocomplete
                 fullWidth
                 disableClearable
+                selectOnFocus
                 size="small"
                 value={value || null}
                 options={products}
@@ -48,9 +49,10 @@ const ProductSpellSearch = ({ onChangeAction, value, onReset }) => {
                 renderInput={(params) => (
                     <TextField
                         {...params}
-                        label="Search Product..."
+                        label="Select product..."
                         variant="outlined"
                         size="small"
+                        placeholder='Search product...'
                     />
                 )}
             />

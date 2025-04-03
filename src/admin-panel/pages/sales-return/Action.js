@@ -2,6 +2,7 @@ import { Button, Grid, MenuItem, TextField } from '@material-ui/core';
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import PopupAction from '../../../common/PopupAction';
+import QtyAction from '../../../common/quntity-update/QtyAction';
 import CustomerSpellSearch from '../../../common/select-box/CustomerSpellSearch';
 import ProductSpellSearch from '../../../common/select-box/ProductSpellSearch';
 import UnitSelect from '../../../common/select-box/UnitSelect';
@@ -182,7 +183,11 @@ const Action = ({ onClose, successAction, title, selectedData = {}, readOnly = f
   };
 
   const handleProductChange = (e) => {
-    setFormsData({ ...formsData, ["product"]: e });
+    setFormsData({ ...formsData, ["product"]: e, ["qty"]: '' });
+  };
+
+  const qtyHandleChange = (value) => {
+    setFormsData({ ...formsData, ["qty"]: value });
   };
 
   const handleReset = () => {
@@ -252,19 +257,13 @@ const Action = ({ onClose, successAction, title, selectedData = {}, readOnly = f
             />
           </Grid>
           <Grid item xs={6}>
-            <TextField
-              label="Return Quantity"
-              variant="outlined"
-              fullWidth
-              name='qty'
-              size='small'
+            <QtyAction
               value={formsData.qty}
-              placeholder="Enter Return Quantity..."
-              InputProps={{
-                readOnly: readOnly,
-              }}
-              error={errors.qty} helperText={errors.qty}
-              onChange={handleInputChange}
+              setter={qtyHandleChange}
+              productId={formsData?.product?.id}
+              readOnly={readOnly}
+              by="sales"
+              type="return"
             />
           </Grid>
           {/* <Grid item xs={6}>

@@ -1,5 +1,5 @@
- export const domain = 'https://inventory.supraindustries.in';
-//export const domain = 'http://localhost:8082';
+//  export const domain = 'https://inventory.supraindustries.in';
+export const domain = 'http://localhost:5001';
 
 export const LOGIN = `${domain}/auth/login`;
 export const SEND_OTP = `${domain}/auth/send-otp`;
@@ -63,6 +63,7 @@ export const DELETE_RETURN_PURCHASE = (id) => `${domain}/purchase/return/${id}`;
 export const CUSTOMERS_LIST = `${domain}/public/customers-list`;
 export const SUPPLIERS_LIST = `${domain}/public/suppliers-list`;
 export const PRODUCTS_LIST = `${domain}/public/products-list`;
+export const AVAILABLE_PRODUCT_QTY = (id,by, type) => `${domain}/public/products/${id}/${by}/${type}`;
 
 export const PRODUCTION_LIST = `${domain}/production/production-list`;
 export const ADD_PRODUCTION_DETAILS = `${domain}/production/production`;

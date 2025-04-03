@@ -47,6 +47,23 @@ export function validateEmail(email) {
     return { 'error': false, email: email.trim() };
 }
 
+export function validateNumber(name, value) {
+    if (typeof value !== 'string') {
+        return { error: true, message: `${name} must be a string` };
+    }
+
+    if (value.trim() === "") {
+        return { error: false, value: "" }; 
+    }
+
+    if (!/^[0-9]+$/.test(value.trim())) {
+        return { error: true, message: `${name} accepts only numbers` };
+    }
+
+    return { error: false, value: value.trim() };
+}
+
+
 
 const LETTERS_REGEX = /^[a-zA-Z]+(\s{0,1}[a-zA-Z])*$/;
 /**

@@ -3,6 +3,7 @@ import moment from 'moment';
 import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
 import PopupAction from '../../../common/PopupAction';
+import QtyAction from '../../../common/quntity-update/QtyAction';
 import ProductSpellSearch from '../../../common/select-box/ProductSpellSearch';
 import SupplierSpellSearch from '../../../common/select-box/SupplierSpellSearch';
 import UnitSelect from '../../../common/select-box/UnitSelect';
@@ -32,7 +33,6 @@ const PurchaseAction = ({ onClose, successAction, title, selectedData = {}, retu
     status: selectedData?.status || '1',
   });
 
-  const [errors, setErrors] = useState({});
   const [{ start, stop }, Loader] = useLoader();
   const user = useSelector((state) => state.user);
 
@@ -41,39 +41,21 @@ const PurchaseAction = ({ onClose, successAction, title, selectedData = {}, retu
     const { name, value } = e.target;
 
     if (name === "purchaseDate") {
-      console.log("value", value);
 
       // Convert value (purchaseDate) to a Date object
       const purchaseDate = new Date(value);
 
       // Add 90 days
       purchaseDate.setDate(purchaseDate.getDate() + 90);
-      console.log("purchaseDate", purchaseDate);
 
       // Format the date to YYYY-MM-DD
       const expiryDate = purchaseDate.toISOString().split("T")[0];
-      console.log("expiryDate", expiryDate);
 
       setFormsData({ ...formsData, ["purchaseDate"]: value, ["expiryDate"]: expiryDate, });
-    } else if (name === "qty") {
-      const numericValue = Number(value); // Convert to number
-
-      if (numericValue > selectedData.qty) {
-        setErrors({ ...errors, "qty": `Quantity cannot be increased beyond : ${selectedData.qty}` })
-        return;
-      }
-
-      setFormsData((prev) => ({
-        ...prev,
-        [name]: numericValue, // Update qty if within limit
-      }));
+    } else {
+      setFormsData((prev) => ({ ...prev, [name]: value }));
     }
-    else {
-      setFormsData({ ...formsData, [name]: value });
-    }
-
   };
-
 
   const validation = () => {
     const errors = {};
@@ -136,9 +118,12 @@ const PurchaseAction = ({ onClose, successAction, title, selectedData = {}, retu
   };
 
   const handleProductChange = (e) => {
-    setFormsData({ ...formsData, ["product"]: e });
+    setFormsData({ ...formsData, ["product"]: e, ["qty"]: '' });
   };
 
+  const qtyHandleChange = (value) => {
+    setFormsData({ ...formsData, ["qty"]: value });
+  };
   const handleReset = () => {
     setFormsData({ ...formsData, ["supplier"]: '', ['product']: '' });
     handleSupplierChange('')
@@ -160,7 +145,6 @@ const PurchaseAction = ({ onClose, successAction, title, selectedData = {}, retu
 
         <Grid container spacing={3} style={{ padding: 20 }}>
           <Grid item xs={6}>
-
             <SupplierSpellSearch onChange={handleSupplierChange} value={formsData.supplier} onReset={handleReset} />
           </Grid>
           <Grid item xs={6}>
@@ -215,19 +199,13 @@ const PurchaseAction = ({ onClose, successAction, title, selectedData = {}, retu
             />
           </Grid>
           <Grid item xs={6}>
-            <TextField
-              label="Quantity"
-              variant="outlined"
-              fullWidth
-              name='qty'
-              size='small'
+            <QtyAction
               value={formsData.qty}
-              placeholder="Enter Quantity..."
-              InputProps={{
-                readOnly: readOnly,
-              }}
-              error={errors.qty} helperText={errors.qty}
-              onChange={handleInputChange}
+              setter={qtyHandleChange}
+              productId={formsData?.product?.id}
+              readOnly={readOnly}
+              by="purchase"
+              type="purchase"
             />
           </Grid>
           <Grid item xs={6}>

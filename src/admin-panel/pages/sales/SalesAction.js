@@ -10,6 +10,7 @@ import { ADD_SALES_DETAILS, UPDATE_SALES_DETAILS } from '../../../config/api-url
 import { useLoader } from '../../../hooks/useLoader'
 import { showMessage } from '../../../utils/message'
 import { sendPostRequestWithAuth } from '../../../utils/network'
+import QtyAction from '../../../common/quntity-update/QtyAction'
 
 const SalesAction = ({ onClose, successAction, title, selectedData = {}, readOnly = false }) => {
     const [formsData, setFormsData] = useState(() => ({
@@ -31,7 +32,6 @@ const SalesAction = ({ onClose, successAction, title, selectedData = {}, readOnl
         const { name, value } = e.target;
         setFormsData((prev) => ({ ...prev, [name]: value }));
     };
-    console.log("formsData", formsData)
 
     const validation = () => {
         const errors = {};
@@ -90,15 +90,18 @@ const SalesAction = ({ onClose, successAction, title, selectedData = {}, readOnl
         setFormsData({ ...formsData, ["customer"]: e });
     };
     const handleProductChange = (e) => {
-        setFormsData({ ...formsData, ["product"]: e });
+        setFormsData({ ...formsData, ["product"]: e, ["qty"]: '' });
     };
 
     const handleReset = () => {
         setFormsData({ pName: '', cName: '' });
         setFormsData({ ...formsData, ["customer"]: '', ['product']: '' });
-
         handleProductChange('');
         handleCustomerChange('');
+    };
+
+    const qtyHandleChange = (value) => {
+        setFormsData({ ...formsData, ["qty"]: value });
     };
 
     return (
@@ -172,18 +175,14 @@ const SalesAction = ({ onClose, successAction, title, selectedData = {}, readOnl
                         />
                     </Grid>
                     <Grid item xs={6}>
-                        <TextField
-                            label="Quantity"
-                            variant="outlined"
-                            fullWidth
-                            name='qty'
-                            size='small'
+
+                        <QtyAction
                             value={formsData.qty}
-                            placeholder="Enter Quantity..."
-                            InputProps={{
-                                readOnly: readOnly,
-                            }}
-                            onChange={handleInputChange}
+                            setter={qtyHandleChange}
+                            productId={formsData?.product?.id}
+                            readOnly={readOnly}
+                            by="sales"
+                            type="sales"
                         />
                     </Grid>
                     <Grid item xs={12}>

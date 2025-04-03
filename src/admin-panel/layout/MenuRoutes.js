@@ -1,20 +1,21 @@
 import AddShoppingCartIcon from '@material-ui/icons/AddShoppingCart';
-import AutorenewIcon from '@material-ui/icons/Autorenew';
 import DashboardOutlinedIcon from '@material-ui/icons/DashboardOutlined';
+import KeyboardReturnIcon from '@material-ui/icons/KeyboardReturn';
 import NewReleasesIcon from '@material-ui/icons/NewReleases';
-import OutdoorGrillIcon from '@material-ui/icons/OutdoorGrill';
 import PeopleSharpIcon from '@material-ui/icons/PeopleSharp';
 import PersonAdd from '@material-ui/icons/PersonAddOutlined';
-import TrendingUpOutlinedIcon from '@material-ui/icons/TrendingUpOutlined';
+import ReceiptIcon from '@material-ui/icons/Receipt';
+import ShoppingCartIcon from '@material-ui/icons/ShoppingCart';
+import SubjectIcon from '@material-ui/icons/Subject';
+import TrendingUpIcon from '@material-ui/icons/TrendingUp';
 import WcOutlinedIcon from '@material-ui/icons/WcOutlined';
 import React from "react";
 import CustomerList from "../pages/customer/CustomerList";
 import Dashboard from '../pages/dashboard/Dashboard';
+import ManufacturingList from '../pages/Manufacturing/List';
 import ProductList from '../pages/product/ProductList';
 import ReturnList from '../pages/purchase-return/ReturnList';
 import PurchaseList from "../pages/purchase/PurchaseList";
-import ProductionList from "../pages/recycle/production/ProductionList";
-import RowMaterialsList from "../pages/recycle/row-materiyal/RowMaterialsList";
 import ReportsHome from "../pages/reports/ReportsList";
 import SalesReturnList from '../pages/sales-return/SalesReturnList';
 import SalesList from "../pages/sales/SalesList";
@@ -64,45 +65,45 @@ const MenuRoutes = [
         component: <CustomerList />,
         roles: ['Admin', 'Store manager'] // Admin and Store manager can access
     },
-    {
-        sidebarName: 'Manufacturing',
-        navbarName: 'Manufacturing',
-        icon: AutorenewIcon,
-        submenu: [
-            {
-                path: '#raw-material',
-                sidebarName: 'Raw material',
-                navbarName: 'Raw material',
-                icon: NewReleasesIcon,
-                component: <RowMaterialsList />,
-            },
-            {
-                path: '#production',
-                sidebarName: 'Production',
-                navbarName: 'Production',
-                icon: OutdoorGrillIcon,
-                component: <ProductionList />,
-            },
-        ]
-    },
+    // {
+    //     sidebarName: 'Manufacturing',
+    //     navbarName: 'Manufacturing',
+    //     icon: AutorenewIcon,
+    //     submenu: [
+    //         {
+    //             path: '#raw-material',
+    //             sidebarName: 'Raw material',
+    //             navbarName: 'Raw material',
+    //             icon: NewReleasesIcon,
+    //             component: <RowMaterialsList />,
+    //         },
+    //         {
+    //             path: '#productions',
+    //             sidebarName: 'Production',
+    //             navbarName: 'Production',
+    //             icon: OutdoorGrillIcon,
+    //             component: <ProductionList />,
+    //         },
+    //     ]
+    // },
 
     {
         sidebarName: 'Purchase',
         navbarName: 'Purchase',
-        icon: AutorenewIcon,
+        icon: ShoppingCartIcon,
         submenu: [
             {
                 path: '#purchase-list',
                 sidebarName: 'List',
                 navbarName: 'List',
-                icon: NewReleasesIcon,
+                icon: SubjectIcon,
                 component: <PurchaseList />,
             },
             {
                 path: '#purchase-return',
                 sidebarName: 'Return',
                 navbarName: 'Return',
-                icon: OutdoorGrillIcon,
+                icon: KeyboardReturnIcon,
                 component: <ReturnList />,
             },
         ]
@@ -110,29 +111,37 @@ const MenuRoutes = [
     {
         sidebarName: 'Sales',
         navbarName: 'Sales',
-        icon: AutorenewIcon,
+        icon: TrendingUpIcon,
         submenu: [
             {
                 path: '#sales-list',
                 sidebarName: 'List',
                 navbarName: 'List',
-                icon: NewReleasesIcon,
+                icon: SubjectIcon,
                 component: <SalesList />,
             },
             {
                 path: '#sales-return',
                 sidebarName: 'Return',
                 navbarName: 'Return',
-                icon: OutdoorGrillIcon,
+                icon: KeyboardReturnIcon,
                 component: <SalesReturnList />,
             },
         ]
     },
     {
+        path: '#production',
+        sidebarName: 'Production',
+        navbarName: 'Production',
+        icon: NewReleasesIcon,
+        component: <ManufacturingList />,
+        roles: ['Admin'] // Only Admin can access
+    },
+    {
         path: '#reports',
         sidebarName: 'Reports',
         navbarName: 'Reports',
-        icon: TrendingUpOutlinedIcon,
+        icon: ReceiptIcon,
         component: <ReportsHome />,
         roles: ['Admin', 'Store manager', 'User'] // Accessible to all roles
     },

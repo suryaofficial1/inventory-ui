@@ -2,22 +2,20 @@ import { Button, Chip } from '@material-ui/core';
 import { DataGrid } from '@material-ui/data-grid';
 import { Add, Refresh, Search } from '@material-ui/icons';
 import { makeStyles } from '@material-ui/styles';
+import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import ActionButton from '../../../../common/action-button/ActionButton';
-import { DELETE_MATERIYAL, MATERIYAL_LIST } from '../../../../config/api-urls';
-import { useLoader } from '../../../../hooks/useLoader';
-import { roleBasePolicy } from '../../../../utils/Constent';
-import { showMessage } from '../../../../utils/message';
-import { sendDeleteRequest, sendGetRequest } from '../../../../utils/network';
-import RowMaterialsAction from './RowMaterialsAction';
+import Swal from 'sweetalert2';
+import ActionButton from '../../../common/action-button/ActionButton';
+import { PRODUCTION_LIST } from '../../../config/api-urls';
+import { useLoader } from '../../../hooks/useLoader';
+import { roleBasePolicy } from '../../../utils/Constent';
+import { sendDeleteRequest, sendGetRequest } from '../../../utils/network';
+import ProductionAction from './Action';
+import Filter from './Filter';
 
 const useStyles = makeStyles({
-    actionIcons: {
-        display: 'flex',
-        gap: 15,
-        cursor: 'pointer',
-    },
+
     addBtn: {
         padding: 10
     },
@@ -30,7 +28,7 @@ const useStyles = makeStyles({
     }
 });
 
-const RowMaterialsList = () => {
+const ManufacturingList = () => {
     const classes = useStyles();
 
     const [page, setPage] = useState(0);
@@ -45,11 +43,11 @@ const RowMaterialsList = () => {
     const user = useSelector((state) => state.user);
 
     useEffect(() => {
-        getMaterialsList();
+        getProductionList();
     }, [page, filter]);
-    const getMaterialsList = () => {
+    const getProductionList = () => {
         start()
-        sendGetRequest(`${MATERIYAL_LIST}?page=${page + 1}&per_page=10`, "token")
+        sendGetRequest(`${PRODUCTION_LIST}?cName=${filter?.cName ? filter?.cName.name : ""}&pName=${filter?.pName ? filter?.pName.name : ""}&page=${page + 1}&per_page=10`, user.token)
             .then(res => {
                 if (res.status === 200) {
                     setRows(res.data.rows)
@@ -75,22 +73,41 @@ const RowMaterialsList = () => {
         setReadOnly(mode === 'view');
     };
 
+
     const deleteAction = (row) => {
-        start()
-        sendDeleteRequest(`${DELETE_MATERIYAL(row.id)}`, "token")
-            .then(res => {
+        Swal.fire({
+            title: "Are you sure?",
+            text: "This will also delete related records! You won't be able to revert this!",
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#3085d6",
+            cancelButtonColor: "#d33",
+            confirmButtonText: "Yes, delete it!"
+        }).then((result) => {
+            if (result.isConfirmed) {
+                deleteData(row)
+            } else if (result.dismiss) {
+                Swal.fire("Changes are not saved", "", "info");
+            }
+        });
+    };
+
+    const deleteData = (row) => {
+        start();
+        sendDeleteRequest(`${DELETE_PRODUCTION(row.id)}`, user.token)
+            .then((res) => {
                 if (res.status === 200) {
-                    getMaterialsList();
-                    showMessage('success', 'Material record deleted successfully');
+                    getSalesList();
+                    Swal.fire("Production deleted successfully!", "", "success");
                 } else {
-                    showMessage("error", 'Somthing went wrong on delete!')
+                    console.log("Error in delete production", res.data);
                 }
-            }).catch(err => {
-                console.log(err)
-            }).finally(stop)
-    }
-
-
+            })
+            .catch((err) => {
+                console.log(err);
+            })
+            .finally(stop);
+    };
 
     const columns = [
         {
@@ -99,18 +116,52 @@ const RowMaterialsList = () => {
             width: 80,
             sortable: true,
         },
+
+        {
+            field: 'customer', headerName: 'Customer', width: 150, resizable: false, sortable: false,
+            renderCell: (params) => (
+                params.row.customer?.name ? params.row.customer.name : ""
+            )
+        },
+        {
+            field: 'product', headerName: 'Product', width: 160, resizable: false, sortable: false,
+            renderCell: (params) => (
+                params.row.product?.name ? params.row.product.name : ''
+            )
+        },
+
+
+        { field: 'qty', headerName: 'Quantity', width: 110, resizable: true, sortable: false },
+        { field: 'unit', headerName: 'Unit', width: 110, resizable: true, sortable: false },
+
+        { field: 'operatorName', headerName: 'Operator', width: 140, resizable: true, sortable: false },
+
         {
             field: 'materials', headerName: 'Raw Material', width: 150, resizable: false, sortable: false,
             renderCell: (params) => (
                 params.row.materials ? <Chip label={JSON.parse(params.row.materials).join(', ')} /> : ""
             )
         },
-        { field: 'mqty', headerName: 'Material Quantity', width: 110, resizable: true, sortable: false },
-        { field: 'mPrice', headerName: 'Material Price', width: 110, resizable: true, sortable: false },
-        { field: 'rqty', headerName: 'Rejection  Quantity', width: 110, resizable: true, sortable: false },
-        { field: 'rPrice', headerName: 'Rejection  Price', width: 110, resizable: true, sortable: false },
-        { field: 'lqty', headerName: 'Lumps Quantity', width: 110, resizable: true, sortable: false },
-        { field: 'lPrice', headerName: 'Lumps Price', width: 110, resizable: true, sortable: false },
+        { field: 'mqty', headerName: 'Material Quantity', width: 160, resizable: true, sortable: false },
+        { field: 'mPrice', headerName: 'Material Price', width: 160, resizable: true, sortable: false },
+        { field: 'rqty', headerName: 'Rejection  Quantity', width: 160, resizable: true, sortable: false },
+        { field: 'rPrice', headerName: 'Rejection  Price', width: 160, resizable: true, sortable: false },
+        { field: 'lqty', headerName: 'Lumps Quantity', width: 160, resizable: true, sortable: false },
+        { field: 'lPrice', headerName: 'Lumps Price', width: 160, resizable: true, sortable: false },
+        {
+            field: 'pDesc', headerName: 'Product Desc', width: 220, resizable: false, sortable: false,
+            renderCell: (params) => {
+                return (
+                    params.row.pDesc ? <textarea readOnly>{params.row.pDesc}</textarea> : ''
+                )
+            }
+        },
+        {
+            field: 'manufacturingDate', headerName: 'Manufacturing Date', width: 180, resizable: false, sortable: false,
+            renderCell: (params) => (
+                params.row.manufacturingDate ? moment(params.row.manufacturingDate).local().format('DD-MM-YYYY') : ''
+            )
+        },
         {
             field: 'status', headerName: 'Status', width: 100, resizable: true, sortable: false,
             renderCell: (params) => (
@@ -143,9 +194,9 @@ const RowMaterialsList = () => {
     return (
         <div >
             <Loader />
-            {/* <div className={classes.addBtn}>
+            <div className={classes.addBtn}>
                 <Filter reset={resetAllData} filter={tempFilter} setFilter={setTempFilter} />
-            </div> */}
+            </div>
             <div>
                 {roleBasePolicy(user?.role) && <Button startIcon={<Add />} className={classes.actionButton} variant="contained" color="primary" onClick={() => setOpen(!open)}>Add New materials</Button>}
                 <Button startIcon={<Search />} className={classes.actionButton} variant="contained" color="primary" onClick={applyFilter}>Search</Button>
@@ -164,16 +215,16 @@ const RowMaterialsList = () => {
                 disableColumnMenu
                 disableColumnFilter
             />
-
-            {open && <RowMaterialsAction
+            {open && <ProductionAction
                 selectedData={editData}
                 readOnly={readOnly}
                 onClose={onClose}
-                successAction={getMaterialsList}
-                title={readOnly ? 'View materials details' : editData.id ? 'Edit materials detail' : 'Add New materials detail'}
+                successAction={getProductionList}
+                title={readOnly ? 'View Production details' : editData.id ? 'Edit Production detail' : 'Add New Production detail'}
             />}
         </div>
+
     );
 };
 
-export default RowMaterialsList;
+export default ManufacturingList;
