@@ -3,7 +3,6 @@ import { Loader } from 'react-overlay-loader';
 import { Route, BrowserRouter as Router, Switch } from 'react-router-dom';
 
 const Login = lazy(() => import('../components/auth/Login'));
-const About = lazy(() => import('../pages/About'));
 const ProtectedRoute = lazy(() => import('./ProtectedRoute'));
 const LayoutIndex = lazy(() => import('../admin-panel/layout/LayoutIndex'));
 

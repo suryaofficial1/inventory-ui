@@ -246,7 +246,7 @@ const SalesReportList = ({ formsData }) => {
                 <SingleBarChart title="Sales report by date" filteredData={salesData.rows} />
             </Grid>
             <Grid item xs={12} >
-                <PeiChart title="Sales report by product " data={salesData.rows} />
+                <PeiChart title="Sales Report by product " data={salesData.rows} />
             </Grid>
         </Grid>
     </>

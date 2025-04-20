@@ -1,16 +1,16 @@
 import { Button, Grid, MenuItem, TextField } from '@material-ui/core'
 import moment from 'moment'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
 import PopupAction from '../../../common/PopupAction'
 import CustomerSpellSearch from '../../../common/select-box/CustomerSpellSearch'
-import ProductSpellSearch from '../../../common/select-box/ProductSpellSearch'
+import ProductionProductSelect from '../../../common/select-box/ProductionProductSelect'
 import UnitSelect from '../../../common/select-box/UnitSelect'
-import { ADD_SALES_DETAILS, UPDATE_SALES_DETAILS } from '../../../config/api-urls'
+import { ADD_SALES_DETAILS, AVAILABLE_PRODUCTION_PRODUCT_QTY, UPDATE_SALES_DETAILS } from '../../../config/api-urls'
 import { useLoader } from '../../../hooks/useLoader'
 import { showMessage } from '../../../utils/message'
-import { sendPostRequestWithAuth } from '../../../utils/network'
-import QtyAction from '../../../common/quntity-update/QtyAction'
+import { sendGetRequest, sendPostRequestWithAuth } from '../../../utils/network'
+import { validateNumber } from '../../../utils/validation'
 
 const SalesAction = ({ onClose, successAction, title, selectedData = {}, readOnly = false }) => {
     const [formsData, setFormsData] = useState(() => ({
@@ -25,12 +25,59 @@ const SalesAction = ({ onClose, successAction, title, selectedData = {}, readOnl
         status: selectedData.status || '1',
     }));
     const [{ start, stop }, Loader] = useLoader();
+    const [availableQty, setAvailableQty] = useState(0);
+    const [errors, setErrors] = useState({});
     const user = useSelector((state) => state.user);
 
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        setFormsData((prev) => ({ ...prev, [name]: value }));
+        if (name === "qty") {
+            const numericValue = Number(value);
+            const qtyValidation = validateNumber("Quantity", value);
+            if (qtyValidation.error) {
+                setErrors({ ...errors, ["qty"]: qtyValidation.message });
+                return;
+            }
+            if (!formsData.product) {
+                showMessage("error", "Product selection is required before entering quantity!");
+                return;
+            }
+
+            if (numericValue > availableQty) {
+                setErrors({ ...errors, ["qty"]: `Quantity cannot exceed available stock: ${availableQty}` });
+                return;
+            }
+            setErrors({ ...errors, ["qty"]: "" });
+            setFormsData((prev) => ({
+                ...prev,
+                [name]: numericValue,
+            }));
+        } else {
+            setFormsData((prev) => ({ ...prev, [name]: value }));
+        }
+    };
+
+    useEffect(() => {
+        if (formsData.product.id) {
+            getAvailableQty();
+        }
+    }, [formsData.product.id, formsData.qty]);
+
+
+    const getAvailableQty = async () => {
+        try {
+            const res = await sendGetRequest(AVAILABLE_PRODUCTION_PRODUCT_QTY(formsData.product.id), user.token);
+            if (res.status === 200) {
+                setAvailableQty(res.data.availableQty);
+            } else {
+                console.error("Error in getting available quantity", res.data);
+                return 0;
+            }
+        } catch (err) {
+            console.error("Error fetching available quantity", err);
+            return 0;
+        }
     };
 
     const validation = () => {
@@ -71,18 +118,18 @@ const SalesAction = ({ onClose, successAction, title, selectedData = {}, readOnl
         sendPostRequestWithAuth(url, reqData, user.token).then((res) => {
             if (res.status === 200) {
                 successAction()
-                showMessage('success', `Product successfully ${action}`);
+                showMessage('success', `New sales record ${action} successfully `);
                 onClose();
             } else if (res.status === 400) {
                 showMessage('error', res.data);
             } else if (res.status === 409) {
                 showMessage('error', res.message);
             } else {
-                showMessage('error', "Something went wrong in " + action + " product!");
+                showMessage('error', "Something went wrong in " + action + " sales record!");
             }
         }).catch((err) => {
             console.log(err);
-            showMessage('error', "Something went wrong in " + action + " product!");
+            showMessage('error', "Something went wrong in " + action + " sales record!");
         }).finally(() => stop())
     }
 
@@ -98,10 +145,6 @@ const SalesAction = ({ onClose, successAction, title, selectedData = {}, readOnl
         setFormsData({ ...formsData, ["customer"]: '', ['product']: '' });
         handleProductChange('');
         handleCustomerChange('');
-    };
-
-    const qtyHandleChange = (value) => {
-        setFormsData({ ...formsData, ["qty"]: value });
     };
 
     return (
@@ -121,7 +164,7 @@ const SalesAction = ({ onClose, successAction, title, selectedData = {}, readOnl
                         <CustomerSpellSearch onChange={handleCustomerChange} value={formsData.customer} onReset={handleReset} />
                     </Grid>
                     <Grid item xs={6}>
-                        <ProductSpellSearch onChangeAction={handleProductChange} value={formsData.product} onReset={handleReset} />
+                        <ProductionProductSelect type="sales" onChangeAction={handleProductChange} value={formsData.product} onReset={handleReset} />
                     </Grid>
                     <Grid item xs={6}>
                         <TextField
@@ -174,15 +217,22 @@ const SalesAction = ({ onClose, successAction, title, selectedData = {}, readOnl
                             onChange={handleInputChange}
                         />
                     </Grid>
-                    <Grid item xs={6}>
 
-                        <QtyAction
+                    <Grid item xs={12}>
+                        <TextField
+                            label="Quantity"
+                            variant="outlined"
+                            fullWidth
+                            name="qty"
+                            size="small"
                             value={formsData.qty}
-                            setter={qtyHandleChange}
-                            productId={formsData?.product?.id}
-                            readOnly={readOnly}
-                            by="sales"
-                            type="sales"
+                            placeholder="Enter Quantity..."
+                            InputProps={{
+                                readOnly: readOnly,
+                            }}
+                            error={Boolean(errors.qty)}
+                            helperText={errors.qty}
+                            onChange={handleInputChange}
                         />
                     </Grid>
                     <Grid item xs={12}>

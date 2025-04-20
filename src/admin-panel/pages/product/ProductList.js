@@ -132,6 +132,7 @@ const ProductList = () => {
         { field: 'qty', headerName: 'quantity', width: 110, resizable: true, sortable: false },
         { field: 'price', headerName: 'Price', width: 110, resizable: true, sortable: false },
         { field: 'unit', headerName: 'Unit', width: 110, resizable: true, sortable: false },
+        { field: 'type', headerName: 'Type', width: 130, resizable: true, sortable: false },
         {
             field: 'status', headerName: 'Status', width: 100, resizable: true, sortable: false,
             renderCell: (params) => (
@@ -151,7 +152,6 @@ const ProductList = () => {
     ];
 
     const applyFilter = () => {
-        console.log("tempFilter", tempFilter)
         setFilter(tempFilter);
         setPage(0)
     }

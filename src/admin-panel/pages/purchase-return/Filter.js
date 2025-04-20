@@ -25,7 +25,7 @@ const PurchaseFilter = ({ filter, setFilter, reset }) => {
                 <SupplierSpellSearch onChange={handleSupplierChange} value={filter.sName} onReset={handleReset} />
             </Grid>
             <Grid item xs={12} sm={6}>
-                <ProductSpellSearch onChangeAction={handleProductChange} value={filter.pName} onReset={handleReset} />
+                <ProductSpellSearch type="purchase" onChangeAction={handleProductChange} value={filter.pName} onReset={handleReset} />
             </Grid>
         </Grid>
     );

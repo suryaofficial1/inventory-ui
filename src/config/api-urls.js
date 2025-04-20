@@ -46,6 +46,7 @@ export const SALES_RETURN_LIST = `${domain}/sales/return-list`;
 export const ADD_RETURN_SALES_DETAILS = `${domain}/sales/upsert/return`;
 export const UPDATE_RETURN_SALES_DETAILS = (id) => `${domain}/sales/upsert/return/${id}`;
 export const DELETE_RETURN_SALES = (id) => `${domain}/sales/return/${id}`;
+export const AVAILABLE_PRODUCTION_PRODUCT_QTY = (id) => `${domain}/sales/${id}/product`;
 
 export const PURCHASE_LIST = `${domain}/purchase/purchase-list`;
 export const ADD_PURCHASE_DETAILS = `${domain}/purchase/purchase`;
@@ -53,8 +54,8 @@ export const UPDATE_PURCHASE_DETAILS = (id) => `${domain}/purchase/purchase/${id
 export const DELETE_PURCHASE = (id) => `${domain}/purchase/purchase/${id}`;
 
 // Return API
-export const PURCHASE_LIST_BY_INVOICE_NO = `${domain}/purchase/list-by-invoice`;
-export const PURCHASE_RETURN_LIST_BY_INVOICE_NO = `${domain}/purchase/return-list-by-invoice`;
+export const PURCHASE_LIST_BY_PRODUCT = `${domain}/purchase/list-by-product`;
+export const PURCHASE_RETURN_LIST_BY_PRODUCTS = `${domain}/purchase/return-list-by-products`;
 export const PURCHASE_RETURN_LIST = `${domain}/purchase/return-list`;
 export const ADD_RETURN_PURCHASE_DETAILS = `${domain}/purchase/upsert/return`;
 export const UPDATE_RETURN_PURCHASE_DETAILS = (id) => `${domain}/purchase/upsert/return/${id}`;
@@ -62,19 +63,29 @@ export const DELETE_RETURN_PURCHASE = (id) => `${domain}/purchase/return/${id}`;
 
 export const CUSTOMERS_LIST = `${domain}/public/customers-list`;
 export const SUPPLIERS_LIST = `${domain}/public/suppliers-list`;
-export const PRODUCTS_LIST = `${domain}/public/products-list`;
-export const AVAILABLE_PRODUCT_QTY = (id,by, type) => `${domain}/public/products/${id}/${by}/${type}`;
+export const PRODUCTS_LIST = (type) => `${domain}/public/products-list/${type}`;
+export const PRODUCTION_PRODUCTS_LIST = `${domain}/public/production-products-list`;
+export const PURCHASE_PRODUCTS_LIST = `${domain}/public/purchase-products-list`;
+export const AVAILABLE_PRODUCT_QTY = (id, by, type) => `${domain}/public/products/${id}/${by}/${type}`;
+export const AVAILABLE_PURCHASE_PRODUCT_QTY = (id) => `${domain}/material/${id}/product`;
 
 export const PRODUCTION_LIST = `${domain}/production/production-list`;
+export const PRODUCTION_DETAIL_BY_ID = (id) => `${domain}/production/production-detail/${id}`;
 export const ADD_PRODUCTION_DETAILS = `${domain}/production/production`;
 export const UPDATE_PRODUCTION_DETAILS = (id) => `${domain}/production/production/${id}`;
+export const UPDATE_PRODUCTION_STATUS = (id) => `${domain}/production/${id}/status`;
 export const DELETE_PRODUCTION = (id) => `${domain}/production/production/${id}`;
 
-export const MATERIYAL_LIST = `${domain}/material/material-list`;
-export const ADD_MATERIYAL_DETAILS = `${domain}/material/material`;
-export const UPDATE_MATERIYAL_DETAILS = (id) => `${domain}/material/material/${id}`;
-export const DELETE_MATERIYAL = (id) => `${domain}/material/material/${id}`;
-
+export const MATERIAL_LIST = (productionId) => `${domain}/material/material-list/${productionId}`;
+export const ADD_MATERIAL_DETAILS = `${domain}/material/material`;
+export const UPDATE_MATERIAL_DETAILS = (id) => `${domain}/material/material/${id}`;
 
 export const SALES_OVERVIEW = `${domain}/report/sales-overview`;
+export const SALES_RETURN_OVERVIEW = `${domain}/report/sales-return-overview`;
 export const PURCHASE_REPORT = `${domain}/report/purchase`;
+export const PURCHASE_RETURN_REPORT = `${domain}/report/purchase-return`;
+export const STOCK_REPORT = `${domain}/report/stock`;
+
+export const ALL_STATS_COUNT = `${domain}/public/all-stats-count`;
+export const TOP_5_PRODUCTS = `${domain}/public/top-5-products`;
+export const PRODUCTION_SUMMARY = `${domain}/public/production-summary`;

@@ -1,17 +1,19 @@
 import { Paper, Tab, Tabs } from '@material-ui/core';
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { CUSTOMERS_LIST, PRODUCTS_LIST, SUPPLIERS_LIST } from '../../../config/api-urls';
+import { CUSTOMERS_LIST, PRODUCTION_PRODUCTS_LIST, PURCHASE_PRODUCTS_LIST, SUPPLIERS_LIST } from '../../../config/api-urls';
 import { useLoader } from '../../../hooks/useLoader';
 import { sendGetRequest } from '../../../utils/network';
-import FIFOReport from './FIFOReport';
 import ReportFilter from './ReportFilter';
-import StockReport from './StockReport';
+// import StockReport from './StockReport';
 import PurchaseReportList from './purchase-report/PurchaseReportList';
+import PurchaseReturnReport from './purchase-report/PurchaseReturnReport';
 import SalesReportList from './sales-report/SalesReportList';
+import SalesReturnReport from './sales-report/SalesReturnReport';
+import StockReport from './stock-report/StockReport';
 
 const ReportsList = () => {
-    const [selectedTab, setSelectedTab] = useState(0);
+    const [selectedTab, setSelectedTab] = useState(2);
     const [customers, setCustomers] = useState([]);
     const [products, setProducts] = useState([]);
     const [suppliers, setSuppliers] = useState([]);
@@ -49,14 +51,15 @@ const ReportsList = () => {
 
     useEffect(() => {
         fetchData();
-    }, []);
+    }, [selectedTab]);
 
     const fetchData = async () => {
         try {
+            let PRODUCT_URL = selectedTab == 0 ||  selectedTab == 3 ? PRODUCTION_PRODUCTS_LIST : PURCHASE_PRODUCTS_LIST
             start();
             const [customersRes, productsRes, suppliersRes] = await Promise.all([
                 sendGetRequest(CUSTOMERS_LIST, user.token),
-                sendGetRequest(PRODUCTS_LIST, user.token),
+                sendGetRequest(PRODUCT_URL, user.token),
                 sendGetRequest(SUPPLIERS_LIST, user.token)
             ]);
             if (customersRes.status === 200) setCustomers(customersRes.data);
@@ -75,7 +78,8 @@ const ReportsList = () => {
             <SalesReportList formsData={formsData} />,
             <PurchaseReportList formsData={formsData} />,
             <StockReport formsData={formsData} />,
-            <FIFOReport formsData={formsData} />
+            <SalesReturnReport formsData={formsData} />,
+            <PurchaseReturnReport formsData={formsData} />,
         ];
         return reportComponents[selectedTab];
     };
@@ -93,7 +97,8 @@ const ReportsList = () => {
                     <Tab label="Sales Report" />
                     <Tab label="Purchase Report" />
                     <Tab label="Stock Report" />
-                    <Tab label="FIFO Report" />
+                    <Tab label="Sales Return" />
+                    <Tab label="Purchase Return" />
                 </Tabs>
             </Paper>
             <ReportFilter

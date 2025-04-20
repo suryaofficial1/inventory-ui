@@ -15,11 +15,6 @@ import SalesAction from './SalesAction';
 import SalesFilter from './SalesFilter';
 
 const useStyles = makeStyles({
-    actionIcons: {
-        display: 'flex',
-        gap: 15,
-        cursor: 'pointer',
-    },
     addBtn: {
         padding: 10
     },
@@ -51,7 +46,7 @@ const SalesList = () => {
     }, [page, filter]);
     const getSalesList = () => {
         start()
-        sendGetRequest(`${SALES_LIST}?cName=${filter?.cName ? filter?.cName.name : ""}&pName=${filter?.pName ? filter?.pName.name : ""}&page=${page + 1}&per_page=10`, user.token)
+        sendGetRequest(`${SALES_LIST}?cName=${filter?.cName ? filter?.cName.name : ""}&pName=${filter?.pName ? filter?.pName.product : ""}&page=${page + 1}&per_page=10`, user.token)
             .then(res => {
                 if (res.status === 200) {
                     setRows(res.data.rows)
@@ -121,7 +116,7 @@ const SalesList = () => {
         },
         { field: 'invoiceNo', headerName: 'Invoice No', width: 130, sortable: false },
         {
-            field: 'customer', headerName: 'Customer Name', width: 120, resizable: false, sortable: false,
+            field: 'customer', headerName: 'Customer Name', width: 140, resizable: false, sortable: false,
             renderCell: (params) => (
                 params.row.customer.name ? params.row.customer.name : ""
             )
@@ -129,7 +124,7 @@ const SalesList = () => {
         {
             field: 'product', headerName: 'Product', width: 120, resizable: false, sortable: false,
             renderCell: (params) => (
-                params.row.product.name ? params.row.product.name : ''
+                params.row.product.product ? params.row.product.product : ''
             )
         },
         {
@@ -141,7 +136,7 @@ const SalesList = () => {
             }
         },
 
-        { field: 'qty', headerName: 'Quantity', width: 110, resizable: true, sortable: false },
+        { field: 'qty', headerName: 'Quantity', width: 90, resizable: true, sortable: false },
         { field: 'salesPrice', headerName: 'Sales Price', width: 110, resizable: true, sortable: false },
         {
             field: 'salesDate', headerName: 'Sales Date', width: 120, resizable: false, sortable: false,
@@ -149,7 +144,7 @@ const SalesList = () => {
                 params.row.salesDate ? moment(params.row.salesDate).local().format('DD-MM-YYYY') : ''
             )
         },
-        { field: 'unit', headerName: 'Unit', width: 110, resizable: true, sortable: false },
+        { field: 'unit', headerName: 'Unit', width: 80, resizable: true, sortable: false },
         {
             field: 'status', headerName: 'Status', width: 100, resizable: true, sortable: false,
             renderCell: (params) => (

@@ -35,8 +35,6 @@ const SalesDetails = ({ error, setter }) => {
         start();
         sendGetRequest(`${SALES_LIST_BY_INVOICE_NO}?invoiceNo=${data}`, token).then((_res) => {
             if (_res.status === 200) {
-                console.log("details", _res.data)
-
                 setSalesList(_res.data);
             } else if (_res.status === 400) {
                 showMessage("error", _res.data[0]);
@@ -63,7 +61,7 @@ const SalesDetails = ({ error, setter }) => {
             isOptionEqualToValue={(option, value) => option.id === value.id}
             options={salesList}
             onChange={(event, newValue) => handleChange(event, newValue)}
-            getOptionLabel={(option) => option.invoiceNo}
+            getOptionLabel={(option) => option.invoiceNo + " - " + option.product.product}
             disableClearable
             loading={isLoading}
             renderInput={(params) => <TextField size='small'
@@ -78,9 +76,9 @@ const SalesDetails = ({ error, setter }) => {
                     ),
                 }}
                 error={error}
-                helperText={error ? "Please select sales" : ""}
+                helperText={error ? "Please select sales by invoice number" : ""}
                 onKeyUp={onEnterSearchUser}
-                label="Search sales record" placeholder="Please Type min 3 char and press enter..." variant="outlined" />}
+                label="Search sales record by invoice number" placeholder="Please Type min 3 char of invoice number and press enter..." variant="outlined" />}
         />
     </>)
 }

@@ -15,6 +15,7 @@ const ProductAction = ({ onClose, successAction, title, selectedData = {}, readO
         qty: selectedData.qty || '',
         price: selectedData.price || '',
         unit: selectedData.unit || '',
+        type: selectedData.type || '',
         status: selectedData.status || '1',
     }));
     const user = useSelector((state) => state.user);
@@ -33,6 +34,7 @@ const ProductAction = ({ onClose, successAction, title, selectedData = {}, readO
         if (!formsData.qty) errors.qty = "Quantity is required";
         if (!formsData.price) errors.price = "Price is required";
         if (!formsData.unit) errors.unit = "Unit is required";
+        if (!formsData.type) errors.type = "Type is required";
         if (!formsData.status) errors.status = "Status is required";
         if (Object.keys(errors).length > 0) {
             showMessage("error", errors[Object.keys(errors)[0]]);
@@ -49,6 +51,7 @@ const ProductAction = ({ onClose, successAction, title, selectedData = {}, readO
             qty: formsData.qty,
             price: formsData.price,
             unit: formsData.unit,
+            type: formsData.type.toLowerCase(),
             status: formsData.status,
         }
         const url = selectedData.id ? UPDATE_PRODUCT(selectedData.id) : ADD_PRODUCT;
@@ -116,23 +119,23 @@ const ProductAction = ({ onClose, successAction, title, selectedData = {}, readO
                         />
                     </Grid>
                     <Grid item xs={6}>
-
                         <UnitSelect onChange={handleInputChange} value={formsData.unit} readOnly={readOnly} />
-                        {/* <TextField
-                            label="Unit"
-                            variant="outlined"
-                            fullWidth
-                            name='unit'
-                            size='small'
-                            value={formsData.unit}
-                            placeholder="Enter Unit..."
-                            InputProps={{
-                                readOnly: readOnly,
-                            }}
-                            onChange={handleInputChange}
-                        /> */}
                     </Grid>
                     <Grid item xs={6}>
+
+                        <TextField fullWidth id="type"
+                            onChange={handleInputChange}
+                            name='type'
+                            label="Type"
+                            variant='outlined'
+                            size='small'
+                            value={formsData.type} select>
+                            <MenuItem value="purchase">Purchase</MenuItem>
+                            <MenuItem value="sales">Sales</MenuItem>
+
+                        </TextField>
+                    </Grid>
+                    <Grid item xs={8}>
                         <TextField
                             label="Quantity"
                             variant="outlined"

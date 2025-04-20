@@ -1,7 +1,7 @@
 import { Grid } from '@material-ui/core';
 import React from 'react';
 import CustomerSpellSearch from '../../../common/select-box/CustomerSpellSearch';
-import ProductSpellSearch from '../../../common/select-box/ProductSpellSearch';
+import ProductionProductSelect from '../../../common/select-box/ProductionProductSelect';
 
 const Filter = ({ filter, setFilter, reset }) => {
 
@@ -25,7 +25,7 @@ const Filter = ({ filter, setFilter, reset }) => {
                 <CustomerSpellSearch onChange={handleCustomerChange} value={filter.cName} onReset={handleReset} />
             </Grid>
             <Grid item xs={12} sm={6}>
-                <ProductSpellSearch onChangeAction={handleProductChange} value={filter.pName} onReset={handleReset} />
+                <ProductionProductSelect onChangeAction={handleProductChange} value={filter.pName} onReset={handleReset} />
             </Grid>
         </Grid>
     );

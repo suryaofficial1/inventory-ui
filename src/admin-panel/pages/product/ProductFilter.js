@@ -17,7 +17,7 @@ const ProductFilter = ({ filter, setFilter, reset }) => {
     return (
         <Grid container spacing={1}>
             <Grid item xs={12} sm={6}>
-                <ProductSpellSearch onChangeAction={handleChange} value={filter.name} onReset={handleReset} />
+                <ProductSpellSearch type="all" onChangeAction={handleChange} value={filter.name} onReset={handleReset} />
             </Grid>
         </Grid>
     );

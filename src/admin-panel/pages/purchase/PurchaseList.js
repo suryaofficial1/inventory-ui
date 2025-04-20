@@ -54,7 +54,7 @@ const PurchaseList = () => {
 
     const getPurchaseList = () => {
         start();
-        sendGetRequest(`${PURCHASE_LIST}?pName=${filter?.pName ? filter?.pName.name : ""}&sName=${filter?.sName ? filter?.sName.name : ""}&page=${page + 1}&per_page=10`, user.token)
+        sendGetRequest(`${PURCHASE_LIST}?pName=${filter?.pName ? filter?.pName.product : ""}&sName=${filter?.sName ? filter?.sName.name : ""}&page=${page + 1}&per_page=10`, user.token)
             .then((res) => {
                 if (res.status === 200) {
                     setRows(res.data.rows);
@@ -126,12 +126,7 @@ const PurchaseList = () => {
                 params.row.supplier.name ? params.row.supplier.name : ""
             )
         },
-        {
-            field: 'product', headerName: 'Product', width: 200, resizable: false, sortable: false,
-            renderCell: (params) => (
-                params.row.product.name ? params.row.product.name : ''
-            )
-        },
+        { field: 'product', headerName: 'Product', width: 200, resizable: false, sortable: false },
         { field: 'description', headerName: 'Description', width: 200 },
         { field: 'qty', headerName: 'Quantity', width: 120 },
         { field: 'price', headerName: 'Price', width: 120 },

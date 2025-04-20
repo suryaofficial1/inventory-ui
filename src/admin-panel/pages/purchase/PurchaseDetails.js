@@ -2,7 +2,7 @@ import { CircularProgress, TextField } from '@material-ui/core';
 import { Autocomplete } from '@material-ui/lab';
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { PURCHASE_LIST_BY_INVOICE_NO } from '../../../config/api-urls';
+import { PURCHASE_LIST_BY_PRODUCT } from '../../../config/api-urls';
 import { useLoader } from '../../../hooks/useLoader';
 import { showMessage } from '../../../utils/message';
 import { sendGetRequest } from '../../../utils/network';
@@ -33,10 +33,8 @@ const PurchaseDetails = ({ error, setter }) => {
 
     const loadPurchaseDetails = (data) => {
         start();
-        sendGetRequest(`${PURCHASE_LIST_BY_INVOICE_NO}?invoiceNo=${data}`, token).then((_res) => {
+        sendGetRequest(`${PURCHASE_LIST_BY_PRODUCT}?product=${data}`, token).then((_res) => {
             if (_res.status === 200) {
-                console.log("details", _res.data)
-
                 setPurchaseList(_res.data);
             } else if (_res.status === 400) {
                 showMessage("error", _res.data[0]);
@@ -63,7 +61,7 @@ const PurchaseDetails = ({ error, setter }) => {
             isOptionEqualToValue={(option, value) => option.id === value.id}
             options={purchaseList}
             onChange={(event, newValue) => handleChange(event, newValue)}
-            getOptionLabel={(option) => option.invoiceNo}
+            getOptionLabel={(option) => option.product}
             disableClearable
             loading={isLoading}
             renderInput={(params) => <TextField size='small'

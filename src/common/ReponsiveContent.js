@@ -32,7 +32,7 @@ export default function ReponsiveContent(props) {
         ...props.style,
         ...(isMobile
           ? { height: '100%' }
-          : { height: props.height, width: props.width }),
+          : { height: props.height }),
       }}
     >
       {props.children}

@@ -3,20 +3,19 @@ import moment from 'moment';
 import React, { useState } from 'react';
 import { useSelector } from 'react-redux';
 import PopupAction from '../../../common/PopupAction';
-import QtyAction from '../../../common/quntity-update/QtyAction';
-import ProductSpellSearch from '../../../common/select-box/ProductSpellSearch';
 import SupplierSpellSearch from '../../../common/select-box/SupplierSpellSearch';
 import UnitSelect from '../../../common/select-box/UnitSelect';
 import { ADD_PURCHASE_DETAILS, UPDATE_PURCHASE_DETAILS } from '../../../config/api-urls';
 import { useLoader } from '../../../hooks/useLoader';
 import { showMessage } from '../../../utils/message';
 import { sendPostRequestWithAuth } from '../../../utils/network';
+import { validateNumber } from '../../../utils/validation';
 
 
 const PurchaseAction = ({ onClose, successAction, title, selectedData = {}, returns = false, readOnly = false }) => {
   const [formsData, setFormsData] = useState({
     supplier: selectedData?.supplier || {},
-    product: selectedData?.product || {},
+    product: selectedData?.product || '',
     purchaseDate: selectedData?.purchaseDate
       ? moment(selectedData.purchaseDate).local().format('YYYY-MM-DD')
       : moment().local().format('YYYY-MM-DD'),
@@ -32,6 +31,7 @@ const PurchaseAction = ({ onClose, successAction, title, selectedData = {}, retu
     price: selectedData?.price || '',
     status: selectedData?.status || '1',
   });
+  const [errorMsg, setErrorMsg] = useState('');
 
   const [{ start, stop }, Loader] = useLoader();
   const user = useSelector((state) => state.user);
@@ -39,7 +39,17 @@ const PurchaseAction = ({ onClose, successAction, title, selectedData = {}, retu
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+    if (name === "qty") {
 
+      const qtyValidation = validateNumber("Quantity", value);
+      if (qtyValidation.error) {
+        setErrorMsg(qtyValidation.message);
+
+        return;
+      } else {
+        setFormsData((prev) => ({ ...prev, ["qty"]: value }));
+      }
+    }
     if (name === "purchaseDate") {
 
       // Convert value (purchaseDate) to a Date object
@@ -60,7 +70,7 @@ const PurchaseAction = ({ onClose, successAction, title, selectedData = {}, retu
   const validation = () => {
     const errors = {};
     if (!formsData?.supplier?.id) errors.supplier = "Supplier is required";
-    if (!formsData?.product?.id) errors.product = "Product is required";
+    if (!formsData?.product) errors.product = "Product is required";
     if (!formsData.invoiceNo) errors.invoiceNo = "Invoice No is required";
     if (!formsData.bNumber) errors.bNumber = "Batch No is required";
     if (!formsData.purchaseDate) errors.purchaseDate = "Purchase Date is required";
@@ -81,7 +91,7 @@ const PurchaseAction = ({ onClose, successAction, title, selectedData = {}, retu
     if (validation()) return;
     const reqData = {
       supplier: formsData.supplier.id,
-      product: formsData.product.id,
+      product: formsData.product.trim(),
       invoiceNo: formsData.invoiceNo,
       bNumber: formsData.bNumber,
       purchaseDate: formsData.purchaseDate,
@@ -104,7 +114,10 @@ const PurchaseAction = ({ onClose, successAction, title, selectedData = {}, retu
         showMessage('error', res.data);
       } else if (res.status === 409) {
         showMessage('error', res.message);
-      } else {
+      } else if (res.status === 403) {
+        showMessage('error', res.message);
+      }
+      else {
         showMessage('error', "Something went wrong in " + action + " purchase!");
       }
     }).catch((err) => {
@@ -117,17 +130,10 @@ const PurchaseAction = ({ onClose, successAction, title, selectedData = {}, retu
     setFormsData({ ...formsData, ["supplier"]: e });
   };
 
-  const handleProductChange = (e) => {
-    setFormsData({ ...formsData, ["product"]: e, ["qty"]: '' });
-  };
-
-  const qtyHandleChange = (value) => {
-    setFormsData({ ...formsData, ["qty"]: value });
-  };
   const handleReset = () => {
     setFormsData({ ...formsData, ["supplier"]: '', ['product']: '' });
     handleSupplierChange('')
-    handleProductChange('')
+    // handleProductChange('')
   };
 
   return (
@@ -144,11 +150,8 @@ const PurchaseAction = ({ onClose, successAction, title, selectedData = {}, retu
       >
 
         <Grid container spacing={3} style={{ padding: 20 }}>
-          <Grid item xs={6}>
+          <Grid item xs={12}>
             <SupplierSpellSearch onChange={handleSupplierChange} value={formsData.supplier} onReset={handleReset} />
-          </Grid>
-          <Grid item xs={6}>
-            <ProductSpellSearch onChangeAction={handleProductChange} value={formsData.product} onReset={handleReset} />
           </Grid>
           <Grid item xs={6}>
             <TextField
@@ -181,6 +184,21 @@ const PurchaseAction = ({ onClose, successAction, title, selectedData = {}, retu
             />
           </Grid>
           <Grid item xs={6}>
+            <TextField
+              label="Product Name"
+              variant="outlined"
+              fullWidth
+              name='product'
+              size='small'
+              value={formsData.product}
+              placeholder="Enter Product Name..."
+              InputProps={{
+                readOnly: readOnly,
+              }}
+              onChange={handleInputChange}
+            />
+          </Grid>
+          <Grid item xs={6}>
             <UnitSelect onChange={handleInputChange} value={formsData.unit} readOnly={readOnly} />
           </Grid>
           <Grid item xs={6}>
@@ -199,13 +217,20 @@ const PurchaseAction = ({ onClose, successAction, title, selectedData = {}, retu
             />
           </Grid>
           <Grid item xs={6}>
-            <QtyAction
+            <TextField
+              label="Quantity"
+              variant="outlined"
+              fullWidth
+              name='qty'
+              size='small'
               value={formsData.qty}
-              setter={qtyHandleChange}
-              productId={formsData?.product?.id}
-              readOnly={readOnly}
-              by="purchase"
-              type="purchase"
+              placeholder="Enter Quantity..."
+              InputProps={{
+                readOnly: readOnly,
+              }}
+              error={Boolean(errorMsg)}
+              helperText={errorMsg}
+              onChange={handleInputChange}
             />
           </Grid>
           <Grid item xs={6}>
@@ -245,6 +270,7 @@ const PurchaseAction = ({ onClose, successAction, title, selectedData = {}, retu
               }}
             />
           </Grid>
+
           <Grid item xs={12}>
             <TextField
               label="Description"

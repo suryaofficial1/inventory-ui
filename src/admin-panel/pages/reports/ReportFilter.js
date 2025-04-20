@@ -22,26 +22,33 @@ const ReportFilter = ({ selectedTab, customers, products, suppliers, onFilter, r
         if (name) {
             setFormData((prev) => ({ ...prev, [name]: value || "" }));
         } else {
-            setFormData({});
+            setFormData(formsData);
         }
     };
 
     const resetFilters = () => {
-        setFormData({
+        const resetDates = [
+            new DateObject().add(-3, "days"),
+            new DateObject().set(),
+          ];
+        
+          setDates(resetDates);
+        
+          setFormData({
             customer: '',
             supplier: '',
             product: '',
             from: '',
-            to: ''
-        });
-        handleListChanges('')
-        setDates([new DateObject().add(-3, "days"), new DateObject().set()]);
-        reset();
+            to: '',
+          });
+        
+          handleListChanges('');
+          reset();
     };
 
     return (
         <Grid container spacing={1} justifyContent='center' alignItems='center' alignContent='center'>
-            <Grid item xs={12} sm={3}>
+            {selectedTab != 2 && <Grid item xs={12} sm={3}>
                 <Autocomplete
                     fullWidth
                     disableClearable
@@ -62,7 +69,7 @@ const ReportFilter = ({ selectedTab, customers, products, suppliers, onFilter, r
                         />
                     )}
                 />
-            </Grid>
+            </Grid>}
             <Grid item xs={12} sm={3}>
                 <Autocomplete
                     fullWidth
@@ -72,7 +79,7 @@ const ReportFilter = ({ selectedTab, customers, products, suppliers, onFilter, r
                     value={formsData.product || null}
                     options={products}
                     onChange={(e, value) => handleListChanges("product", value)}
-                    getOptionLabel={(option) => option.name}
+                    getOptionLabel={(option) => option.product}
                     renderInput={(params) => (
                         <TextField {...params} label="Select Product"
                             size='small'

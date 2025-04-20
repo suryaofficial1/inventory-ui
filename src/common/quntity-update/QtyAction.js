@@ -20,7 +20,7 @@ const QtyAction = ({ value, setter, productId, readOnly, by, type }) => {
         try {
             const res = await sendGetRequest(AVAILABLE_PRODUCT_QTY(productId,by, type), user.token);
             if (res.status === 200) {
-                return { availableQty: res.data.availableQty, totalPurchased: res.data.totalPurchased };
+                return { availableQty: res.data.availableQty };
             } else {
                 console.error("Error in getting available quantity", res.data);
                 return 0;
@@ -40,10 +40,10 @@ const QtyAction = ({ value, setter, productId, readOnly, by, type }) => {
             return;
         }
 
-        if (!productId) {
-            setErrorMsg('Product selection is required before entering quantity!');
-            return;
-        }
+        // if (!productId) {
+        //     setErrorMsg('Product selection is required before entering quantity!');
+        //     return;
+        // }
 
         const { availableQty, totalPurchased } = await getAvailableQty();
         if (Number(enteredValue) > Number(availableQty)) {
@@ -54,7 +54,7 @@ const QtyAction = ({ value, setter, productId, readOnly, by, type }) => {
             } else {
                 message = `Only ${availableQty} units are available in stock. Please enter a valid quantity.`;
             }
-
+            setter('');
             setErrorMsg(message);
             return;
         }

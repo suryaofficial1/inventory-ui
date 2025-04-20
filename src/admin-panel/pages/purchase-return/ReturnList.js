@@ -11,8 +11,8 @@ import { DELETE_RETURN_PURCHASE, PURCHASE_RETURN_LIST } from '../../../config/ap
 import { useLoader } from '../../../hooks/useLoader';
 import { roleBasePolicy } from '../../../utils/Constent';
 import { sendDeleteRequest, sendGetRequest } from '../../../utils/network';
+import PurchaseFilter from '../purchase/PurchaseFilter';
 import Action from './Action';
-import PurchaseFilter from './Filter';
 
 const useStyles = makeStyles({
     actionIcons: {
@@ -54,7 +54,7 @@ const ReturnList = () => {
 
     const getReturnList = () => {
         start();
-        sendGetRequest(`${PURCHASE_RETURN_LIST}?pName=${filter?.pName ? filter?.pName.name : ""}&sName=${filter?.sName ? filter?.sName.name : ""}&page=${page + 1}&per_page=10`, user.token)
+        sendGetRequest(`${PURCHASE_RETURN_LIST}?pName=${filter?.pName ? filter?.pName : ""}&sName=${filter?.sName ? filter?.sName.name : ""}&page=${page + 1}&per_page=10`, user.token)
             .then((res) => {
                 if (res.status === 200) {
                     setRows(res.data.rows);
@@ -127,12 +127,7 @@ const ReturnList = () => {
                 params.row.supplier.name ? params.row.supplier.name : ""
             )
         },
-        {
-            field: 'product', headerName: 'Product', width: 200, resizable: false, sortable: false,
-            renderCell: (params) => (
-                params.row.product.name ? params.row.product.name : ''
-            )
-        },
+        { field: 'product', headerName: 'Product', width: 200, resizable: false, sortable: false },
         {
             field: 'rDesc', headerName: 'desc', width: 200,
             renderCell: (params) => {

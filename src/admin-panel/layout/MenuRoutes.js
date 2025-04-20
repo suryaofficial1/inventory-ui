@@ -65,28 +65,6 @@ const MenuRoutes = [
         component: <CustomerList />,
         roles: ['Admin', 'Store manager'] // Admin and Store manager can access
     },
-    // {
-    //     sidebarName: 'Manufacturing',
-    //     navbarName: 'Manufacturing',
-    //     icon: AutorenewIcon,
-    //     submenu: [
-    //         {
-    //             path: '#raw-material',
-    //             sidebarName: 'Raw material',
-    //             navbarName: 'Raw material',
-    //             icon: NewReleasesIcon,
-    //             component: <RowMaterialsList />,
-    //         },
-    //         {
-    //             path: '#productions',
-    //             sidebarName: 'Production',
-    //             navbarName: 'Production',
-    //             icon: OutdoorGrillIcon,
-    //             component: <ProductionList />,
-    //         },
-    //     ]
-    // },
-
     {
         sidebarName: 'Purchase',
         navbarName: 'Purchase',

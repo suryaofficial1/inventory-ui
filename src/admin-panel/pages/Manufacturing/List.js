@@ -1,21 +1,20 @@
-import { Button, Chip } from '@material-ui/core';
-import { DataGrid } from '@material-ui/data-grid';
-import { Add, Refresh, Search } from '@material-ui/icons';
+import { Box, Button, Collapse, IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableFooter, TableHead, TablePagination, TableRow, Typography } from '@material-ui/core';
+import { Add, KeyboardArrowDown, KeyboardArrowUp, Refresh, Search } from '@material-ui/icons';
 import { makeStyles } from '@material-ui/styles';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import Swal from 'sweetalert2';
 import ActionButton from '../../../common/action-button/ActionButton';
-import { PRODUCTION_LIST } from '../../../config/api-urls';
+import { DELETE_PRODUCTION, PRODUCTION_LIST } from '../../../config/api-urls';
 import { useLoader } from '../../../hooks/useLoader';
 import { roleBasePolicy } from '../../../utils/Constent';
 import { sendDeleteRequest, sendGetRequest } from '../../../utils/network';
 import ProductionAction from './Action';
 import Filter from './Filter';
+import UsedMaterialList from './UsedMaterialList';
 
 const useStyles = makeStyles({
-
     addBtn: {
         padding: 10
     },
@@ -47,7 +46,7 @@ const ManufacturingList = () => {
     }, [page, filter]);
     const getProductionList = () => {
         start()
-        sendGetRequest(`${PRODUCTION_LIST}?cName=${filter?.cName ? filter?.cName.name : ""}&pName=${filter?.pName ? filter?.pName.name : ""}&page=${page + 1}&per_page=10`, user.token)
+        sendGetRequest(`${PRODUCTION_LIST}?cName=${filter?.cName ? filter?.cName.name : ""}&pName=${filter?.pName ? filter?.pName.product : ""}&page=${page + 1}&per_page=10`, user.token)
             .then(res => {
                 if (res.status === 200) {
                     setRows(res.data.rows)
@@ -97,7 +96,7 @@ const ManufacturingList = () => {
         sendDeleteRequest(`${DELETE_PRODUCTION(row.id)}`, user.token)
             .then((res) => {
                 if (res.status === 200) {
-                    getSalesList();
+                    getProductionList();
                     Swal.fire("Production deleted successfully!", "", "success");
                 } else {
                     console.log("Error in delete production", res.data);
@@ -123,31 +122,13 @@ const ManufacturingList = () => {
                 params.row.customer?.name ? params.row.customer.name : ""
             )
         },
-        {
-            field: 'product', headerName: 'Product', width: 160, resizable: false, sortable: false,
-            renderCell: (params) => (
-                params.row.product?.name ? params.row.product.name : ''
-            )
-        },
+        { field: 'product', headerName: 'Product', width: 160, resizable: false, sortable: false },
 
 
-        { field: 'qty', headerName: 'Quantity', width: 110, resizable: true, sortable: false },
         { field: 'unit', headerName: 'Unit', width: 110, resizable: true, sortable: false },
+        { field: 'qty', headerName: 'Quantity', width: 110, resizable: true, sortable: false },
 
         { field: 'operatorName', headerName: 'Operator', width: 140, resizable: true, sortable: false },
-
-        {
-            field: 'materials', headerName: 'Raw Material', width: 150, resizable: false, sortable: false,
-            renderCell: (params) => (
-                params.row.materials ? <Chip label={JSON.parse(params.row.materials).join(', ')} /> : ""
-            )
-        },
-        { field: 'mqty', headerName: 'Material Quantity', width: 160, resizable: true, sortable: false },
-        { field: 'mPrice', headerName: 'Material Price', width: 160, resizable: true, sortable: false },
-        { field: 'rqty', headerName: 'Rejection  Quantity', width: 160, resizable: true, sortable: false },
-        { field: 'rPrice', headerName: 'Rejection  Price', width: 160, resizable: true, sortable: false },
-        { field: 'lqty', headerName: 'Lumps Quantity', width: 160, resizable: true, sortable: false },
-        { field: 'lPrice', headerName: 'Lumps Price', width: 160, resizable: true, sortable: false },
         {
             field: 'pDesc', headerName: 'Product Desc', width: 220, resizable: false, sortable: false,
             renderCell: (params) => {
@@ -202,7 +183,24 @@ const ManufacturingList = () => {
                 <Button startIcon={<Search />} className={classes.actionButton} variant="contained" color="primary" onClick={applyFilter}>Search</Button>
                 <Button startIcon={<Refresh />} className={classes.actionButton} variant="contained" color="secondary" onClick={resetAllData}>Reset</Button>
             </div>
-            <DataGrid autoHeight pagination style={{ background: "#fff", width: "100%" }}
+
+            <EzyDataGrid
+                autoHeight
+                pagination
+                rows={rows}
+                columns={columns}
+                extendedField={"materials"}
+                page={page}
+                pageSize={10}
+                rowsPerPageOptions={[10, 20]}
+                rowCount={(totalRecords) ? totalRecords : 100}
+                paginationMode="server"
+                onPageChange={(e, newPage) => setPage(newPage)}
+                disableColumnMenu
+                disableColumnFilter
+            />
+
+            {/* <DataGrid autoHeight pagination style={{ background: "#fff", width: "100%" }}
                 rows={rows}
                 columns={columns}
                 page={page}
@@ -214,7 +212,7 @@ const ManufacturingList = () => {
                 onPageChange={(newPage) => setPage(newPage)}
                 disableColumnMenu
                 disableColumnFilter
-            />
+            /> */}
             {open && <ProductionAction
                 selectedData={editData}
                 readOnly={readOnly}
@@ -227,4 +225,73 @@ const ManufacturingList = () => {
     );
 };
 
-export default ManufacturingList;
+export default ManufacturingList
+
+
+
+function Row(props) {
+    const { open, onExpand, row, columns, heading, extendedField } = props;
+    return (
+        <>
+            <TableRow key={row.id}>
+                <TableCell width={30}>
+                    <IconButton aria-label="view reporters" size="small" onClick={() => onExpand(row.id)}>
+                        {open == row.id ? <KeyboardArrowUp /> : <KeyboardArrowDown />}
+                    </IconButton>
+                </TableCell>
+
+                {columns.map((item, i) => <TableCell key={i}>
+                    {item.renderCell ? item.renderCell({ value: row[item.field], row }) : row[item.field]}
+                </TableCell>)}
+            </TableRow>
+            {extendedField ?
+                <TableRow>
+                    <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={10}>
+                        <Collapse in={open == row.id} timeout="auto" unmountOnExit>
+                            <Box margin={1}>
+                                <Typography variant="h6" gutterBottom component="div">
+                                    Used Materials
+                                </Typography>
+                                <UsedMaterialList list={row[extendedField]} />
+                            </Box>
+                        </Collapse>
+                    </TableCell>
+                </TableRow> : ''}
+        </>
+    );
+}
+
+function EzyDataGrid({ columns, rows, rowsPerPageOptions, page, pageSize, rowCount, onPageChange, extendedColumns, extendedField }) {
+
+    const [open, setOpen] = useState(-1)
+
+
+    return <TableContainer component={Paper} style={{ width: "100%", minWidth: "100%" }} >
+        <Table aria-label="simple table">
+            <TableHead>
+                <TableRow>
+                    <TableCell width={30}></TableCell>
+                    {columns.map((item, i) => <TableCell key={i} width={item.width || 100}>{item.headerName}</TableCell>)}
+                </TableRow>
+            </TableHead>
+            <TableBody>
+                {rows.map((row, index) => (
+                    <Row key={index} row={row} columns={columns} open={open} onExpand={(_new) => setOpen((prev) => prev == _new ? -1 : _new)} extendedColumns={extendedColumns} extendedField={extendedField} />))}
+            </TableBody>
+        </Table>
+        <div style={{ display: "flex", justifyContent: "flex-end" }}>
+
+            <TableFooter >
+                <TablePagination
+                    rowsPerPageOptions={rowsPerPageOptions}
+                    rowsPerPage={pageSize}
+                    colSpan={4}
+                    count={rowCount}
+                    page={page}
+                    labelDisplayedRows={({ from, to, count }) => `${from}-${to} out of ${rowCount}`}
+                    onPageChange={onPageChange}
+                />
+            </TableFooter>
+        </div>
+    </TableContainer>
+}

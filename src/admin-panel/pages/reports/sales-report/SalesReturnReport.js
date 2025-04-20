@@ -10,64 +10,64 @@ import "jspdf-autotable";
 import React, { useEffect, useRef, useState } from 'react';
 import { useSelector } from 'react-redux';
 import PeiChart from '../../../../common/report-components/PeiChart';
-import PurchaseReportTable from '../../../../common/report-components/PurchaseReportTable';
+import SalesReportTable from '../../../../common/report-components/SalesReportTable';
 import SingleBarChart from '../../../../common/report-components/SingleBarChart';
-import { PURCHASE_REPORT } from '../../../../config/api-urls';
+import { SALES_RETURN_OVERVIEW } from '../../../../config/api-urls';
 import { useLoader } from '../../../../hooks/useLoader';
 import { showMessage } from '../../../../utils/message';
 import { sendGetRequest } from '../../../../utils/network';
 
-const PurchaseReportList = ({ formsData }) => {
+const SalesReturnReport = ({ formsData }) => {
     const [{ start, stop }, Loader] = useLoader();
-    const [rows, setRows] = useState([]);
+    const [salesData, setSalesData] = useState([]);
     const [anchorEl, setAnchorEl] = useState(null);
     const [hide, setHide] = useState(false);
     const pdfRef = useRef();
     const user = useSelector((state) => state.user);
 
     useEffect(() => {
-        fetchAllData();
+        fetchSalesData();
     }, [formsData]);
 
-    const fetchAllData = () => {
+    const fetchSalesData = () => {
         start();
-        sendGetRequest(`${PURCHASE_REPORT}?from=${formsData?.from}&to=${formsData?.to}&pId=${formsData?.product ? formsData?.product?.id : ""}&sId=${formsData?.supplier ? formsData.supplier.id : ""}`, user.token)
+        sendGetRequest(`${SALES_RETURN_OVERVIEW}?from=${formsData?.from}&to=${formsData?.to}&pId=${formsData?.product ? formsData?.product?.id : ""}&cId=${formsData?.customer ? formsData.customer.id : ""}`, user.token)
             .then((_res) => {
                 if (_res.status === 200) {
-                    setRows(_res.data);
+                    setSalesData(_res.data);
                 } else {
-                    showMessage("error", "Something went wrong while loading purchase details");
+                    showMessage("error", "Something went wrong while loading sales return details");
                 }
             }).catch(err => {
                 console.log("err", err)
-                showMessage("error", "Something went wrong while loading purchase details");
+                showMessage("error", "Something went wrong while loading sales return details");
             }).finally(() => stop())
     }
 
     const getValues = () => {
         let reportBy;
-        if (formsData && formsData.product && !formsData.supplier) {
-            reportBy = " Purchase Report by Product : " + formsData.product.name
-        } else if (formsData && formsData.supplier && !formsData.product) {
-            reportBy = " Purchase Report by Supplier : " + formsData.supplier.name
-        } else if (formsData && (formsData.product && formsData.supplier)) {
-            reportBy = " Purchase Report by Product : " + formsData.product.name + " and " + " Supplier : " + formsData.supplier.name
+        if (formsData && formsData.product && !formsData.customer) {
+            reportBy = " Sales Return Report by Product : " + formsData.product.name
+        } else if (formsData && formsData.customer && !formsData.product) {
+            reportBy = " Sales Return Report by Customer : " + formsData.customer.name
+        } else if (formsData && (formsData.product && formsData.customer)) {
+            reportBy = " Sales Return Report by Product : " + formsData.product.name + " and " + " Customer : " + formsData.customer.name
         }
 
         else {
-            reportBy = 'Overview All Purchase Reports'
+            reportBy = 'Overview All Sales Return Reports'
         }
         return reportBy
     }
 
     const exportToExcel = async () => {
-        if (!rows?.rows?.length) {
+        if (!salesData?.rows?.length) {
             alert("No data available to export!");
             return;
         }
         // Create a new Workbook
         const workbook = new ExcelJS.Workbook();
-        const worksheet = workbook.addWorksheet("Purchase Report");
+        const worksheet = workbook.addWorksheet("Sales Return Report");
 
         // 🎨 Define Styles
         const titleStyle = {
@@ -97,7 +97,7 @@ const PurchaseReportList = ({ formsData }) => {
         titleCell.fill = titleStyle.fill;
 
         // 🎯 Column Headers
-        const headers = ["Date", "Supplier Name", "Product Name", "Qty", "Price"];
+        const headers = ["Date", "Customer Name", "Product Name", "Qty", "Price"];
         worksheet.addRow([]); // Add empty row for spacing
         const headerRow = worksheet.addRow(headers);
         headerRow.eachCell((cell) => {
@@ -109,17 +109,17 @@ const PurchaseReportList = ({ formsData }) => {
         // 🎯 Define Column Widths & Alignment
         worksheet.columns = [
             { key: "date", width: 15, alignment: { horizontal: "left" } },
-            { key: "Supplier", width: 25, alignment: { horizontal: "left" } },
+            { key: "customer", width: 25, alignment: { horizontal: "left" } },
             { key: "product", width: 20, alignment: { horizontal: "left" } },
             { key: "qty", width: 10, alignment: { horizontal: "center" }, numFmt: 0 },
             { key: "price", width: 15, alignment: { horizontal: "center" }, numFmt: "0.00" }
         ];
 
         // 🎯 Add Data Rows
-        rows.rows.forEach(row => {
+        salesData.rows.forEach(row => {
             const rowData = worksheet.addRow({
                 date: row.date,
-                Supplier: row.supplier.name,
+                customer: row.customer.name,
                 product: row.product.name,
                 qty: Number(row.qty),
                 price: Number(row.price)
@@ -152,7 +152,7 @@ const PurchaseReportList = ({ formsData }) => {
         // 🎯 Save Excel File
         const buffer = await workbook.xlsx.writeBuffer();
         const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
-        saveAs(blob, "Purchase-report.xlsx");
+        saveAs(blob, "Sales-return-report.xlsx");
 
     };
 
@@ -186,7 +186,7 @@ const PurchaseReportList = ({ formsData }) => {
             const imgX = (pdfWidth - imgWidth * ration) / 2;
             const imgY = 30;
             pdf.addImage(imgData, 'PNG', imgX, imgY, imgWidth * ration, imgHeight * ration);
-            pdf.save('Purchase-report.pdf')
+            pdf.save('Sales-return-report.pdf')
         })
         setHide(false);
     }
@@ -240,17 +240,17 @@ const PurchaseReportList = ({ formsData }) => {
         </Grid>
         <Grid container spacing={1} ref={pdfRef}>
             <Grid item sm={12} >
-                <PurchaseReportTable data={rows} formsData={formsData} hidden={hide} hiddenAction={setHide} onSuccess={fetchAllData} />
+                <SalesReportTable data={salesData} formsData={formsData} hidden={hide} hiddenAction={setHide} onSuccess={fetchSalesData} />
             </Grid>
             <Grid item sm={12}>
-                <SingleBarChart title=" Report by date" filteredData={rows.rows} />
+                <SingleBarChart title="Report by date" filteredData={salesData.rows} />
             </Grid>
             <Grid item xs={12} >
-                <PeiChart title=" Report by product " data={rows.rows} />
+                <PeiChart title="Report by product " data={salesData.rows} />
             </Grid>
         </Grid>
     </>
     )
 }
 
-export default PurchaseReportList
+export default SalesReturnReport

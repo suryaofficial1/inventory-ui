@@ -51,7 +51,7 @@ const SalesReturnList = () => {
     }, [page, filter]);
     const getSalesList = () => {
         start()
-        sendGetRequest(`${SALES_RETURN_LIST}?cName=${filter?.cName ? filter?.cName.name : ""}&pName=${filter?.pName ? filter?.pName.name : ""}&page=${page + 1}&per_page=10`, user.token)
+        sendGetRequest(`${SALES_RETURN_LIST}?cName=${filter?.cName ? filter?.cName.name : ""}&pName=${filter?.pName ? filter?.pName.product : ""}&page=${page + 1}&per_page=10`, user.token)
             .then(res => {
                 if (res.status === 200) {
                     setRows(res.data.rows)
@@ -132,7 +132,7 @@ const SalesReturnList = () => {
         {
             field: 'product', headerName: 'Product', width: 150, resizable: true, sortable: false,
             renderCell: (params) => (
-                params.row.product.name ? params.row.product.name : ''
+                params.row.product.product ? params.row.product.product : ''
             )
         },
         {

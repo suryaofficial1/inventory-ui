@@ -1,196 +1,144 @@
-import { Grid, Typography } from '@material-ui/core';
-import React, { useState } from "react";
+import { Card, CardHeader, Grid, Typography } from '@material-ui/core';
+import { makeStyles } from '@material-ui/styles';
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from 'react-redux';
+import ProductionSingleBar from '../../../common/report-components/ProductionSingleBar';
+import ProgressBar from '../../../common/report-components/ProgressBar';
+import { ALL_STATS_COUNT, PRODUCTION_SUMMARY, TOP_5_PRODUCTS } from '../../../config/api-urls';
+import { useLoader } from '../../../hooks/useLoader';
+import { sendGetRequest } from '../../../utils/network';
 
-import { CardGiftcard, List, Money, People, Person, Store } from '@material-ui/icons';
-import AttachMoneyIcon from '@material-ui/icons/AttachMoney';
-import TrendingUpIcon from '@material-ui/icons/TrendingUp';
-import { logoutUser } from '../../../actions';
+const useStyles = makeStyles((theme) => ({
+  card: {
+    background: "#a7606091",
+    padding: 3,
+    height: 110,
+    [theme.breakpoints.down("sm")]: {
+      height: 100,
+      padding: 1
+    }
+
+  },
+  topSellingCard: {
+    padding: theme.spacing(2),
+    height: 200
+  },
+  image: {
+    width: 60, height: 60,
+    padding: 10,
+    [theme.breakpoints.down("sm")]: {
+      width: 40, height: 40,
+      padding: 5
+    }
+
+  },
+  title: {
+    fontSize: "1rem",
+    fontWeight: "700",
+    color: "#fff",
+  },
+  subTitle: {
+    fontSize: "0.9rem",
+    fontWeight: "800",
+    color: "#fff",
+  }
+}));
 
 const Dashboard = () => {
+  const classes = useStyles();
   const dispatch = useDispatch();
   const [filter, setFilter] = useState("weekly");
+  const [productionSummary, setProductionSummary] = useState([]);
+  const [counts, setAllCounts] = useState([]);
+  const [top5Product, setTop5Product] = useState([]);
 
+  const [{ start, stop }, Loader] = useLoader();
   const user = useSelector((state) => state.user);
-  const logout = () => {
-    dispatch(logoutUser());
-    window.location.href = '/login';
+
+
+
+  useEffect(() => {
+    fetchData()
+  }, []);
+  const fetchData = async () => {
+    try {
+      start();
+      const [countsRes, top5Res, productionRes] = await Promise.all([
+        sendGetRequest(ALL_STATS_COUNT, user.token),
+        sendGetRequest(TOP_5_PRODUCTS, user.token),
+        sendGetRequest(PRODUCTION_SUMMARY, user.token),
+      ]);
+      if (countsRes.status === 200) setAllCounts(countsRes.data);
+      if (top5Res.status === 200) setTop5Product(top5Res.data);
+      if (productionRes.status === 200) setProductionSummary(productionRes.data);
+    } catch (error) {
+      console.error("Error fetching data", error);
+    } finally {
+      stop();
+    }
+  };
+
+  const cardSection = (image, title, subTitle) => {
+    return (
+      <Card elevation={2} className={classes.card}>
+        <CardHeader
+          avatar={
+            <img src={image} className={classes.image} />
+          }
+          title={<Typography className={classes.title}>{title}</Typography>}
+          subheader={<Typography className={classes.subTitle}>₹{subTitle}</Typography>}
+        />
+      </Card>
+    )
   }
-  const data = {
-    weekly: [
-      { name: "Mon", Purchase: 5000, Sales: 3000 },
-      { name: "Tue", Purchase: 7000, Sales: 4000 },
-      { name: "Wed", Purchase: 6000, Sales: 5000 },
-      { name: "Thu", Purchase: 8000, Sales: 6000 },
-      { name: "Fri", Purchase: 9000, Sales: 7000 },
-      { name: "Sat", Purchase: 10000, Sales: 8000 },
-      { name: "Sun", Purchase: 7000, Sales: 6000 },
-    ],
-    monthly: [
-      { name: "Jan", Purchase: 40000, Sales: 30000 },
-      { name: "Feb", Purchase: 50000, Sales: 40000 },
-      { name: "Mar", Purchase: 45000, Sales: 35000 },
-      { name: "Apr", Purchase: 48000, Sales: 36000 },
-      { name: "May", Purchase: 50000, Sales: 40000 },
-      { name: "Jun", Purchase: 60000, Sales: 50000 },
-    ],
-    yearly: [
-      { name: "2020", Purchase: 300000, Sales: 200000 },
-      { name: "2021", Purchase: 350000, Sales: 250000 },
-      { name: "2022", Purchase: 400000, Sales: 300000 },
-      { name: "2023", Purchase: 450000, Sales: 350000 },
-    ],
-  };
 
-  const orderData = {
-    weekly: [
-      { name: "Mon", Ordered: 1000, Delivered: 800 },
-      { name: "Tue", Ordered: 1200, Delivered: 1000 },
-      { name: "Wed", Ordered: 900, Delivered: 700 },
-      { name: "Thu", Ordered: 1500, Delivered: 1300 },
-      { name: "Fri", Ordered: 1100, Delivered: 900 },
-      { name: "Sat", Ordered: 1800, Delivered: 1500 },
-      { name: "Sun", Ordered: 1300, Delivered: 1100 },
-    ],
-    monthly: [
-      { name: "Jan", Ordered: 3000, Delivered: 2500 },
-      { name: "Feb", Ordered: 4000, Delivered: 3500 },
-      { name: "Mar", Ordered: 3500, Delivered: 3000 },
-      { name: "Apr", Ordered: 4500, Delivered: 4000 },
-      { name: "May", Ordered: 5000, Delivered: 4500 },
-    ],
-    yearly: [
-      { name: "2020", Ordered: 30000, Delivered: 25000 },
-      { name: "2021", Ordered: 40000, Delivered: 38000 },
-      { name: "2022", Ordered: 45000, Delivered: 42000 },
-      { name: "2023", Ordered: 50000, Delivered: 47000 },
-    ],
-  };
-
-  const columnMapping = {
-    "Name": "name",
-    "Sold quantity": "Sold quantity",
-    "Remaining quantity": "Remaining quantity",
-    "Pricee": "Price",
-  };
-
-  const productData = [
-    { name: 'Surf Excel', "Sold quantity": 30, "Remaining quantity": 12, "Price": 100 },
-    { name: 'Colgate', "Sold quantity": 12, "Remaining quantity": 5, "Price": 50 },
-    { name: 'Dove', "Sold quantity": 10, "Remaining quantity": 3, "Price": 30 },
-    { name: 'Pepsodent', "Sold quantity": 8, "Remaining quantity": 2, "Price": 20 },
-    { name: 'Colgate', "Sold quantity": 12, "Remaining quantity": 5, "Price": 50 },
-    { name: 'Dove', "Sold quantity": 10, "Remaining quantity": 3, "Price": 30 },
-    { name: 'Pepsodent', "Sold quantity": 8, "Remaining quantity": 2, "Price": 20 },
-  ];
-
-  const overviewData = [
-    { title: "Customer", value: "50", icon: <People /> },
-    { title: "Product", value: "50", icon: <Store /> },
-    { title: "Order", value: "50", icon: <CardGiftcard /> },
-    { title: "Sales", value: "50", icon: <Money /> }
-  ]
-
-  const purchaseOverviewData = [
-    { title: "Purchase", value: "₹832", icon: <Money /> },
-    { title: "Cost", value: "₹18,300", icon: <Money /> },
-    { title: "Cancel", value: "₹868", icon: <Money /> },
-    { title: "Return", value: "₹17,432", icon: <Money /> },
-  ]
-
-  const inventorySummary = [
-    { title: "Quantity in Hand", value: "50", icon: <AttachMoneyIcon /> },
-    { title: "To be received", value: "50", icon: <TrendingUpIcon /> },
-  ]
-
-  const productSummary = [
-    { title: "Suppliers", value: "50", icon: <Person /> },
-    { title: "Categories", value: "50", icon: <List /> }
-  ]
+  const top5ProductSection = (title, data) => {
+    return (
+      <Card elevation={2} className={classes.topSellingCard}>
+        <Grid container spacing={3}>
+          <Grid item sm={12} align="center">
+            <Typography gutterBottom variant='h5'><b>{title}</b></Typography>
+          </Grid>
+          <Grid container item sm={12} spacing={1}>
+            {data && data.map((item, index) => {
+              return <Grid container item sm={12} spacing={1} key={index}>
+                <Grid item sm={3} align="right">
+                  <Typography variant="body2">{item.product}</Typography>
+                </Grid>
+                <Grid item sm={7}>
+                  <ProgressBar value={item.qty} price={item.price} prefix="₹" />
+                </Grid>
+                <Grid item sm={2}>
+                  <Typography variant="body2">{item.qty}</Typography>
+                </Grid>
+              </Grid>
+            })}
+          </Grid>
+        </Grid>
+      </Card>
+    )
+  }
 
   return (
     <>
+      <Loader />
       <Grid container spacing={1}>
-        <Grid item sm={12} align="center">
-          <Typography variant='h4' color='error'>In Progress</Typography>
+        {counts && counts.map((card, index) => {
+          return (
+            <Grid item xs={12} sm={4} key={index}>
+              {cardSection(card.images, card.title, card.subTitle)}
+            </Grid>
+          )
+        })}
+        <Grid item xs={12} sm={6}>
+          {top5Product && top5ProductSection("Top 5 Selling Products", top5Product.top5Sell)}
         </Grid>
-        {/* <Grid item xs={12} sm={7}>
-          <OverviewCards title="Sales Overview" data={overviewData} />
+        <Grid item xs={12} sm={6}>
+          {top5Product && top5ProductSection("Top 5 Purchase Products", top5Product.top5Purchase)}
         </Grid>
-        <Grid item xs={12} sm={5}>
-          <OverviewCards title="Inventory Summary" data={inventorySummary} />
+        <Grid item sm={12}>
+          <ProductionSingleBar title={"Production Summary"} filteredData={productionSummary} />
         </Grid>
-        <Grid item xs={12} sm={7}>
-          <OverviewCards title="Purchase Overview" data={purchaseOverviewData} />
-        </Grid>
-        <Grid item xs={12} sm={5}>
-          <OverviewCards title="Product Summary" data={productSummary} />
-        </Grid>
-        <Grid item xs={12} sm={7}>
-          <div style={{ padding: "20px", background: "#fff", borderRadius: "8px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
-              <h3 style={{ margin: 0 }}>Sales & Purchase</h3>
-              <ButtonGroup variant="outlined" size="small">
-                <Button onClick={() => setFilter("weekly")} variant={filter === "weekly" ? "contained" : "outlined"}>
-                  Weekly
-                </Button>
-                <Button onClick={() => setFilter("monthly")} variant={filter === "monthly" ? "contained" : "outlined"}>
-                  Monthly
-                </Button>
-                <Button onClick={() => setFilter("yearly")} variant={filter === "yearly" ? "contained" : "outlined"}>
-                  Yearly
-                </Button>
-              </ButtonGroup>
-            </div>
-            <BarChart width={500} height={300} data={data[filter]}>
-              <CartesianGrid strokeDasharray="3 3 3" />
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Bar dataKey="Purchase" fill="#8884d8" />
-              <Bar dataKey="Sales" fill="#82ca9d" />
-            </BarChart>
-          </div>
-        </Grid>
-        <Grid item xs={12} sm={5}>
-          <div style={{ padding: "20px", background: "#fff", borderRadius: "8px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
-              <h3 style={{ margin: 0 }}>Order Summary</h3>
-              <ButtonGroup variant="outlined" size="small">
-                <Button onClick={() => setFilter("weekly")} variant={filter === "weekly" ? "contained" : "outlined"}>
-                  Weekly
-                </Button>
-                <Button onClick={() => setFilter("monthly")} variant={filter === "monthly" ? "contained" : "outlined"}>
-                  Monthly
-                </Button>
-                <Button onClick={() => setFilter("yearly")} variant={filter === "yearly" ? "contained" : "outlined"}>
-                  Yearly
-                </Button>
-              </ButtonGroup>
-            </div>
-            <LineChart width={350} height={300} data={orderData[filter]}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
-              <Legend />
-              <Line type="monotone" dataKey="Ordered" stroke="#f6a623" strokeWidth={2} />
-              <Line type="monotone" dataKey="Delivered" stroke="#6c63ff" strokeWidth={2} />
-            </LineChart>
-          </div>
-        </Grid>
-        <Grid sm={12}>
-          <ReportTables title="Top Selling Stock" 
-          headers={["name", "Sold quantity", "Remaining quantity", "Price"]} 
-          rows={productData}
-          showAll="See All"
-          showAllLink="#sales"
-          columnMapping={columnMapping}
-          
-          />
-          
-        </Grid> */}
       </Grid>
     </>
   )

@@ -12,12 +12,12 @@ import { useSelector } from 'react-redux';
 import PeiChart from '../../../../common/report-components/PeiChart';
 import PurchaseReportTable from '../../../../common/report-components/PurchaseReportTable';
 import SingleBarChart from '../../../../common/report-components/SingleBarChart';
-import { PURCHASE_REPORT } from '../../../../config/api-urls';
+import { PURCHASE_RETURN_REPORT } from '../../../../config/api-urls';
 import { useLoader } from '../../../../hooks/useLoader';
 import { showMessage } from '../../../../utils/message';
 import { sendGetRequest } from '../../../../utils/network';
 
-const PurchaseReportList = ({ formsData }) => {
+const PurchaseReturnReport = ({ formsData }) => {
     const [{ start, stop }, Loader] = useLoader();
     const [rows, setRows] = useState([]);
     const [anchorEl, setAnchorEl] = useState(null);
@@ -31,34 +31,35 @@ const PurchaseReportList = ({ formsData }) => {
 
     const fetchAllData = () => {
         start();
-        sendGetRequest(`${PURCHASE_REPORT}?from=${formsData?.from}&to=${formsData?.to}&pId=${formsData?.product ? formsData?.product?.id : ""}&sId=${formsData?.supplier ? formsData.supplier.id : ""}`, user.token)
+        sendGetRequest(`${PURCHASE_RETURN_REPORT}?from=${formsData?.from}&to=${formsData?.to}&pId=${formsData?.product ? formsData?.product?.id : ""}&sId=${formsData?.supplier ? formsData.supplier.id : ""}`, user.token)
             .then((_res) => {
                 if (_res.status === 200) {
                     setRows(_res.data);
                 } else {
-                    showMessage("error", "Something went wrong while loading purchase details");
+                    showMessage("error", "Something went wrong while loading purchase return details");
                 }
             }).catch(err => {
                 console.log("err", err)
-                showMessage("error", "Something went wrong while loading purchase details");
+                showMessage("error", "Something went wrong while loading purchase return details");
             }).finally(() => stop())
     }
 
     const getValues = () => {
         let reportBy;
         if (formsData && formsData.product && !formsData.supplier) {
-            reportBy = " Purchase Report by Product : " + formsData.product.name
+            reportBy = " Purchase Return Report by Product : " + formsData.product.name
         } else if (formsData && formsData.supplier && !formsData.product) {
-            reportBy = " Purchase Report by Supplier : " + formsData.supplier.name
+            reportBy = " Purchase ReturnReport by Supplier : " + formsData.supplier.name
         } else if (formsData && (formsData.product && formsData.supplier)) {
-            reportBy = " Purchase Report by Product : " + formsData.product.name + " and " + " Supplier : " + formsData.supplier.name
+            reportBy = " Purchase ReturnReport by Product : " + formsData.product.name + " and " + " Supplier : " + formsData.supplier.name
         }
 
         else {
-            reportBy = 'Overview All Purchase Reports'
+            reportBy = 'Overview All Purchase return Reports'
         }
         return reportBy
     }
+
 
     const exportToExcel = async () => {
         if (!rows?.rows?.length) {
@@ -67,7 +68,7 @@ const PurchaseReportList = ({ formsData }) => {
         }
         // Create a new Workbook
         const workbook = new ExcelJS.Workbook();
-        const worksheet = workbook.addWorksheet("Purchase Report");
+        const worksheet = workbook.addWorksheet("Purchase Return Report");
 
         // 🎨 Define Styles
         const titleStyle = {
@@ -152,7 +153,7 @@ const PurchaseReportList = ({ formsData }) => {
         // 🎯 Save Excel File
         const buffer = await workbook.xlsx.writeBuffer();
         const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
-        saveAs(blob, "Purchase-report.xlsx");
+        saveAs(blob, "Purchase-return-report.xlsx");
 
     };
 
@@ -186,7 +187,7 @@ const PurchaseReportList = ({ formsData }) => {
             const imgX = (pdfWidth - imgWidth * ration) / 2;
             const imgY = 30;
             pdf.addImage(imgData, 'PNG', imgX, imgY, imgWidth * ration, imgHeight * ration);
-            pdf.save('Purchase-report.pdf')
+            pdf.save('Purchase-return-report.pdf')
         })
         setHide(false);
     }
@@ -253,4 +254,4 @@ const PurchaseReportList = ({ formsData }) => {
     )
 }
 
-export default PurchaseReportList
+export default PurchaseReturnReport

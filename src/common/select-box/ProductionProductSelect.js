@@ -1,11 +1,11 @@
 import { TextField } from '@material-ui/core';
 import { Autocomplete } from '@material-ui/lab';
 import React, { useEffect, useState } from 'react';
-import { PRODUCTS_LIST } from '../../config/api-urls';
+import { PRODUCTION_PRODUCTS_LIST } from '../../config/api-urls';
 import { useLoader } from '../../hooks/useLoader';
 import { sendGetRequest } from '../../utils/network';
 
-const ProductSpellSearch = ({ onChangeAction, value, type }) => {
+const ProductionProductSelect = ({ onChangeAction, value }) => {
     const [products, setProducts] = useState([]);
     const [{ start, stop }, Loader] = useLoader();
 
@@ -16,7 +16,7 @@ const ProductSpellSearch = ({ onChangeAction, value, type }) => {
     const getProducts = async () => {
         start();
         try {
-            const res = await sendGetRequest(PRODUCTS_LIST(type));
+            const res = await sendGetRequest(PRODUCTION_PRODUCTS_LIST);
             if (res.status === 200) {
                 setProducts(res.data);
             } else {
@@ -44,7 +44,7 @@ const ProductSpellSearch = ({ onChangeAction, value, type }) => {
                 value={value || null}
                 options={products}
                 onChange={handleSelection}
-                getOptionLabel={(option) => option.name}
+                getOptionLabel={(option) => option.product}
                 renderInput={(params) => (
                     <TextField
                         {...params}
@@ -59,4 +59,4 @@ const ProductSpellSearch = ({ onChangeAction, value, type }) => {
     );
 };
 
-export default ProductSpellSearch;
+export default ProductionProductSelect;

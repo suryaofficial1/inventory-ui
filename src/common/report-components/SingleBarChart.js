@@ -23,7 +23,6 @@ const CustomTooltip = ({ active, payload }) => {
 
 
 const SingleBarChart = ({ title, filteredData }) => {
-  console.log("filteredData", filteredData)
   return (
     <Paper elevation={1} className="overview" style={{ padding: "20px" }}>
       <h3>{title}</h3>

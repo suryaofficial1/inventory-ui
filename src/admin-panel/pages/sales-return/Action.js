@@ -2,14 +2,14 @@ import { Button, Grid, MenuItem, TextField } from '@material-ui/core';
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import PopupAction from '../../../common/PopupAction';
-import QtyAction from '../../../common/quntity-update/QtyAction';
 import CustomerSpellSearch from '../../../common/select-box/CustomerSpellSearch';
-import ProductSpellSearch from '../../../common/select-box/ProductSpellSearch';
+import ProductionProductSelect from '../../../common/select-box/ProductionProductSelect';
 import UnitSelect from '../../../common/select-box/UnitSelect';
 import { ADD_RETURN_SALES_DETAILS, SALES_LIST_BY_INVOICE_NO, SALES_RETURN_LIST_BY_INVOICE_NO, UPDATE_RETURN_SALES_DETAILS } from '../../../config/api-urls';
 import { useLoader } from '../../../hooks/useLoader';
 import { showMessage } from '../../../utils/message';
 import { sendGetRequest, sendPostRequestWithAuth } from '../../../utils/network';
+import { validateNumber } from '../../../utils/validation';
 import SalesDetails from './SalesDetails';
 
 
@@ -36,16 +36,28 @@ const Action = ({ onClose, successAction, title, selectedData = {}, readOnly = f
 
     if (name === "qty") {
       const numericValue = Number(value);
+      const qtyValidation = validateNumber("Quantity", value);
 
-      if (numericValue > selectedInvoice.qty) {
-        setErrors({ ...errors, "qty": `Quantity cannot be increased beyond : ${selectedInvoice.qty}` })
+      if (qtyValidation.error) {
+        setErrors({ ...errors, ["qty"]: qtyValidation.message });
+        return;
+      }
+      if (!formsData.product.id) {
+        showMessage("error", "Product selection is required before entering quantity!");
         return;
       }
 
+      // if (numericValue > selectedInvoice.qty) {
+      //   setErrors({ ...errors, "qty": `Quantity cannot be increased beyond : ${selectedInvoice.qty}` })
+      //   return;
+      // }
+
+      setErrors({ ...errors, ["qty"]: "" });
       setFormsData((prev) => ({
         ...prev,
         [name]: numericValue,
       }));
+
     }
     else {
       setFormsData({ ...formsData, [name]: value });
@@ -122,8 +134,6 @@ const Action = ({ onClose, successAction, title, selectedData = {}, readOnly = f
     }).finally(() => stop())
   }
 
-  console.log("formsData", formsData)
-
   const validation = () => {
     const errors = {};
     if (!formsData.invoiceNo) errors.invoiceNo = "Invoice No is required";
@@ -196,8 +206,6 @@ const Action = ({ onClose, successAction, title, selectedData = {}, readOnly = f
     handleProductChange('')
   };
 
-  console.log("form", formsData, selectedInvoice)
-
   return (
     <>
       <Loader />
@@ -236,12 +244,12 @@ const Action = ({ onClose, successAction, title, selectedData = {}, readOnly = f
             <CustomerSpellSearch onChange={handleCustomerChange} value={formsData.customer} onReset={handleReset} />
           </Grid>
           <Grid item xs={6}>
-            <ProductSpellSearch onChangeAction={handleProductChange} value={formsData.product} onReset={handleReset} />
+            <ProductionProductSelect onChangeAction={handleProductChange} value={formsData.product} />
           </Grid>
           <Grid item xs={6}>
             <UnitSelect onChange={handleInputChange} value={formsData.unit} readOnly={readOnly} />
           </Grid>
-          <Grid item xs={6}>
+          <Grid item xs={4}>
             <TextField
               label="Price"
               variant="outlined"
@@ -256,45 +264,30 @@ const Action = ({ onClose, successAction, title, selectedData = {}, readOnly = f
               onChange={handleInputChange}
             />
           </Grid>
-          <Grid item xs={6}>
-            <QtyAction
+          <Grid item xs={8}>
+            {/* <QtyAction
               value={formsData.qty}
               setter={qtyHandleChange}
               productId={formsData?.product?.id}
               readOnly={readOnly}
               by="sales"
               type="return"
-            />
-          </Grid>
-          {/* <Grid item xs={6}>
+            /> */}
             <TextField
+              label="Quantity"
               variant="outlined"
               fullWidth
-              name="returnDate"
-              value={formsData.returnDate}
-              onChange={handleInputChange}
-              label="Return Sales Date"
-              type="date"
+              name="qty"
               size="small"
-              InputLabelProps={{
-                shrink: true,
+              value={formsData.qty}
+              placeholder="Enter Quantity..."
+              InputProps={{
+                readOnly: readOnly,
               }}
-              inputProps={{
-                format: "YY/MM/DD"
-              }}
-            />
-          </Grid> */}
-          <Grid item xs={6}>
-            <TextField fullWidth id="status"
+              error={Boolean(errors.qty)}
+              helperText={errors.qty}
               onChange={handleInputChange}
-              name='status'
-              label="Status"
-              variant='outlined'
-              size='small'
-              value={formsData.status} select>
-              <MenuItem value="1">Active</MenuItem>
-              <MenuItem value="0">Inactive</MenuItem>
-            </TextField>
+            />
           </Grid>
           <Grid item xs={12}>
             <TextField
@@ -313,7 +306,18 @@ const Action = ({ onClose, successAction, title, selectedData = {}, readOnly = f
               onChange={handleInputChange}
             />
           </Grid>
-
+          <Grid item xs={12}>
+            <TextField fullWidth id="status"
+              onChange={handleInputChange}
+              name='status'
+              label="Status"
+              variant='outlined'
+              size='small'
+              value={formsData.status} select>
+              <MenuItem value="1">Active</MenuItem>
+              <MenuItem value="0">Inactive</MenuItem>
+            </TextField>
+          </Grid>
         </Grid>
       </PopupAction>
     </>

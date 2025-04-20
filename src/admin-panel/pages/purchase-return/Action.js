@@ -4,10 +4,9 @@ import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import PopupAction from '../../../common/PopupAction';
 import QtyAction from '../../../common/quntity-update/QtyAction';
-import ProductSpellSearch from '../../../common/select-box/ProductSpellSearch';
 import SupplierSpellSearch from '../../../common/select-box/SupplierSpellSearch';
 import UnitSelect from '../../../common/select-box/UnitSelect';
-import { ADD_RETURN_PURCHASE_DETAILS, PURCHASE_LIST_BY_INVOICE_NO, PURCHASE_RETURN_LIST_BY_INVOICE_NO, UPDATE_RETURN_PURCHASE_DETAILS } from '../../../config/api-urls';
+import { ADD_RETURN_PURCHASE_DETAILS, PURCHASE_LIST_BY_PRODUCT, PURCHASE_RETURN_LIST_BY_PRODUCTS, UPDATE_RETURN_PURCHASE_DETAILS } from '../../../config/api-urls';
 import { useLoader } from '../../../hooks/useLoader';
 import { showMessage } from '../../../utils/message';
 import { sendGetRequest, sendPostRequestWithAuth } from '../../../utils/network';
@@ -17,7 +16,7 @@ import PurchaseDetails from '../purchase/PurchaseDetails';
 const Action = ({ onClose, successAction, title, selectedData = {}, returns = false, readOnly = false }) => {
   const [formsData, setFormsData] = useState({
     supplier: selectedData?.supplier ? selectedData.supplier : {} || {},
-    product: selectedData?.product ? selectedData.product : {} || {},
+    product: selectedData?.product ? selectedData.product : '' || '',
     returnDate: moment(selectedData.returnDate).local().format('YYYY-MM-DD') || '',
     desc: selectedData?.rDesc || '',
     purchaseId: selectedData?.purchaseId || '',
@@ -26,9 +25,10 @@ const Action = ({ onClose, successAction, title, selectedData = {}, returns = fa
     qty: selectedData?.qty || '',
     unit: selectedData?.unit || '',
     price: selectedData?.price || '',
+    id: selectedData?.id || '',
   });
 
-  const [selectedInvoice, setSelectedInvoice] = useState({});
+  const [selectedProduct, setSelectedProduct] = useState({});
   const [{ start, stop }, Loader] = useLoader();
   const user = useSelector((state) => state.user);
 
@@ -37,40 +37,50 @@ const Action = ({ onClose, successAction, title, selectedData = {}, returns = fa
     setFormsData({ ...formsData, [name]: value });
   };
 
-  useEffect(() => {
-    if (selectedData?.id) {
-      loadPurchaseDetails(selectedData.invoiceNo)
-    }
-  }, [selectedData, selectedInvoice.length])
+  // useEffect(() => {
+  //   if (selectedData?.id) {
+  //     loadPurchaseDetails(selectedData.id)
+  //   }
+  // }, [selectedData, selectedProduct.length])
 
   useEffect(() => {
-    if (Object.keys(selectedInvoice).length !== 0) {
+    if (Object.keys(selectedProduct).length !== 0) {
       // setFormsData({ ...formsData, ["invoiceNo"]: selectedInvoice.invoiceNo, ["bNumber"]: selectedInvoice.bNumber })
       setFormsData((prevFormsData) => ({
         ...prevFormsData,  // Keep existing values
-        invoiceNo: selectedInvoice?.invoiceNo ?? prevFormsData.invoiceNo,
-        bNumber: selectedInvoice?.bNumber ?? prevFormsData.bNumber,
-        product: selectedInvoice?.product ?? prevFormsData.product,
-        supplier: selectedInvoice?.supplier ?? prevFormsData.supplier,
-        unit: selectedInvoice?.unit ?? prevFormsData.unit,
-        desc: selectedInvoice?.rDesc ?? prevFormsData.desc,
+        invoiceNo: selectedProduct?.invoiceNo ?? prevFormsData.invoiceNo,
+        bNumber: selectedProduct?.bNumber ?? prevFormsData.bNumber,
+        product: selectedProduct?.product ?? prevFormsData.product,
+        supplier: selectedProduct?.supplier ?? prevFormsData.supplier,
+        unit: selectedProduct?.unit ?? prevFormsData.unit,
+        desc: selectedProduct?.rDesc ?? prevFormsData.desc,
+        id: selectedProduct?.id ?? prevFormsData.id
       }));
     }
-  }, [selectedInvoice]);
+  }, [selectedProduct]);
 
-  useEffect(() => {
-    if (selectedInvoice.invoiceNo) {
-      loadPurchaseReturnDetails(selectedInvoice.invoiceNo);
-    }
-  }, [selectedInvoice.invoiceNo]);
+  // useEffect(() => {
+  //   if (selectedProduct.id) {
+  //     loadPurchaseReturnDetails(selectedProduct.id);
+  //   }
+  // }, [selectedProduct.id]);
 
 
-  const loadPurchaseDetails = (data) => {
+  const loadPurchaseDetails = (id) => {
     start();
-    sendGetRequest(`${PURCHASE_LIST_BY_INVOICE_NO}?invoiceNo=${data}`, user.token).then((_res) => {
+    sendGetRequest(`${PURCHASE_LIST_BY_PRODUCT}?id=${id}`, user.token).then((_res) => {
       if (_res.status === 200) {
-        setSelectedInvoice(_res.data[0]);
-        setFormsData({ ...formsData, ["invoiceNo"]: _res.data[0].invoiceNo, ["bNumber"]: _res.data[0].bNumber })
+        setSelectedProduct(_res.data[0]);
+        setFormsData((prevFormsData) => ({
+          ...prevFormsData,
+          invoiceNo: _res.data[0].invoiceNo,
+          bNumber: _res.data[0].bNumber,
+          product: _res.data[0].product,
+          supplier: _res.data[0].supplier,
+          unit: _res.data[0].unit,
+          desc: _res.data[0].rDesc,
+          id: _res.data[0].id
+        }));
       } else if (_res.status === 400) {
         showMessage("error", _res.data[0]);
       } else {
@@ -84,7 +94,7 @@ const Action = ({ onClose, successAction, title, selectedData = {}, returns = fa
 
   const loadPurchaseReturnDetails = (data) => {
     start();
-    sendGetRequest(`${PURCHASE_RETURN_LIST_BY_INVOICE_NO}?invoiceNo=${data}`, user.token).then((_res) => {
+    sendGetRequest(`${PURCHASE_RETURN_LIST_BY_PRODUCTS}?id=${data}`, user.token).then((_res) => {
       if (_res.status === 200) {
         setFormsData((prevFormsData) => ({
           ...prevFormsData,
@@ -95,6 +105,7 @@ const Action = ({ onClose, successAction, title, selectedData = {}, returns = fa
           unit: _res.data?.unit ?? prevFormsData.unit,
           price: _res.data?.price ?? prevFormsData.price,
           desc: _res.data?.rDesc ?? prevFormsData.desc,
+          id: data
         }));
         selectedData.id = _res.data.id
       } else if (_res.status === 400) {
@@ -113,7 +124,7 @@ const Action = ({ onClose, successAction, title, selectedData = {}, returns = fa
     if (!formsData.invoiceNo) errors.invoiceNo = "Invoice No is required";
     if (!formsData?.bNumber) errors.bNumber = "Batch Number is required";
     if (!formsData?.supplier?.id) errors.supplier = "Supplier is required";
-    if (!formsData?.product?.id) errors.product = "Product is required";
+    if (!formsData?.product) errors.product = "Product is required";
     if (!formsData.unit) errors.unit = "Unit is required";
     if (!formsData.price) errors.price = "Return Price is required";
     if (!formsData.qty) errors.qty = "Return Quantity is required";
@@ -128,9 +139,9 @@ const Action = ({ onClose, successAction, title, selectedData = {}, returns = fa
   const submitAction = () => {
     if (validation()) return;
     const reqData = {
-      purchaseId: selectedInvoice.id,
+      purchaseId: formsData.id,
       supplier: formsData.supplier.id,
-      product: formsData.product.id,
+      product: formsData.product,
       invoiceNo: formsData.invoiceNo,
       bNumber: formsData.bNumber,
       desc: formsData.desc,
@@ -179,8 +190,6 @@ const Action = ({ onClose, successAction, title, selectedData = {}, returns = fa
     setFormsData({ ...formsData, ["qty"]: value });
   };
 
-  console.log("form", formsData)
-
   return (
     <>
       <Loader />
@@ -196,25 +205,9 @@ const Action = ({ onClose, successAction, title, selectedData = {}, returns = fa
 
         <Grid container spacing={3} style={{ padding: 20 }}>
           {!selectedData?.id && <Grid item xs={12}>
-            <PurchaseDetails error={selectedInvoice.length == 0}
-              setter={setSelectedInvoice} />
+            <PurchaseDetails error={selectedProduct.length == 0}
+              setter={setSelectedProduct} />
           </Grid>}
-          <Grid item xs={6}>
-            <TextField
-              label="Batch Number"
-              variant="outlined"
-              fullWidth
-              name='bNumber'
-              size='small'
-              focused={formsData.bNumber}
-              value={formsData.bNumber}
-              placeholder="Enter bNumber..."
-              InputProps={{
-                readOnly: true,
-              }}
-            // onChange={handleInputChange}
-            />
-          </Grid>
           <Grid item xs={6}>
             <TextField
               label="Invoice No"
@@ -232,10 +225,39 @@ const Action = ({ onClose, successAction, title, selectedData = {}, returns = fa
             />
           </Grid>
           <Grid item xs={6}>
+            <TextField
+              label="Batch Number"
+              variant="outlined"
+              fullWidth
+              name='bNumber'
+              size='small'
+              focused={formsData.bNumber}
+              value={formsData.bNumber}
+              placeholder="Enter bNumber..."
+              InputProps={{
+                readOnly: true,
+              }}
+            // onChange={handleInputChange}
+            />
+          </Grid>
+          <Grid item xs={6}>
             <SupplierSpellSearch onChange={handleSupplierChange} value={formsData.supplier} onReset={handleReset} />
           </Grid>
           <Grid item xs={6}>
-            <ProductSpellSearch onChangeAction={handleProductChange} value={formsData.product} onReset={handleReset} />
+            <TextField
+              label="Product Name"
+              variant="outlined"
+              fullWidth
+              name='product'
+              size='small'
+              value={formsData.product}
+              placeholder="Enter Product Name..."
+              InputProps={{
+                readOnly: readOnly,
+              }}
+              onChange={handleInputChange}
+            />
+            {/* <ProductSpellSearch type="purchase" onChangeAction={handleProductChange} value={formsData.product} onReset={handleReset} /> */}
           </Grid>
 
           <Grid item xs={6}>
@@ -260,7 +282,7 @@ const Action = ({ onClose, successAction, title, selectedData = {}, returns = fa
             <QtyAction
               value={formsData.qty}
               setter={qtyHandleChange}
-              productId={formsData?.product?.id}
+              productId={formsData?.id}
               readOnly={readOnly}
               by="purchase"
               type="return"
