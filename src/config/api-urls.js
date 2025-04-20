@@ -1,5 +1,5 @@
-//  export const domain = 'https://inventory.supraindustries.in';
-export const domain = 'http://localhost:5001';
+ export const domain = 'https://inventory.supraindustries.in';
+// export const domain = 'http://localhost:5001';
 
 export const LOGIN = `${domain}/auth/login`;
 export const SEND_OTP = `${domain}/auth/send-otp`;
