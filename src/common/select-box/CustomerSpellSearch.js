@@ -4,10 +4,12 @@ import React, { useEffect, useState } from 'react';
 import { CUSTOMERS_LIST } from '../../config/api-urls';
 import { useLoader } from '../../hooks/useLoader';
 import { sendGetRequest } from '../../utils/network';
+import { useSelector } from 'react-redux';
 
 const CustomerSpellSearch = ({ onChange, value }) => {
     const [customers, setCustomers] = useState([]);
     const [{ start, stop }, Loader] = useLoader();
+    const user = useSelector((state) => state.user);
 
     useEffect(() => {
         getCustomers();
@@ -16,7 +18,7 @@ const CustomerSpellSearch = ({ onChange, value }) => {
     const getCustomers = async () => {
         start();
         try {
-            const res = await sendGetRequest(CUSTOMERS_LIST);
+            const res = await sendGetRequest(CUSTOMERS_LIST, user.token);
             if (res.status === 200) {
                 setCustomers(res.data);
             } else {

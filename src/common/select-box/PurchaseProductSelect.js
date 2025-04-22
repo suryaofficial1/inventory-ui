@@ -4,10 +4,12 @@ import React, { useEffect, useState } from 'react';
 import { PURCHASE_PRODUCTS_LIST } from '../../config/api-urls';
 import { useLoader } from '../../hooks/useLoader';
 import { sendGetRequest } from '../../utils/network';
+import { useSelector } from 'react-redux';
 
 const PurchaseProductSelect = ({ onChangeAction, value }) => {
     const [products, setProducts] = useState([]);
     const [{ start, stop }, Loader] = useLoader();
+    const user = useSelector((state) => state.user);
 
     useEffect(() => {
         getProducts();
@@ -16,7 +18,7 @@ const PurchaseProductSelect = ({ onChangeAction, value }) => {
     const getProducts = async () => {
         start();
         try {
-            const res = await sendGetRequest(PURCHASE_PRODUCTS_LIST);
+            const res = await sendGetRequest(PURCHASE_PRODUCTS_LIST, user.token);
             if (res.status === 200) {
                 setProducts(res.data);
             } else {

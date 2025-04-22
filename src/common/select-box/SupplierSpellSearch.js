@@ -4,10 +4,13 @@ import React, { useEffect, useState } from 'react';
 import { SUPPLIERS_LIST } from '../../config/api-urls';
 import { useLoader } from '../../hooks/useLoader';
 import { sendGetRequest } from '../../utils/network';
+import { useSelector } from 'react-redux';
 
 const SupplierSpellSearch = ({ onChange, value }) => {
     const [suppliers, setSuppliers] = useState([]);
     const [{ start, stop }, Loader] = useLoader();
+      const user = useSelector((state) => state.user);
+    
 
     useEffect(() => {
         getProducts();
@@ -16,7 +19,7 @@ const SupplierSpellSearch = ({ onChange, value }) => {
     const getProducts = async () => {
         start();
         try {
-            const res = await sendGetRequest(SUPPLIERS_LIST);
+            const res = await sendGetRequest(SUPPLIERS_LIST, user.token);
             if (res.status === 200) {
                 setSuppliers(res.data);
             } else {
