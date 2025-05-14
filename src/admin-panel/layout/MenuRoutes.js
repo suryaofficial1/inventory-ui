@@ -87,6 +87,14 @@ const MenuRoutes = [
         ]
     },
     {
+        path: '#production',
+        sidebarName: 'Production',
+        navbarName: 'Production',
+        icon: NewReleasesIcon,
+        component: <ManufacturingList />,
+        roles: ['Admin'] // Only Admin can access
+    },
+    {
         sidebarName: 'Sales',
         navbarName: 'Sales',
         icon: TrendingUpIcon,
@@ -106,14 +114,6 @@ const MenuRoutes = [
                 component: <SalesReturnList />,
             },
         ]
-    },
-    {
-        path: '#production',
-        sidebarName: 'Production',
-        navbarName: 'Production',
-        icon: NewReleasesIcon,
-        component: <ManufacturingList />,
-        roles: ['Admin'] // Only Admin can access
     },
     {
         path: '#reports',

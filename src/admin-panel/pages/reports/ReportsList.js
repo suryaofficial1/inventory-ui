@@ -29,7 +29,6 @@ const ReportsList = () => {
     });
 
     const onFilter = (filters) => {
-        console.log("Applying filters: ", filters);
         setFormData(filters);
     };
 

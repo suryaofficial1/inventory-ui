@@ -170,7 +170,6 @@ const UserList = () => {
   ];
 
   const applyFilter = () => {
-    console.log("user_config", tempFilter)
     setFilter(tempFilter);
     setPage(0)
   }

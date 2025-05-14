@@ -59,8 +59,8 @@ const StockReportTable = ({ data }) => {
                         <TableCell sx={cellStyle}>Rate</TableCell>
                         <TableCell sx={cellStyle}>Amount.</TableCell>
                         <TableCell sx={cellStyle}>Manufacturing Date</TableCell>
-                        <TableCell sx={cellStyle}>Batch No.</TableCell>
-                        <TableCell sx={cellStyle}>Quantity.</TableCell>
+                        <TableCell sx={cellStyle}>Batch No</TableCell>
+                        <TableCell sx={cellStyle}>Quantity</TableCell>
                         <TableCell sx={cellStyle}>Reject Quantity</TableCell>
                         <TableCell sx={cellStyle}>Balance Quantity.</TableCell>
                         <TableCell sx={cellStyle}>Amount</TableCell>

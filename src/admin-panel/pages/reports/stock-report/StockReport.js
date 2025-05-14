@@ -53,7 +53,6 @@ const StockReport = ({ formsData }) => {
         }
         return reportBy
     }
-    console.log("getValues", getValues())
 
     // const exportToExcel = async () => {
     //     if (!stockData?.rows?.length) {
@@ -501,10 +500,10 @@ const StockReport = ({ formsData }) => {
             <Grid item sm={12} >
                 <StockReportTable data={stockData?.rows} formsData={formsData} hidden={hide} hiddenAction={setHide} onSuccess={fetchStockReports} />
             </Grid>
-             <Grid item sm={12}>
+             {/* <Grid item sm={12}>
                  <ProductionSingleBar title={"Stock report by date"} filteredData={stockData.rows} />
 
-            </Grid>
+            </Grid> */}
            {/* <Grid item xs={12} >
                 <PeiChart title="Stock Report by product " data={stockData.rows} />
             </Grid> */}
