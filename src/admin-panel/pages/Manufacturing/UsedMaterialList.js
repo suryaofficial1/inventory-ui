@@ -12,9 +12,15 @@ const UsedMaterialList = ({ list }) => {
         },
 
         {
-            field: 'product', headerName: 'Product', width: 150, resizable: false, sortable: false,
+            field: 'supplier', headerName: 'Supplier', width: 200, resizable: true, sortable: false,
             renderCell: (params) => (
-                params.row.product?.product ? params.row.product.product : ""
+                params.row.supplier?.name ? params.row.supplier.name : ""
+            )
+        },
+        {
+            field: 'product', headerName: 'Product', width: 200, resizable: true, sortable: false,
+            renderCell: (params) => (
+                params.row.product?.name ? params.row.product.name : ""
             )
         },
         {

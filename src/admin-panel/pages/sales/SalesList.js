@@ -32,8 +32,9 @@ const SalesList = () => {
 
     const [page, setPage] = useState(0);
     const [rows, setRows] = useState([]);
-    const [filter, setFilter] = useState({ cName: '', pName: '' });
-    const [tempFilter, setTempFilter] = useState({ cName: '', pName: '' });
+    const [filter, setFilter] = useState({ cName: '', pName: {} });
+    const [tempFilter, setTempFilter] = useState({ cName: '', pName: {} });
+    const [clearSignal, setClearSignal] = useState(0);
     const [totalRecords, setTotalRecords] = useState(0);
     const [open, setOpen] = useState(false);
     const [editData, setEditData] = useState({});
@@ -46,7 +47,7 @@ const SalesList = () => {
     }, [page, filter]);
     const getSalesList = () => {
         start()
-        sendGetRequest(`${SALES_LIST}?cName=${filter?.cName ? filter?.cName.name : ""}&pName=${filter?.pName ? filter?.pName.product : ""}&page=${page + 1}&per_page=10`, user.token)
+        sendGetRequest(`${SALES_LIST}?cName=${filter?.cName ? filter?.cName.name : ""}&pId=${filter?.pName?.id ? filter?.pName.id : ""}&page=${page + 1}&per_page=10`, user.token)
             .then(res => {
                 if (res.status === 200) {
                     setRows(res.data.rows)
@@ -116,19 +117,19 @@ const SalesList = () => {
         },
         { field: 'invoiceNo', headerName: 'Invoice No', width: 130, sortable: false },
         {
-            field: 'customer', headerName: 'Customer Name', width: 140, resizable: false, sortable: false,
+            field: 'customer', headerName: 'Customer Name', width: 180, resizable: true, sortable: true,
             renderCell: (params) => (
                 params.row.customer.name ? params.row.customer.name : ""
             )
         },
         {
-            field: 'product', headerName: 'Product', width: 120, resizable: false, sortable: false,
+            field: 'product', headerName: 'Product', width: 180, resizable: true, sortable: true,
             renderCell: (params) => (
-                params.row.product.product ? params.row.product.product : ''
+                params.row.product.name ? params.row.product.name : ''
             )
         },
         {
-            field: 'pDesc', headerName: 'Product Desc', width: 220, resizable: false, sortable: false,
+            field: 'pDesc', headerName: 'Product Desc', width: 220, resizable: true, sortable: false,
             renderCell: (params) => {
                 return (
                     params.row.pDesc ? <textarea readOnly>{params.row.pDesc}</textarea> : ''
@@ -172,13 +173,14 @@ const SalesList = () => {
         setFilter({ cName: null, pName: null });
         setTempFilter({ cName: null, pName: null });
         setPage(0)
+        setClearSignal(prev => prev + 1);
     }
 
     return (
         <div >
             <Loader />
             <div className={classes.addBtn}>
-                <SalesFilter reset={resetAllData} filter={tempFilter} setFilter={setTempFilter} />
+                <SalesFilter reset={resetAllData} filter={tempFilter} setFilter={setTempFilter} clearSignal={clearSignal}/>
             </div>
             <div>
                 {roleBasePolicy(user?.role) && <Button startIcon={<Add />} className={classes.actionButton} variant="contained" color="primary" onClick={() => setOpen(!open)}>Add Sales</Button>}

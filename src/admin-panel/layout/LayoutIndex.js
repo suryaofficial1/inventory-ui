@@ -10,18 +10,26 @@ import {
     ListItemText, makeStyles, Toolbar,
     Typography
 } from '@material-ui/core';
-import { ExpandLess, ExpandMore } from '@material-ui/icons';
-import MenuIcon from '@material-ui/icons/Menu';
-import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom/cjs/react-router-dom';
-import './Style.css';
-import MenuRoutes from './MenuRoutes';
-import { useDispatch, useSelector } from 'react-redux';
-import { domain } from '../../config/api-urls';
-import UserProfile from '../../components/auth/UserProfile';
+import { ExpandLess, ExpandMore, PersonAdd } from '@material-ui/icons';
+import AddShoppingCartIcon from '@material-ui/icons/AddShoppingCart';
 import Logouts from '@material-ui/icons/ExitToAppRounded';
-import { persistor } from '../../store/store';
+import KeyboardReturnIcon from '@material-ui/icons/KeyboardReturn';
+import MenuIcon from '@material-ui/icons/Menu';
+import NewReleasesIcon from '@material-ui/icons/NewReleases';
+import PeopleSharpIcon from '@material-ui/icons/PeopleSharp';
+import SubjectIcon from '@material-ui/icons/Subject';
+import WcOutlinedIcon from '@material-ui/icons/WcOutlined';
+import Add from '@mui/icons-material/AddCircleOutlineRounded';
+import { Box, Button, Card, CardActionArea, CardContent, Popover } from '@mui/material';
+import React, { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { Link } from 'react-router-dom/cjs/react-router-dom';
 import { logoutUser } from '../../actions';
+import UserProfile from '../../components/auth/UserProfile';
+import { domain } from '../../config/api-urls';
+import { persistor } from '../../store/store';
+import MenuRoutes from './MenuRoutes';
+import './Style.css';
 
 const useStyles = makeStyles((theme) => ({
     root: {
@@ -35,12 +43,26 @@ const useStyles = makeStyles((theme) => ({
 
 const LayoutIndex = () => {
     const classes = useStyles();
-    const [sidebarOpen, setSidebarOpen] = useState(true);
+    const [sidebarOpen, setSidebarOpen] = React.useState(true);
     const [expand, setExpand] = useState({});
     const [editUser, setEditUser] = useState(false);
     const hash = window.location.hash
     const user = useSelector((state) => state.user);
     const dispatch = useDispatch();
+
+
+    const [anchorEl, setAnchorEl] = React.useState(null);
+
+    const handleClick = (event) => {
+        setAnchorEl(event.currentTarget);
+    };
+
+    const handleDialogClose = () => {
+        setAnchorEl(null);
+    };
+
+    const open = Boolean(anchorEl);
+    const id = open ? 'simple-popover' : undefined;
 
     const toggleSidebar = () => {
         setSidebarOpen(!sidebarOpen);
@@ -128,32 +150,135 @@ const LayoutIndex = () => {
         </div>
     );
 
+    const addPageDetails = [
+        {
+            id: 2,
+            path: '#products',
+            name: 'Add New Products',
+            icon: AddShoppingCartIcon,
+        },
+        {
+            id: 3,
+            path: '#suppliers',
+            name: 'Add New Suppliers',
+            icon: PeopleSharpIcon,
+        },
+        {
+            id: 4,
+            path: '#customers',
+            name: 'Add New Customers',
+            icon: WcOutlinedIcon
+        },
+        {
+            id: 5,
+            path: '#purchase-list',
+            name: 'Add new Purchase',
+            icon: SubjectIcon,
+        },
+        {
+            id: 6,
+            path: '#purchase-return',
+            name: 'Add New Purchase Return',
+            icon: KeyboardReturnIcon,
+        },
+        {
+            id: 7,
+            path: '#production',
+            name: 'Add New Production',
+            icon: NewReleasesIcon,
+        },
+        {
+            id: 8,
+            path: '#sales-list',
+            name: 'Add New Sales',
+            icon: SubjectIcon,
+        },
+        {
+            id: 9,
+            path: '#sales-return',
+            name: 'Add New Sales Return',
+            icon: KeyboardReturnIcon,
+        },
+    ]
+
     const newHeader = () => {
         return (
             <AppBar position="fixed" className='app-bar'>
                 <Toolbar className='flex'>
-                    <div className='flex center-item' style={{ flex: 1, marginLeft: 20 }}>
-                        <IconButton edge="start" color="inherit" onClick={toggleSidebar}>
-                            <MenuIcon />
-                        </IconButton>
-                        <Typography variant="h6" noWrap>
-                            {hash.replace('#', '').charAt(0).toUpperCase() + hash.slice(2)}
-                        </Typography>
-                    </div>
-                    <div className='user-profile' onClick={() => setEditUser(true)}>
-                        <Avatar alt={user.name} src={domain + user.profile} style={{ width: 30, height: 30, margin: 5 }} />
-                        <p className='user-name' >
-                            {user.name}
-                        </p>
-                        <p className='user-edit-icon' >
-                            ▼
-                        </p>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', width: '100%' }}>
+                        <div className='flex center-item'>
+                            <IconButton edge="start" color="inherit" onClick={toggleSidebar}>
+                                <MenuIcon />
+                            </IconButton>
+                            <Typography variant="h6" noWrap>
+                                {hash.replace('#', '').charAt(0).toUpperCase() + hash.slice(2)}
+                            </Typography>
+                        </div>
+                        <div className='flex center-item'>
+                            <Button style={{ background: '#f1e9e9', color: 'black' }}
+                                variant='contained' startIcon={<Add size="small" />} onClick={handleClick}>Add New</Button>
+                            <Popover
+                                open={open}
+                                anchorEl={anchorEl}
+                                onClose={handleDialogClose}
+                                anchorOrigin={{
+                                    vertical: 'bottom',
+                                    horizontal: 'left',
+                                }}
+                            >
+                                <Box
+                                    sx={{
+                                        p: 2,
+                                        display: 'grid',
+                                        gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))',
+                                        gap: 2,
+                                        maxWidth: 630,
+                                    }}
+                                >
+                                    {addPageDetails.map((item, index) => (
+                                        <Card
+                                            key={index}
+                                            sx={{
+                                                p: 1,
+                                                textAlign: 'center',
+                                                cursor: 'pointer',
+                                                boxShadow: 1,
+                                                borderRadius: 2,
+                                                '&:hover': {
+                                                    backgroundColor: '#f5f5f5',
+                                                    boxShadow: 3,
+                                                },
+                                            }}
+                                            onClick={() => {
+                                                handleDialogClose();
+                                                window.location.hash = item.path;
+                                            }}
+                                        >
+                                            <CardContent sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', p: 1 }}>
+                                                <item.icon style={{ fontSize: 30, color: '#1976d2', marginBottom: 4 }} />
+                                                <Typography variant="body2">
+                                                    <b> {item.name}</b>
+                                                </Typography>
+                                            </CardContent>
+                                        </Card>
+                                    ))}
+                                </Box>
+                            </Popover>
+                        </div>
+                        <div className='flex center-item' onClick={() => setEditUser(true)} style={{ cursor: 'pointer' }}>
+                            <Avatar alt={user.name} src={domain + user.profile} style={{ width: 30, height: 30, margin: 5 }} />
+                            <p className='user-name' >
+                                {user.name}
+                            </p>
+                            <p className='user-edit-icon' >
+                                ▼
+                            </p>
+                        </div>
                     </div>
                 </Toolbar>
             </AppBar>
         );
     }
-
 
     const found = (MenuRoutes.flatMap(r => r.submenu ? r.submenu : r)
         .filter(f => !f.disabled && hash.startsWith(f.path)))

@@ -2,21 +2,20 @@ import { Button, Grid, TextField } from '@material-ui/core';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
+import PurchaseItemsSpellSearch from '../../../common/input-search/PurchaseItemsSpellSearch';
 import PopupAction from '../../../common/PopupAction';
-import QtyAction from '../../../common/quntity-update/QtyAction';
-import SupplierSpellSearch from '../../../common/select-box/SupplierSpellSearch';
-import UnitSelect from '../../../common/select-box/UnitSelect';
-import { ADD_RETURN_PURCHASE_DETAILS, PURCHASE_LIST_BY_PRODUCT, PURCHASE_RETURN_LIST_BY_PRODUCTS, UPDATE_RETURN_PURCHASE_DETAILS } from '../../../config/api-urls';
+import { ADD_RETURN_PURCHASE_DETAILS, AVAILABLE_PURCHASE_PRODUCT_QTY, PURCHASE_DETAILS_BY_PRODUCT_ID, UPDATE_RETURN_PURCHASE_DETAILS } from '../../../config/api-urls';
 import { useLoader } from '../../../hooks/useLoader';
 import { showMessage } from '../../../utils/message';
 import { sendGetRequest, sendPostRequestWithAuth } from '../../../utils/network';
-import PurchaseDetails from '../purchase/PurchaseDetails';
+import { validateNumber } from '../../../utils/validation';
+import SupplierSpellSearch from '../../../common/select-box/SupplierSpellSearch';
+import UnitSelect from '../../../common/select-box/UnitSelect';
 
-
-const Action = ({ onClose, successAction, title, selectedData = {}, returns = false, readOnly = false }) => {
+const Action = ({ onClose, successAction, title, selectedData = {}, readOnly = false }) => {
   const [formsData, setFormsData] = useState({
     supplier: selectedData?.supplier ? selectedData.supplier : {} || {},
-    product: selectedData?.product ? selectedData.product : '' || '',
+    product: selectedData?.product ? selectedData.product : {} || {},
     returnDate: moment(selectedData.returnDate).local().format('YYYY-MM-DD') || '',
     desc: selectedData?.rDesc || '',
     purchaseId: selectedData?.purchaseId || '',
@@ -27,8 +26,9 @@ const Action = ({ onClose, successAction, title, selectedData = {}, returns = fa
     price: selectedData?.price || '',
     id: selectedData?.id || '',
   });
-
-  const [selectedProduct, setSelectedProduct] = useState({});
+  const [availableQty, setAvailableQty] = useState(0);
+  const [errors, setErrors] = useState({});
+  const [clearSignal, setClearSignal] = useState(0);
   const [{ start, stop }, Loader] = useLoader();
   const user = useSelector((state) => state.user);
 
@@ -37,94 +37,115 @@ const Action = ({ onClose, successAction, title, selectedData = {}, returns = fa
     setFormsData({ ...formsData, [name]: value });
   };
 
-  // useEffect(() => {
-  //   if (selectedData?.id) {
-  //     loadPurchaseDetails(selectedData.id)
-  //   }
-  // }, [selectedData, selectedProduct.length])
+  const qtyHandleChange = (e) => {
+    const { name, value } = e.target;
+    const numericValue = Number(value);
+    const qtyValidation = validateNumber("Quantity", value);
+    if (qtyValidation.error) {
+      setErrors({ ...errors, ["qty"]: qtyValidation.message });
+      return;
+    }
+    if (!formsData?.product?.id) {
+      showMessage("error", "Product selection is required before entering quantity!");
+      return;
+    }
+
+    if (numericValue > availableQty) {
+      setErrors({ ...errors, ["qty"]: `Quantity cannot exceed available stock: ${availableQty}` });
+      return;
+    }
+    setErrors({ ...errors, ["mqty"]: "" });
+    setFormsData((prev) => ({
+      ...prev,
+      ["qty"]: numericValue,
+    }));
+
+  };
 
   useEffect(() => {
-    if (Object.keys(selectedProduct).length !== 0) {
-      // setFormsData({ ...formsData, ["invoiceNo"]: selectedInvoice.invoiceNo, ["bNumber"]: selectedInvoice.bNumber })
-      setFormsData((prevFormsData) => ({
-        ...prevFormsData,  // Keep existing values
-        invoiceNo: selectedProduct?.invoiceNo ?? prevFormsData.invoiceNo,
-        bNumber: selectedProduct?.bNumber ?? prevFormsData.bNumber,
-        product: selectedProduct?.product ?? prevFormsData.product,
-        supplier: selectedProduct?.supplier ?? prevFormsData.supplier,
-        unit: selectedProduct?.unit ?? prevFormsData.unit,
-        desc: selectedProduct?.rDesc ?? prevFormsData.desc,
-        id: selectedProduct?.id ?? prevFormsData.id
-      }));
+    if (formsData.product.id) {
+      getAvailableQty();
     }
-  }, [selectedProduct]);
+  }, [formsData.product.id]);
 
-  // useEffect(() => {
-  //   if (selectedProduct.id) {
-  //     loadPurchaseReturnDetails(selectedProduct.id);
-  //   }
-  // }, [selectedProduct.id]);
-
-
-  const loadPurchaseDetails = (id) => {
-    start();
-    sendGetRequest(`${PURCHASE_LIST_BY_PRODUCT}?id=${id}`, user.token).then((_res) => {
-      if (_res.status === 200) {
-        setSelectedProduct(_res.data[0]);
-        setFormsData((prevFormsData) => ({
-          ...prevFormsData,
-          invoiceNo: _res.data[0].invoiceNo,
-          bNumber: _res.data[0].bNumber,
-          product: _res.data[0].product,
-          supplier: _res.data[0].supplier,
-          unit: _res.data[0].unit,
-          desc: _res.data[0].rDesc,
-          id: _res.data[0].id
-        }));
-      } else if (_res.status === 400) {
-        showMessage("error", _res.data[0]);
+  const getAvailableQty = async () => {
+    try {
+      const res = await sendGetRequest(AVAILABLE_PURCHASE_PRODUCT_QTY(formsData.product.id, formsData.supplier.id), user.token);
+      if (res.status === 200) {
+        setAvailableQty(res.data.availableQty);
       } else {
-        showMessage("error", "Something went wrong while loading purchase details");
+        console.error("Error in getting available quantity", res.data);
+        return 0;
       }
-    }).catch(err => {
-      console.log("err", err)
-      showMessage("error", "Something went wrong while loading purchase details");
-    }).finally(() => stop())
+    } catch (err) {
+      console.error("Error fetching available quantity", err);
+      return 0;
+    }
+  };
+
+  const getPurchaseDetailsByProductId = (e) => {
+    start();
+    sendGetRequest(PURCHASE_DETAILS_BY_PRODUCT_ID(e.product.id, formsData.supplier.id, 'purchase_return'), user.token).then((res) => {
+      if (res.status === 200) {
+        if (Object.keys(res.data).length !== 0) {
+          setClearSignal((prev) => prev + 1);
+          setFormsData((prev) => ({ ...prev, product: {}, unit: "", price: "", qty: "", invoiceNo: "", bNumber: "" }));
+          showMessage('error', "Product already exists on purchase return list please update this product!");
+        } else {
+          setFormsData((prev) => ({
+            ...prev,
+            product: e.product,
+            unit: e.unit,
+            purchaseId: e.id,
+            invoiceNo: e.invoiceNo,
+            bNumber: e.bNumber
+          }));
+        }
+      }
+    }).catch((err) => {
+      console.log("err", err);
+    }).finally(() => {
+      stop();
+    });
   }
 
-  const loadPurchaseReturnDetails = (data) => {
-    start();
-    sendGetRequest(`${PURCHASE_RETURN_LIST_BY_PRODUCTS}?id=${data}`, user.token).then((_res) => {
-      if (_res.status === 200) {
-        setFormsData((prevFormsData) => ({
-          ...prevFormsData,
-          qty: _res.data?.qty ?? prevFormsData.qty,
-          product: _res.data?.product ?? prevFormsData.product,
-          supplier: _res.data?.supplier ?? prevFormsData.supplier,
-          returnDate: _res.data?.returnDate ?? prevFormsData.returnDate,
-          unit: _res.data?.unit ?? prevFormsData.unit,
-          price: _res.data?.price ?? prevFormsData.price,
-          desc: _res.data?.rDesc ?? prevFormsData.desc,
-          id: data
-        }));
-        selectedData.id = _res.data.id
-      } else if (_res.status === 400) {
-        showMessage("error", _res.data[0]);
-      } else {
-        showMessage("error", "Something went wrong while loading purchase details");
+  console.log("formsData", formsData);
+
+  const handleProductChange = (e) => {
+
+    if (!formsData.supplier.id) {
+      setErrors({ ...errors, ["supplier"]: "Supplier is required" });
+      showMessage('error', "Please select supplier first!");
+      setClearSignal((prev) => prev + 1);
+      setFormsData((prev) => ({ ...prev, product: {}, unit: "", price: "", qty: "", invoiceNo: "", bNumber: "", purchaseId: "" }));
+      return
+    } else {
+      if (typeof e === "object" && e?.id) {
+        getPurchaseDetailsByProductId(e);
+        return;
       }
-    }).catch(err => {
-      console.log("err", err)
-      showMessage("error", "Something went wrong while loading purchase details");
-    }).finally(() => stop())
-  }
+    }
+  };
+
+  const handleSupplierChange = (e) => {
+    setErrors({ ...errors, ["supplier"]: "" });
+    setClearSignal((prev) => prev + 1);
+    setFormsData({ ...formsData, ["supplier"]: e, ['product']: {}, unit: "", qty: "", invoiceNo: "", bNumber: "", purchaseId: "" });
+  };
+
+  const handleReset = () => {
+    setFormsData({ ...formsData, ["supplier"]: '', ['product']: '' });
+    handleSupplierChange('')
+    // handleProductChange('')
+  };
 
   const validation = () => {
     const errors = {};
+
+    if (!formsData?.product?.id) errors.product = "Product is required";
     if (!formsData.invoiceNo) errors.invoiceNo = "Invoice No is required";
     if (!formsData?.bNumber) errors.bNumber = "Batch Number is required";
     if (!formsData?.supplier?.id) errors.supplier = "Supplier is required";
-    if (!formsData?.product) errors.product = "Product is required";
     if (!formsData.unit) errors.unit = "Unit is required";
     if (!formsData.price) errors.price = "Return Price is required";
     if (!formsData.qty) errors.qty = "Return Quantity is required";
@@ -139,9 +160,9 @@ const Action = ({ onClose, successAction, title, selectedData = {}, returns = fa
   const submitAction = () => {
     if (validation()) return;
     const reqData = {
-      purchaseId: formsData.id,
+      purchaseId: formsData.purchaseId,
       supplier: formsData.supplier.id,
-      product: formsData.product,
+      product: formsData.product.id,
       invoiceNo: formsData.invoiceNo,
       bNumber: formsData.bNumber,
       desc: formsData.desc,
@@ -172,24 +193,6 @@ const Action = ({ onClose, successAction, title, selectedData = {}, returns = fa
     }).finally(() => stop())
   }
 
-  const handleSupplierChange = (e) => {
-    setFormsData({ ...formsData, ["supplier"]: e });
-  };
-
-  const handleProductChange = (e) => {
-    setFormsData({ ...formsData, ["product"]: e, ["qty"]: '' });
-  };
-
-  const handleReset = () => {
-    setFormsData({ ...formsData, ["supplier"]: '', ['product']: '' });
-    handleSupplierChange('')
-    handleProductChange('')
-  };
-
-  const qtyHandleChange = (value) => {
-    setFormsData({ ...formsData, ["qty"]: value });
-  };
-
   return (
     <>
       <Loader />
@@ -204,18 +207,54 @@ const Action = ({ onClose, successAction, title, selectedData = {}, returns = fa
       >
 
         <Grid container spacing={3} style={{ padding: 20 }}>
-          {!selectedData?.id && <Grid item xs={12}>
-            <PurchaseDetails error={selectedProduct.length == 0}
-              setter={setSelectedProduct} />
-          </Grid>}
-          <Grid item xs={6}>
+          <Grid item xs={12} sm={6}>
+            {selectedData.id ?
+              <TextField
+                autoComplete='off'
+                label="Supplier name"
+                variant="outlined"
+                fullWidth
+                name='supplier'
+                size='small'
+                value={formsData.supplier.name}
+                InputProps={{
+                  readOnly: readOnly,
+                }}
+              /> : <SupplierSpellSearch onChange={handleSupplierChange} value={formsData.supplier} onReset={handleReset} error={errors.supplier} />
+            }
+          </Grid>
+
+          <Grid item xs={12} sm={6}>  {!selectedData?.id ?
+            <PurchaseItemsSpellSearch
+              type="purchase"
+              onSelect={handleProductChange}
+              clearSignal={clearSignal}
+              supplier={formsData.supplier.id}
+            />
+            :
             <TextField
+              autoComplete='off'
+              label="Product"
+              variant="outlined"
+              fullWidth
+              name='product'
+              size='small'
+              focused={formsData?.product?.name}
+              value={formsData?.product?.name}
+              InputProps={{
+                readOnly: true,
+              }}
+            />
+          }
+          </Grid>
+          <Grid item xs={12} sm={6}>
+            <TextField
+              autoComplete='off'
               label="Invoice No"
               variant="outlined"
               fullWidth
               name='invoiceNo'
               size='small'
-              focused={formsData.invoiceNo}
               value={formsData.invoiceNo}
               placeholder="Enter Invoice No..."
               InputProps={{
@@ -224,52 +263,33 @@ const Action = ({ onClose, successAction, title, selectedData = {}, returns = fa
             // onChange={handleInputChange}
             />
           </Grid>
-          <Grid item xs={6}>
+          <Grid item xs={12} sm={6}>
             <TextField
+              autoComplete='off'
               label="Batch Number"
               variant="outlined"
               fullWidth
               name='bNumber'
               size='small'
-              focused={formsData.bNumber}
               value={formsData.bNumber}
-              placeholder="Enter bNumber..."
               InputProps={{
                 readOnly: true,
               }}
             // onChange={handleInputChange}
             />
           </Grid>
-          <Grid item xs={6}>
-            <SupplierSpellSearch onChange={handleSupplierChange} value={formsData.supplier} onReset={handleReset} />
-          </Grid>
-          <Grid item xs={6}>
-            <TextField
-              label="Product Name"
-              variant="outlined"
-              fullWidth
-              name='product'
-              size='small'
-              value={formsData.product}
-              placeholder="Enter Product Name..."
-              InputProps={{
-                readOnly: readOnly,
-              }}
-              onChange={handleInputChange}
-            />
-            {/* <ProductSpellSearch type="purchase" onChangeAction={handleProductChange} value={formsData.product} onReset={handleReset} /> */}
-          </Grid>
-
-          <Grid item xs={6}>
+          <Grid item xs={12} sm={6}>
             <UnitSelect onChange={handleInputChange} value={formsData.unit} readOnly={readOnly} />
           </Grid>
-          <Grid item xs={6}>
+          <Grid item xs={12} sm={6}>
             <TextField
+              autoComplete='off'
               label="Price"
               variant="outlined"
               fullWidth
               name='price'
               size='small'
+              type='number'
               value={formsData.price}
               placeholder="Enter Price..."
               InputProps={{
@@ -279,18 +299,31 @@ const Action = ({ onClose, successAction, title, selectedData = {}, returns = fa
             />
           </Grid>
           <Grid item xs={12}>
-            <QtyAction
+
+            <TextField
+              autoComplete='off' fullWidth id="Return-Quantity"
+              onChange={qtyHandleChange}
+              name='qty'
+              label="Return Quantity"
+              variant='outlined'
+              size='small'
+              value={formsData.qty}
+              error={Boolean(errors.qty)}
+              helperText={errors.qty}
+            />
+            {/* <QtyAction
               value={formsData.qty}
               setter={qtyHandleChange}
               productId={formsData?.id}
               readOnly={readOnly}
               by="purchase"
               type="return"
-            />
+            /> */}
           </Grid>
 
           <Grid item xs={12}>
             <TextField
+              autoComplete='off'
               label="Description"
               variant="outlined"
               fullWidth

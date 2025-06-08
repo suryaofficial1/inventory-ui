@@ -32,8 +32,9 @@ const ManufacturingList = () => {
 
     const [page, setPage] = useState(0);
     const [rows, setRows] = useState([]);
-    const [filter, setFilter] = useState({ cName: '', pName: '' });
-    const [tempFilter, setTempFilter] = useState({ cName: '', pName: '' });
+    const [filter, setFilter] = useState({ cName: '', pName: {} });
+    const [tempFilter, setTempFilter] = useState({ cName: '', pName: {} });
+    const [clearSignal, setClearSignal] = useState(0);
     const [totalRecords, setTotalRecords] = useState(0);
     const [open, setOpen] = useState(false);
     const [editData, setEditData] = useState({});
@@ -46,7 +47,7 @@ const ManufacturingList = () => {
     }, [page, filter]);
     const getProductionList = () => {
         start()
-        sendGetRequest(`${PRODUCTION_LIST}?cName=${filter?.cName ? filter?.cName.name : ""}&pName=${filter?.pName ? filter?.pName.product : ""}&page=${page + 1}&per_page=10`, user.token)
+        sendGetRequest(`${PRODUCTION_LIST}?cName=${filter?.cName ? filter?.cName.name : ""}&pName=${filter?.pName?.id ? filter?.pName.id : ""}&page=${page + 1}&per_page=10`, user.token)
             .then(res => {
                 if (res.status === 200) {
                     setRows(res.data.rows)
@@ -117,12 +118,16 @@ const ManufacturingList = () => {
         },
 
         {
-            field: 'customer', headerName: 'Customer', width: 150, resizable: false, sortable: false,
+            field: 'customer', headerName: 'Customer', width: 150, resizable: true, sortable: false,
             renderCell: (params) => (
                 params.row.customer?.name ? params.row.customer.name : ""
             )
         },
-        { field: 'product', headerName: 'Product', width: 160, resizable: false, sortable: false },
+        { field: 'product', headerName: 'Product', width: 160, resizable: true, sortable: false,
+             renderCell: (params) => (
+                params.row.product?.name ? params.row.product.name : ""
+            )
+         },
 
 
         { field: 'unit', headerName: 'Unit', width: 110, resizable: true, sortable: false },
@@ -130,7 +135,7 @@ const ManufacturingList = () => {
 
         { field: 'operatorName', headerName: 'Operator', width: 140, resizable: true, sortable: false },
         {
-            field: 'pDesc', headerName: 'Product Desc', width: 220, resizable: false, sortable: false,
+            field: 'pDesc', headerName: 'Product Desc', width: 220, resizable: true, sortable: false,
             renderCell: (params) => {
                 return (
                     params.row.pDesc ? <textarea readOnly>{params.row.pDesc}</textarea> : ''
@@ -167,16 +172,17 @@ const ManufacturingList = () => {
     }
 
     const resetAllData = () => {
-        setFilter({ cName: '', pName: '' });
-        setTempFilter({ cName: '', pName: '' });
+        setFilter({ cName: null, pName: null });
+        setTempFilter({ cName: null, pName: null });
         setPage(0)
+        setClearSignal(prev => prev + 1);
     }
 
     return (
         <div >
             <Loader />
             <div className={classes.addBtn}>
-                <Filter reset={resetAllData} filter={tempFilter} setFilter={setTempFilter} />
+                <Filter reset={resetAllData} filter={tempFilter} setFilter={setTempFilter} clearSignal={clearSignal}/>
             </div>
             <div>
                 {roleBasePolicy(user?.role) && <Button startIcon={<Add />} className={classes.actionButton} variant="contained" color="primary" onClick={() => setOpen(!open)}>Add New materials</Button>}
@@ -200,19 +206,6 @@ const ManufacturingList = () => {
                 disableColumnFilter
             />
 
-            {/* <DataGrid autoHeight pagination style={{ background: "#fff", width: "100%" }}
-                rows={rows}
-                columns={columns}
-                page={page}
-                pageSize={10}
-                rowsPerPageOptions={[10]}
-                rowCount={(totalRecords) ? totalRecords : 100}
-                loading={loading}
-                paginationMode="server"
-                onPageChange={(newPage) => setPage(newPage)}
-                disableColumnMenu
-                disableColumnFilter
-            /> */}
             {open && <ProductionAction
                 selectedData={editData}
                 readOnly={readOnly}

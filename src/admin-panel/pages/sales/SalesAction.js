@@ -1,12 +1,12 @@
-import { Button, Grid, MenuItem, TextField } from '@material-ui/core'
+import { Button, Grid, TextField } from '@material-ui/core'
 import moment from 'moment'
-import React, { useEffect, useState } from 'react'
 import { useSelector } from 'react-redux'
+import React, { useEffect, useState } from 'react'
+import ProductionProductSpellSearch from '../../../common/input-search/ProductionProductSpellSearch'
 import PopupAction from '../../../common/PopupAction'
 import CustomerSpellSearch from '../../../common/select-box/CustomerSpellSearch'
-import ProductionProductSelect from '../../../common/select-box/ProductionProductSelect'
 import UnitSelect from '../../../common/select-box/UnitSelect'
-import { ADD_SALES_DETAILS, AVAILABLE_PRODUCTION_PRODUCT_QTY, UPDATE_SALES_DETAILS } from '../../../config/api-urls'
+import { ADD_SALES_DETAILS, SALES_DETAIL_BY_PRODUCT_ID, SALES_ITEM_AVAILABLE_QTY, UPDATE_SALES_DETAILS } from '../../../config/api-urls'
 import { useLoader } from '../../../hooks/useLoader'
 import { showMessage } from '../../../utils/message'
 import { sendGetRequest, sendPostRequestWithAuth } from '../../../utils/network'
@@ -23,7 +23,9 @@ const SalesAction = ({ onClose, successAction, title, selectedData = {}, readOnl
         salesPrice: selectedData.salesPrice || '',
         unit: selectedData.unit || '',
         status: selectedData.status || '1',
+        productionId: selectedData.productionId || '',
     }));
+    const [clearSignal, setClearSignal] = useState(0);
     const [{ start, stop }, Loader] = useLoader();
     const [availableQty, setAvailableQty] = useState(0);
     const [errors, setErrors] = useState({});
@@ -48,7 +50,7 @@ const SalesAction = ({ onClose, successAction, title, selectedData = {}, readOnl
                 setErrors({ ...errors, ["qty"]: `Quantity cannot exceed available stock: ${availableQty}` });
                 return;
             }
-            setErrors({ ...errors, ["qty"]: "" });
+            setErrors({ ...errors, ["qty"]: false });
             setFormsData((prev) => ({
                 ...prev,
                 [name]: numericValue,
@@ -59,15 +61,15 @@ const SalesAction = ({ onClose, successAction, title, selectedData = {}, readOnl
     };
 
     useEffect(() => {
-        if (formsData.product.id) {
+        if (formsData?.product?.id) {
             getAvailableQty();
         }
-    }, [formsData.product.id, formsData.qty]);
+    }, [formsData?.product?.id]);
 
 
     const getAvailableQty = async () => {
         try {
-            const res = await sendGetRequest(AVAILABLE_PRODUCTION_PRODUCT_QTY(formsData.product.id), user.token);
+            const res = await sendGetRequest(`${SALES_ITEM_AVAILABLE_QTY(formsData?.product?.id)}?type=sales`, user.token);
             if (res.status === 200) {
                 setAvailableQty(res.data.availableQty);
             } else {
@@ -82,9 +84,9 @@ const SalesAction = ({ onClose, successAction, title, selectedData = {}, readOnl
 
     const validation = () => {
         const errors = {};
-        if (!formsData.invoiceNo) errors.invoiceNo = "invoice Number is required";
         if (!formsData.customer) errors.customer = "Customer is required";
-        if (!formsData.product) errors.product = "Product is required";
+        if (!formsData?.product?.id) errors.product = "Product is required";
+        if (!formsData.invoiceNo) errors.invoiceNo = "invoice Number is required";
         if (!formsData.salesDate) errors.salesDate = "Sales Date is required";
         if (!formsData.unit) errors.unit = "Unit is required";
         if (!formsData.salesPrice) errors.salesPrice = "Sales Price is required";
@@ -101,15 +103,15 @@ const SalesAction = ({ onClose, successAction, title, selectedData = {}, readOnl
     const submitAction = () => {
         if (validation()) return;
         const reqData = {
-            invoiceNo: formsData.invoiceNo,
+            productionId: formsData?.productionId,
             customer: formsData.customer.id,
+            invoiceNo: formsData.invoiceNo,
             product: formsData.product.id,
             salesDate: formsData.salesDate,
             salesPrice: formsData.salesPrice,
             unit: formsData.unit,
             qty: formsData.qty,
             pDesc: formsData.pDesc,
-            invoiceNo: formsData.invoiceNo,
             status: formsData.status,
         }
         const url = selectedData.id ? UPDATE_SALES_DETAILS(selectedData.id) : ADD_SALES_DETAILS;
@@ -134,10 +136,46 @@ const SalesAction = ({ onClose, successAction, title, selectedData = {}, readOnl
     }
 
     const handleCustomerChange = (e) => {
-        setFormsData({ ...formsData, ["customer"]: e });
+        setErrors({ ...errors, ["customer"]: "" });
+        setClearSignal((prev) => prev + 1);
+        setFormsData({ ...formsData, ["customer"]: e , ['product']: {}, unit: ""});
     };
+
+    const getProductionDetailsByProductId = (e) => {
+        console.log(e);
+        console.log(formsData);
+        start();
+        sendGetRequest(SALES_DETAIL_BY_PRODUCT_ID(e.product.id, formsData.customer.id, 'sales'), user.token).then((res) => {
+            if (res.status === 200) {
+                if (Object.keys(res.data).length !== 0 ) {
+                    setClearSignal((prev) => prev + 1);
+                    setFormsData((prev) => ({ ...prev, product: {}, unit: "" }));
+                    showMessage('error', "Product already exists on sales list please update this product!");
+                } else {
+                        setFormsData((prev) => ({ ...prev, product: e.product, unit: e.unit, productionId: e.id }));
+                }
+            }
+        }).catch((err) => {
+            console.log("err", err);
+        }).finally(() => {
+            stop();
+        });
+    }
+
     const handleProductChange = (e) => {
-        setFormsData({ ...formsData, ["product"]: e, ["qty"]: '' });
+        if (!formsData.customer) {
+            setErrors({ ...errors, ["customer"]: "Customer is required" });
+            showMessage('error', "Please select customer first!");
+            setClearSignal((prev) => prev + 1);
+            setFormsData((prev) => ({ ...prev, product: {}, unit: "" }));
+            return false
+        } else {
+
+            if (typeof e === "object" && e?.id) {
+                getProductionDetailsByProductId(e);
+                return;
+            }
+        }
     };
 
     const handleReset = () => {
@@ -161,14 +199,53 @@ const SalesAction = ({ onClose, successAction, title, selectedData = {}, readOnl
             >
                 <Grid container spacing={3} style={{ padding: 20 }}>
                     <Grid item xs={6}>
-                        <CustomerSpellSearch onChange={handleCustomerChange} value={formsData.customer} onReset={handleReset} />
+                        {selectedData.id ? 
+                         <TextField
+                            label="Customer"
+                            variant="outlined"
+                            fullWidth
+                            name='customer'
+                            size='small'
+                            value={formsData.customer.name}
+                            placeholder="Enter customer name..."
+                            InputProps={{
+                                readOnly: true,
+                            }}
+                        />
+                        :
+                        <CustomerSpellSearch
+                            onChange={handleCustomerChange}
+                            value={formsData.customer}
+                            onReset={handleReset}
+                            error={errors.customer}
+                        />}
                     </Grid>
                     <Grid item xs={6}>
-                        <ProductionProductSelect type="sales" onChangeAction={handleProductChange} value={formsData.product} onReset={handleReset} />
+                         {selectedData.id ? 
+                         <TextField
+                            label="Product"
+                            variant="outlined"
+                            fullWidth
+                            name='product'
+                            size='small'
+                            value={formsData.product.name}
+                            placeholder="Enter product name..."
+                            InputProps={{
+                                readOnly: true,
+                            }}
+                        />
+                        :
+                        <ProductionProductSpellSearch
+                            onSelect={handleProductChange}
+                            clearSignal={clearSignal}
+                            status="1"
+                            customer={formsData.customer}
+                        />}
                     </Grid>
                     <Grid item xs={6}>
                         <TextField
                             label="Invoice No"
+                            autoComplete='off'
                             variant="outlined"
                             fullWidth
                             name='invoiceNo'
@@ -185,6 +262,7 @@ const SalesAction = ({ onClose, successAction, title, selectedData = {}, readOnl
                         <TextField
                             variant="outlined"
                             fullWidth
+                            autoComplete='off'
                             name="salesDate"
                             value={formsData.salesDate}
                             onChange={handleInputChange}
@@ -206,6 +284,7 @@ const SalesAction = ({ onClose, successAction, title, selectedData = {}, readOnl
                         <TextField
                             label="Sales Price"
                             variant="outlined"
+                            autoComplete='off'
                             fullWidth
                             name='salesPrice'
                             size='small'
@@ -222,6 +301,7 @@ const SalesAction = ({ onClose, successAction, title, selectedData = {}, readOnl
                         <TextField
                             label="Quantity"
                             variant="outlined"
+                            autoComplete='off'
                             fullWidth
                             name="qty"
                             size="small"
@@ -239,6 +319,7 @@ const SalesAction = ({ onClose, successAction, title, selectedData = {}, readOnl
                         <TextField
                             label="Description"
                             variant="outlined"
+                            autoComplete='off'
                             fullWidth
                             multiline
                             rows={4}
@@ -252,7 +333,7 @@ const SalesAction = ({ onClose, successAction, title, selectedData = {}, readOnl
                             onChange={handleInputChange}
                         />
                     </Grid>
-                    <Grid item xs={12}>
+                    {/* <Grid item xs={12}>
                         <TextField fullWidth id="status"
                             onChange={handleInputChange}
                             name='status'
@@ -264,7 +345,7 @@ const SalesAction = ({ onClose, successAction, title, selectedData = {}, readOnl
                             <MenuItem value="0">Inactive</MenuItem>
 
                         </TextField>
-                    </Grid>
+                    </Grid> */}
                 </Grid>
             </PopupAction >
         </>

@@ -5,7 +5,7 @@ import { useSelector } from 'react-redux'
 import PopupAction from '../../../common/PopupAction'
 import CustomerSpellSearch from '../../../common/select-box/CustomerSpellSearch'
 import UnitSelect from '../../../common/select-box/UnitSelect'
-import { ADD_PRODUCTION_DETAILS, PRODUCTION_DETAIL_BY_ID, UPDATE_PRODUCTION_DETAILS, UPDATE_PRODUCTION_STATUS } from '../../../config/api-urls'
+import { ADD_PRODUCTION_DETAILS, PRODUCTION_DETAIL_BY_ID, PRODUCTION_DETAIL_BY_PRODUCT_ID, UPDATE_PRODUCTION_DETAILS, UPDATE_PRODUCTION_STATUS } from '../../../config/api-urls'
 import { useLoader } from '../../../hooks/useLoader'
 import { showMessage } from '../../../utils/message'
 import { sendGetRequest, sendPostRequest } from '../../../utils/network'
@@ -13,6 +13,9 @@ import { validateNumber } from '../../../utils/validation'
 import NewProductionDetails from './NewProductionDetails'
 import RawMaterialAction from './RawMaterialAction'
 import UsedMaterialDetails from './UsedMaterialDetails'
+import SpellSearchProduct from '../../../common/select-box/SpellSearchProduct'
+import PurchaseItemsSpellSearch from '../../../common/input-search/PurchaseItemsSpellSearch'
+import ProductSpellSearch from '../../../common/input-search/ProductSpellSearch'
 
 
 const ProductionAction = ({ successAction, title, selectedData = {}, readOnly = false, onClose }) => {
@@ -28,14 +31,38 @@ const ProductionAction = ({ successAction, title, selectedData = {}, readOnly = 
         productionId: selectedData.id || '',
     }));
     const [productionData, setProductionData] = useState({});
+    const [clearSignal, setClearSignal] = useState(0);
     const [errors, setErrors] = useState({});
     const [edit, setEdit] = useState(false);
     const [{ start, stop }, Loader] = useLoader();
     const user = useSelector((state) => state.user);
 
-
+console.log("formsData", formsData)
+    const getProductionDetailsByProductId = (e) => {
+        start();
+        sendGetRequest(PRODUCTION_DETAIL_BY_PRODUCT_ID(e.id), user.token).then((res) => {
+            if (res.status === 200) {
+                if (Object.keys(res.data).length !== 0){
+                    setClearSignal((prev) => prev + 1);
+                    setFormData((prev) => ({ ...prev, product: {}, unit: "" }));
+                    showMessage('error', "Product already exists in production!");
+                } else {
+                setFormData((prev) => ({ ...prev, product: e, unit: e.unit }));
+                }
+            }
+        }).catch((err) => {
+            console.log("err", err);
+        }).finally(() => {
+            stop();
+        });
+    }
 
     const handleInputChange = (e) => {
+        console.log("e", e, typeof e);
+        if (typeof e === "object" && e?.id) {
+            getProductionDetailsByProductId(e);
+            return;
+        }
         const { name, value } = e.target;
         if (name === "qty") {
 
@@ -51,7 +78,6 @@ const ProductionAction = ({ successAction, title, selectedData = {}, readOnly = 
             setFormData((prev) => ({ ...prev, [name]: value }));
         }
     };
-
 
     const validation = () => {
         const errors = {};
@@ -75,7 +101,7 @@ const ProductionAction = ({ successAction, title, selectedData = {}, readOnly = 
         const reqData = {
             customer: formsData.customer.id,
             manufacturingDate: formsData.pDate,
-            product: formsData.product,
+            product: formsData.product.id,
             unit: formsData.unit,
             qty: formsData.qty,
             operatorName: formsData.operatorName,
@@ -174,19 +200,20 @@ const ProductionAction = ({ successAction, title, selectedData = {}, readOnly = 
                     />
                 </Grid>
                 <Grid item xs={6}>
-                    <TextField
-                        label="Product Name"
-                        variant="outlined"
-                        fullWidth
-                        name='product'
-                        size='small'
-                        value={formsData.product}
-                        placeholder="Enter Product Name..."
-                        InputProps={{
-                            readOnly: readOnly,
-                        }}
-                        onChange={handleInputChange}
-                    />
+                    {selectedData.id ?
+                        <TextField label="Product Name" variant="outlined" fullWidth name='product' size='small' value={formsData.product.name} placeholder="Enter Product Name..." InputProps={{ readOnly: true }} />
+                        :
+                                        <ProductSpellSearch
+                                            type="sales"
+                                            onSelect={(e) => handleInputChange(e)}
+                                            clearSignal={clearSignal}
+                                        />
+                        // <PurchaseItemsSpellSearch
+                        //     type="sales"
+                        //     onSelect={handleInputChange}
+                        //     clearSignal={clearSignal} />
+                    }
+
                 </Grid>
                 <Grid item xs={6}>
                     <UnitSelect onChange={handleInputChange} value={formsData.unit} readOnly={readOnly} />
@@ -241,19 +268,6 @@ const ProductionAction = ({ successAction, title, selectedData = {}, readOnly = 
                         onChange={handleInputChange}
                     />
                 </Grid>
-                <Grid item xs={12}>
-                    <TextField fullWidth id="status"
-                        onChange={handleInputChange}
-                        name='status'
-                        label="Status"
-                        variant='outlined'
-                        size='small'
-                        value={formsData.status} select>
-                        <MenuItem value="1">Active</MenuItem>
-                        <MenuItem value="0">Inactive</MenuItem>
-                    </TextField>
-                </Grid>
-
                 {!readOnly && <Grid item xs={12} >
                     <Button variant="contained" color="primary" onClick={submitAction} >{selectedData.id ? "Update" : "Submit"}</Button>
                 </Grid>}
@@ -287,7 +301,7 @@ const ProductionAction = ({ successAction, title, selectedData = {}, readOnly = 
                     </Collapse> :
                         <Grid item xs={12}>
                             {selectedData && selectedData.materials.length != 0 &&
-                                <UsedMaterialDetails data={selectedData.materials} />
+                                <UsedMaterialDetails data={selectedData.materials} readOnly={readOnly} />
                             }
                         </Grid>
                     }

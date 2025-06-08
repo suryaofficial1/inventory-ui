@@ -35,10 +35,10 @@ const useStyles = makeStyles({
     },
 });
 
-export default function UsedMaterialDetails({ data }) {
+export default function UsedMaterialDetails({ data,  deleteAction, readOnly }) {
     const classes = useStyles();
-    function createData(id, product, mqty, mPrice, rqty, rPrice, lqty, lPrice) {
-        return { id, product, mqty, mPrice, rqty, rPrice, lqty, lPrice };
+    function createData(id, supplier, product, mqty, mPrice, rqty, rPrice, lqty, lPrice) {
+        return { id, supplier, product, mqty, mPrice, rqty, rPrice, lqty, lPrice };
     }
 
     const rows = data
@@ -46,6 +46,7 @@ export default function UsedMaterialDetails({ data }) {
             createData(
                 item.id,
                 item.product,
+                item.supplier,
                 item.mqty,
                 item.mPrice,
                 item.rqty,
@@ -61,7 +62,8 @@ export default function UsedMaterialDetails({ data }) {
             <Table className={classes.table} aria-label="customized table">
                 <TableHead>
                     <TableRow>
-                        <StyledTableCell align="left">#id</StyledTableCell>
+                        {!readOnly && <StyledTableCell align="center">Actions</StyledTableCell>}                        <StyledTableCell align="left">#id</StyledTableCell>
+                        <StyledTableCell align="left">Supplier</StyledTableCell>
                         <StyledTableCell align="left">Product</StyledTableCell>
                         <StyledTableCell align="center">Material Quantity</StyledTableCell>
                         <StyledTableCell align="center">Material Price</StyledTableCell>
@@ -74,8 +76,19 @@ export default function UsedMaterialDetails({ data }) {
                 <TableBody>
                     {rows.map((row) => (
                         <StyledTableRow key={row.id}>
+                            { !readOnly && <StyledTableCell align="center" style={{ display: 'flex', flexDirection: 'row' }}>
+                                {/* <Edit color='primary'
+                                    style={{ cursor: 'pointer', marginRight: '10px' }}
+                                    onClick={() => editAction(row)}
+                                /> */}
+                               <Delete color='secondary' 
+                                    style={{ cursor: 'pointer' }}
+                                    onClick={() => deleteAction(row)}
+                                    />
+                            </StyledTableCell>} 
                             <StyledTableCell align="left">{row.id}</StyledTableCell>
-                            <StyledTableCell align="left">{row.product.product}</StyledTableCell>
+                            <StyledTableCell align="left">{row.supplier.name}</StyledTableCell>
+                            <StyledTableCell align="left">{row.product.name}</StyledTableCell>
                             <StyledTableCell align="center">{row.mqty}</StyledTableCell>
                             <StyledTableCell align="center">{row.mPrice}</StyledTableCell>
                             <StyledTableCell align="center">{row.rqty}</StyledTableCell>

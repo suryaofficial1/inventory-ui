@@ -2,12 +2,14 @@ import { Button, Collapse, Grid, TextField, Typography } from '@material-ui/core
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import PurchaseProductSelect from '../../../common/select-box/PurchaseProductSelect';
-import { ADD_MATERIAL_DETAILS, AVAILABLE_PURCHASE_PRODUCT_QTY, MATERIAL_LIST, UPDATE_MATERIAL_DETAILS } from '../../../config/api-urls';
+import { ADD_MATERIAL_DETAILS, AVAILABLE_PURCHASE_PRODUCT_QTY, DELETE_MATERIAL, MATERIAL_LIST, UPDATE_MATERIAL_DETAILS, USED_MATERIAL_DETAIL_BY_PRODUCT_ID } from '../../../config/api-urls';
 import { useLoader } from '../../../hooks/useLoader';
 import { showMessage } from '../../../utils/message';
-import { sendGetRequest, sendPostRequest } from '../../../utils/network';
+import { sendDeleteRequest, sendGetRequest, sendPostRequest } from '../../../utils/network';
 import { validateNumber } from '../../../utils/validation';
 import UsedMaterialDetails from './UsedMaterialDetails';
+import Swal from 'sweetalert2';
+import PurchaseItemsSpellSearch from '../../../common/input-search/PurchaseItemsSpellSearch';
 
 const RawMaterialAction = ({ productionId, readOnly = false, getProductionDetails }) => {
     const [formsData, setFormData] = useState(() => ({
@@ -21,10 +23,10 @@ const RawMaterialAction = ({ productionId, readOnly = false, getProductionDetail
     }));
     const [edit, setEdit] = useState(false);
     const [selectedData, setSelectedData] = useState(false);
-
     const [availableQty, setAvailableQty] = useState(0);
     const [errors, setErrors] = useState({});
     const [rows, setRows] = useState([]);
+    const [clearSignal, setClearSignal] = useState(0);
     const [{ start, stop }, Loader] = useLoader();
     const user = useSelector((state) => state.user);
 
@@ -70,8 +72,8 @@ const RawMaterialAction = ({ productionId, readOnly = false, getProductionDetail
                 setErrors({ ...errors, ["mqty"]: 'First insert material quantity', ["rqty"]: 'Material Quantity is required' });
                 return;
             }
-            if (value > (availableQty - Number(formsData.mqty))) {
-                setErrors({ ...errors, ["rqty"]: `Rejection Quantity cannot exceed available stock: ${availableQty - Number(formsData.mqty)}` });
+            if (value > Number(formsData.mqty)) {
+                setErrors({ ...errors, ["rqty"]: `Rejection Quantity cannot exceed material used quantity: ${formsData.mqty}` });
                 return;
             }
 
@@ -87,36 +89,39 @@ const RawMaterialAction = ({ productionId, readOnly = false, getProductionDetail
         }
     };
 
-    useEffect(() => {
-        if (formsData.product.id) {
-            getAvailableQty();
-        }
-    }, [formsData.product.id]);
-
-
-    const getAvailableQty = async () => {
-        try {
-            const res = await sendGetRequest(AVAILABLE_PURCHASE_PRODUCT_QTY(formsData.product.id), user.token);
+    console.log("formsData", formsData)
+    const getMaterialDetailsByProductId = (e) => {
+        start();
+        sendGetRequest(USED_MATERIAL_DETAIL_BY_PRODUCT_ID(e.product.id, productionId), user.token).then((res) => {
             if (res.status === 200) {
-                setAvailableQty(res.data.availableQty);
-            } else {
-                console.error("Error in getting available quantity", res.data);
-                return 0;
+                if (Object.keys(res.data).length !== 0 && res.data[0].s_id == e.supplier.id) {
+                    setClearSignal((prev) => prev + 1);
+                    setAvailableQty(0);
+                    setFormData({ ...formsData, ["product"]: {}, ['mqty']: '', ['mPrice']: '', ['rqty']: '', ['rPrice']: '', ['lqty']: '', ['lPrice']: '' });
+                    showMessage('error', "Product already exists in production!");
+                } else {
+                    setAvailableQty(e.availableQty)
+                    setFormData({ ...formsData, ["supplier"]: e.supplier, ["product"]: e.product, ['mqty']: '', ['mPrice']: '', ['rqty']: '', ['rPrice']: '', ['lqty']: '', ['lPrice']: '' });
+                }
             }
-        } catch (err) {
-            console.error("Error fetching available quantity", err);
-            return 0;
-        }
-    };
+        }).catch((err) => {
+            console.log("err", err);
+        }).finally(() => {
+            stop();
+        });
+    }
 
     const handleProductChange = (e) => {
-        setFormData({ ...formsData, ["product"]: e, ['mqty']: '', ['mPrice']: '', ['rqty']: '', ['rPrice']: '', ['lqty']: '', ['lPrice']: '' });
+        if (typeof e === "object" && e?.id) {
+            getMaterialDetailsByProductId(e);
+            return;
+        }
     };
 
     const handleReset = () => {
         setFormData({ pName: '', cName: '' });
         setFormData({ ...formsData, ["customer"]: '', ['product']: '' });
-        handleProductChange('');
+        handleProductChange({});
         handleCustomerChange('');
     };
 
@@ -125,10 +130,6 @@ const RawMaterialAction = ({ productionId, readOnly = false, getProductionDetail
         if (!formsData.product && formsData.product.id) errors.product = "Product is required";
         if (!formsData.mqty) errors.mqty = "Material Quantity is required";
         if (!formsData.mPrice) errors.mPrice = "Material Price is required";
-        // if (!formsData.rqty) errors.rqty = "Rejection Quantity is required";
-        // if (!formsData.rPrice) errors.rPrice = "Rejection Price is required";
-        // if (!formsData.lqty) errors.lqty = "Lumps Quantity is required";
-        // if (!formsData.lPrice) errors.lPrice = "Lumps Price is required";
         if (Object.keys(errors).length > 0) {
             showMessage("error", errors[Object.keys(errors)[0]]);
             return true;
@@ -140,6 +141,7 @@ const RawMaterialAction = ({ productionId, readOnly = false, getProductionDetail
         if (validation()) return;
         const reqData = {
             productionId,
+            supplier: formsData.supplier.id,
             product: formsData.product.id,
             mqty: formsData.mqty,
             mPrice: formsData.mPrice,
@@ -154,14 +156,17 @@ const RawMaterialAction = ({ productionId, readOnly = false, getProductionDetail
         sendPostRequest(url, reqData, true, user.token).then((res) => {
             if (res.status === 200) {
                 setFormData({
-                    product: '',
+                    product: {},
                     mqty: '',
                     mPrice: '',
                     rqty: '',
                     rPrice: '',
                     lqty: '',
                     lPrice: '',
+                    supplier: {},   
                 });
+                setClearSignal((prev) => prev + 1);
+                setAvailableQty(0);
                 setErrors({})
                 getMaterials()
                 getProductionDetails(productionId)
@@ -195,18 +200,36 @@ const RawMaterialAction = ({ productionId, readOnly = false, getProductionDetail
         }).finally(() => stop())
     }
 
-    const editAction = (row) => {
-        setEdit(!edit)
-        setSelectedData(row);
-        setFormData(row);
+    const deleteAction = (row) => {
+        start();
+        sendDeleteRequest(`${DELETE_MATERIAL(row.id)}`, user.token)
+            .then((res) => {
+                if (res.status === 200) {
+                    getMaterials();
+                    getProductionDetails(productionId)
+                    showMessage('success', "Item delete successfully");
+
+                } else {
+                    console.log("Error in delete material", res.data);
+                }
+            })
+            .catch((err) => {
+                console.log(err);
+            })
+            .finally(stop);
     }
+
     return (<>
         <Grid container spacing={1} item xs={12}>
             <Grid item xs={12}>
                 <Typography gutterBottom variant='h6'>Add {rows?.length > 0 ? ' More ' : ''} Used Raw Material Detail</Typography>
             </Grid>
             <Grid item xs={12}>
-                <PurchaseProductSelect onChangeAction={handleProductChange} value={formsData.product} onReset={handleReset} />
+                <PurchaseItemsSpellSearch
+                    type="purchase"
+                    onSelect={handleProductChange}
+                    clearSignal={clearSignal} />
+                {/* <PurchaseProductSelect onChangeAction={handleProductChange} value={formsData.product} onReset={handleReset} /> */}
             </Grid>
             <Grid item xs={6}>
                 <TextField fullWidth id="material Quantity"
@@ -289,16 +312,22 @@ const RawMaterialAction = ({ productionId, readOnly = false, getProductionDetail
                 />
             </Grid>
             {!readOnly && <Grid item xs={12} >
-                <Button variant="contained" color="primary" onClick={submitAction} >{rows?.length > 0 ? 'Add More' : 'Add'}</Button>
+
+                <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={submitAction}
+                >
+                    {formsData.id ? 'Update' : rows?.length > 0 ? 'Add More' : 'Add'}
+                </Button>
             </Grid>}
 
             <Grid item xs={12}>
                 {rows?.length > 0 && <Collapse in={true} timeout="auto" unmountOnExit>
-                    <UsedMaterialDetails editAction={editAction} data={rows} />
+                    <UsedMaterialDetails deleteAction={deleteAction} data={rows} />
                 </Collapse>}
             </Grid>
         </Grid>
-
     </>
     );
 }

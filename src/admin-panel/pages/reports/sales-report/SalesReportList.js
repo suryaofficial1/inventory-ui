@@ -20,10 +20,10 @@ import { sendGetRequest } from '../../../../utils/network';
 const SalesReportList = ({ formsData }) => {
     const [{ start, stop }, Loader] = useLoader();
     const [salesData, setSalesData] = useState([]);
-    const [anchorEl, setAnchorEl] = useState(null);
+    const user = useSelector((state) => state.user);
+    const [anchorEl, setAnchorEl] = React.useState(null);
     const [hide, setHide] = useState(false);
     const pdfRef = useRef();
-    const user = useSelector((state) => state.user);
 
     useEffect(() => {
         fetchSalesData();
@@ -118,11 +118,11 @@ const SalesReportList = ({ formsData }) => {
         // 🎯 Add Data Rows
         salesData.rows.forEach(row => {
             const rowData = worksheet.addRow({
-                date: row.date,
+                date: row.salesDate,
                 customer: row.customer.name,
                 product: row.product.name,
                 qty: Number(row.qty),
-                price: Number(row.price)
+                price: Number(row.salesPrice)
             });
 
             rowData.eachCell((cell, colNumber) => {

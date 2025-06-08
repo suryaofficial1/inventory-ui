@@ -11,8 +11,8 @@ import { DELETE_RETURN_PURCHASE, PURCHASE_RETURN_LIST } from '../../../config/ap
 import { useLoader } from '../../../hooks/useLoader';
 import { roleBasePolicy } from '../../../utils/Constent';
 import { sendDeleteRequest, sendGetRequest } from '../../../utils/network';
-import PurchaseFilter from '../purchase/PurchaseFilter';
 import Action from './Action';
+import PurchaseFilter from './Filter';
 
 const useStyles = makeStyles({
     actionIcons: {
@@ -37,8 +37,9 @@ const ReturnList = () => {
 
     const [page, setPage] = useState(0);
     const [rows, setRows] = useState([]);
-    const [filter, setFilter] = useState({ pName: '', sName: '' });
-    const [tempFilter, setTempFilter] = useState({ pName: '', sName: '' });
+    const [filter, setFilter] = useState({ pName: {}, sName: '' });
+    const [tempFilter, setTempFilter] = useState({ pName: {}, sName: '' });
+    const [clearSignal, setClearSignal] = useState(0);
     const [totalRecords, setTotalRecords] = useState(0);
     const [open, setOpen] = useState(false);
     const [editData, setEditData] = useState({});
@@ -54,7 +55,7 @@ const ReturnList = () => {
 
     const getReturnList = () => {
         start();
-        sendGetRequest(`${PURCHASE_RETURN_LIST}?pName=${filter?.pName ? filter?.pName : ""}&sName=${filter?.sName ? filter?.sName.name : ""}&page=${page + 1}&per_page=10`, user.token)
+        sendGetRequest(`${PURCHASE_RETURN_LIST}?pName=${filter?.pName?.id ? filter?.pName.name : ""}&sName=${filter?.sName ? filter?.sName.name : ""}&page=${page + 1}&per_page=10`, user.token)
             .then((res) => {
                 if (res.status === 200) {
                     setRows(res.data.rows);
@@ -127,9 +128,13 @@ const ReturnList = () => {
                 params.row.supplier.name ? params.row.supplier.name : ""
             )
         },
-        { field: 'product', headerName: 'Product', width: 200, resizable: false, sortable: false },
         {
-            field: 'rDesc', headerName: 'desc', width: 200,
+            field: 'product', headerName: 'Product', width: 200, resizable: true, sortable: false,
+            renderCell: (params) => (
+                params.row.product.name ? params.row.product.name : ""
+            )
+        }, {
+            field: 'rDesc', headerName: 'desc', width: 200, resizable: true, sortable: false,
             renderCell: (params) => {
                 return (
                     params.row.rDesc ? <textarea readOnly>{params.row.rDesc}</textarea> : ''
@@ -165,13 +170,15 @@ const ReturnList = () => {
         setFilter({ pName: null, sName: null });
         setTempFilter({ pName: null, sName: null });
         setPage(0);
+        setClearSignal(prev => prev + 1);
+
     };
 
     return (
         <div>
             <Loader />
             <div className={classes.addBtn}>
-                <PurchaseFilter reset={resetAllData} filter={tempFilter} setFilter={setTempFilter} />
+                <PurchaseFilter reset={resetAllData} filter={tempFilter} setFilter={setTempFilter} clearSignal={clearSignal} />
             </div>
             <div>
                 {roleBasePolicy(user?.role) && <Button startIcon={<Add />} className={classes.actionButton}

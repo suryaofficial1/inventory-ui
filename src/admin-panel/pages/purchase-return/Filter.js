@@ -1,31 +1,39 @@
 import { Grid } from '@material-ui/core';
 import React from 'react';
-import ProductSpellSearch from '../../../common/select-box/ProductSpellSearch';
-import SupplierSpellSearch from '../../../common/select-box/SupplierSpellSearch';
 
-const PurchaseFilter = ({ filter, setFilter, reset }) => {
+import SupplierSpellSearch from '../../../common/select-box/SupplierSpellSearch';
+import SpellSearchPurchase from '../../../common/select-box/SpellSearchPurchase';
+import PurchaseItemsSpellSearch from '../../../common/input-search/PurchaseItemsSpellSearch';
+
+const PurchaseFilter = ({ filter, setFilter, reset , clearSignal}) => {
 
     const handleSupplierChange = (e) => {
         setFilter({ ...filter, "sName": e });
     };
     const handleProductChange = (e) => {
-        setFilter({ ...filter, "pName": e });
+        setFilter({ ...filter, "pName": e.product });
     };
 
     const handleReset = () => {
-        setFilter({ pName: '', sName: '' });
+        setFilter({ pName: {}, sName: '' });
         handleProductChange('');
         handleSupplierChange('')
         reset();
     };
 
+    console.log("filter", filter)
     return (
         <Grid container spacing={1}>
             <Grid item xs={12} sm={6}>
                 <SupplierSpellSearch onChange={handleSupplierChange} value={filter.sName} onReset={handleReset} />
             </Grid>
             <Grid item xs={12} sm={6}>
-                <ProductSpellSearch type="purchase" onChangeAction={handleProductChange} value={filter.pName} onReset={handleReset} />
+                
+                <PurchaseItemsSpellSearch
+                    type="purchase_return"
+                    onSelect={(e) => handleProductChange(e)}
+                    clearSignal={clearSignal}
+                />
             </Grid>
         </Grid>
     );

@@ -38,8 +38,9 @@ const PurchaseList = () => {
 
     const [page, setPage] = useState(0);
     const [rows, setRows] = useState([]);
-    const [filter, setFilter] = useState({ pName: '', sName: '' });
-    const [tempFilter, setTempFilter] = useState({ pName: '', sName: '' });
+    const [filter, setFilter] = useState({ pName: {}, sName: '' });
+    const [clearSignal, setClearSignal] = useState(0);
+    const [tempFilter, setTempFilter] = useState({ pName: {}, sName: '' });
     const [totalRecords, setTotalRecords] = useState(0);
     const [open, setOpen] = useState(false);
     const [editData, setEditData] = useState({});
@@ -54,7 +55,7 @@ const PurchaseList = () => {
 
     const getPurchaseList = () => {
         start();
-        sendGetRequest(`${PURCHASE_LIST}?pName=${filter?.pName ? filter?.pName.product : ""}&sName=${filter?.sName ? filter?.sName.name : ""}&page=${page + 1}&per_page=10`, user.token)
+        sendGetRequest(`${PURCHASE_LIST}?pName=${filter?.pName?.id ? filter?.pName.name : ""}&sName=${filter?.sName ? filter?.sName.name : ""}&page=${page + 1}&per_page=10`, user.token)
             .then((res) => {
                 if (res.status === 200) {
                     setRows(res.data.rows);
@@ -105,7 +106,6 @@ const PurchaseList = () => {
                 if (res.status === 200) {
                     getPurchaseList();
                     Swal.fire("Purchase record deleted successfully!", "", "success");
-                    // showMessage('warning', 'Purchase record deleted successfully');
                 } else {
                     console.log("Error in delete purchase", res.data);
                 }
@@ -126,10 +126,22 @@ const PurchaseList = () => {
                 params.row.supplier.name ? params.row.supplier.name : ""
             )
         },
-        { field: 'product', headerName: 'Product', width: 200, resizable: false, sortable: false },
-        { field: 'description', headerName: 'Description', width: 200 },
+        {
+            field: 'product', headerName: 'Product', width: 200, resizable: false, sortable: false,
+            renderCell: (params) => (
+                params.row.product.name ? params.row.product.name : ""
+            )
+        },
         { field: 'qty', headerName: 'Quantity', width: 120 },
         { field: 'price', headerName: 'Price', width: 120 },
+        {
+            field: 'description', headerName: 'Description', width: 230,
+            renderCell: (params) => {
+                return (
+                    params.row.description ? <textarea readOnly>{params.row.description}</textarea> : ''
+                )
+            }
+        },
         {
             field: 'purchaseDate', headerName: 'Purchase Date', width: 150,
             renderCell: (params) => (
@@ -163,13 +175,15 @@ const PurchaseList = () => {
         setFilter({ pName: null, sName: null });
         setTempFilter({ pName: null, sName: null });
         setPage(0);
+        setClearSignal(prev => prev + 1);
+
     };
 
     return (
         <div>
             <Loader />
             <div className={classes.addBtn}>
-                <PurchaseFilter reset={resetAllData} filter={tempFilter} setFilter={setTempFilter} />
+                <PurchaseFilter reset={resetAllData} filter={tempFilter} setFilter={setTempFilter} clearSignal={clearSignal} />
             </div>
             <div>
                 {roleBasePolicy(user?.role) && <Button startIcon={<Add />} className={classes.actionButton} variant="contained" color="primary" onClick={() => setOpen(!open)}>Add Purchase</Button>}

@@ -88,6 +88,7 @@ const SupplierAction = ({ onClose, successAction, title, selectedData = {}, read
                 <Grid container spacing={3} style={{ padding: 20 }}>
                     <Grid item xs={6}>
                         <TextField
+                            autoComplete='off'
                             label="Name"
                             variant="outlined"
                             fullWidth
@@ -103,6 +104,7 @@ const SupplierAction = ({ onClose, successAction, title, selectedData = {}, read
                     </Grid>
                     <Grid item xs={6}>
                         <TextField
+                            autoComplete='off'
                             label="Vendor Code"
                             variant="outlined"
                             fullWidth
@@ -116,38 +118,10 @@ const SupplierAction = ({ onClose, successAction, title, selectedData = {}, read
                             onChange={handleInputChange}
                         />
                     </Grid>
-                    <Grid item xs={12}>
-                        <TextField
-                            label="Address"
-                            variant="outlined"
-                            fullWidth
-                            name='address'
-                            size='small'
-                            value={formsData.address}
-                            placeholder="Enter Address..."
-                            InputProps={{
-                                readOnly: readOnly,
-                            }}
-                            onChange={handleInputChange}
-                        />
-                    </Grid>
-                    <Grid item xs={12}>
-                        <TextField
-                            label="Location"
-                            variant="outlined"
-                            fullWidth
-                            name='location'
-                            size='small'
-                            value={formsData.location}
-                            placeholder="Enter Location..."
-                            InputProps={{
-                                readOnly: readOnly,
-                            }}
-                            onChange={handleInputChange}
-                        />
-                    </Grid>
+                    
                     <Grid item xs={6}>
                         <TextField
+                            autoComplete='off'
                             label="Contact"
                             variant="outlined"
                             fullWidth
@@ -163,6 +137,7 @@ const SupplierAction = ({ onClose, successAction, title, selectedData = {}, read
                     </Grid>
                     <Grid item xs={6}>
                         <TextField
+                            autoComplete='off'
                             label="GSTIN"
                             variant="outlined"
                             fullWidth
@@ -176,8 +151,47 @@ const SupplierAction = ({ onClose, successAction, title, selectedData = {}, read
                             onChange={handleInputChange}
                         />
                     </Grid>
+                      <Grid item xs={12}>
+                        <TextField
+                            multiline
+                            rows={2}
+                            autoComplete='off'
+                            label="Location"
+                            variant="outlined"
+                            fullWidth
+                            name='location'
+                            size='small'
+                            value={formsData.location}
+                            placeholder="Enter Location..."
+                            InputProps={{
+                                readOnly: readOnly,
+                            }}
+                            onChange={handleInputChange}
+                        />
+                    </Grid>
                     <Grid item xs={12}>
-                        <TextField fullWidth id="status"
+                        <TextField
+                        multiline
+                            rows={3}
+                            autoComplete='off'
+                            label="Address"
+                            variant="outlined"
+                            fullWidth
+                            name='address'
+                            size='small'
+                            value={formsData.address}
+                            placeholder="Enter Address..."
+                            InputProps={{
+                                readOnly: readOnly,
+                            }}
+                            onChange={handleInputChange}
+                        />
+                    </Grid>
+                  
+                    <Grid item xs={12}>
+                        <TextField
+
+                            autoComplete='off' fullWidth id="status"
                             onChange={handleInputChange}
                             name='status'
                             label="Status"

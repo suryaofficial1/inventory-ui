@@ -7,6 +7,7 @@ import ProgressBar from '../../../common/report-components/ProgressBar';
 import { ALL_STATS_COUNT, PRODUCTION_SUMMARY, TOP_5_PRODUCTS } from '../../../config/api-urls';
 import { useLoader } from '../../../hooks/useLoader';
 import { sendGetRequest } from '../../../utils/network';
+import DashboardCards from './DashboardCards';
 
 const useStyles = makeStyles((theme) => ({
   card: {
@@ -78,19 +79,6 @@ const Dashboard = () => {
     }
   };
 
-  const cardSection = (image, title, subTitle) => {
-    return (
-      <Card elevation={2} className={classes.card}>
-        <CardHeader
-          avatar={
-            <img src={image} className={classes.image} />
-          }
-          title={<Typography className={classes.title}>{title}</Typography>}
-          subheader={<Typography className={classes.subTitle}>₹{subTitle}</Typography>}
-        />
-      </Card>
-    )
-  }
 
   const top5ProductSection = (title, data) => {
     return (
@@ -123,18 +111,8 @@ const Dashboard = () => {
     <>
       <Loader />
       <Grid container spacing={1}>
-        {counts && counts.map((card, index) => {
-          return (
-            <Grid item xs={12} sm={4} key={index}>
-              {cardSection(card.images, card.title, card.subTitle)}
-            </Grid>
-          )
-        })}
-        <Grid item xs={12} sm={6}>
-          {top5Product && top5ProductSection("Top 5 Selling Products", top5Product.top5Sell)}
-        </Grid>
-        <Grid item xs={12} sm={6}>
-          {top5Product && top5ProductSection("Top 5 Purchase Products", top5Product.top5Purchase)}
+        <Grid item xs={12}>
+        <DashboardCards data={counts} />
         </Grid>
         <Grid item sm={12}>
           <ProductionSingleBar title={"Production Summary"} filteredData={productionSummary} />

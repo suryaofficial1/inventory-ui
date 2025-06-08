@@ -6,7 +6,7 @@ import { useLoader } from '../../hooks/useLoader';
 import { sendGetRequest } from '../../utils/network';
 import { useSelector } from 'react-redux';
 
-const SupplierSpellSearch = ({ onChange, value }) => {
+const SupplierSpellSearch = ({ onChange, value, error }) => {
     const [suppliers, setSuppliers] = useState([]);
     const [{ start, stop }, Loader] = useLoader();
       const user = useSelector((state) => state.user);
@@ -53,6 +53,8 @@ const SupplierSpellSearch = ({ onChange, value }) => {
                         label="Search Supplier..."
                         variant="outlined"
                         size="small"
+                        error={Boolean(error)}
+                        helperText={error ? "Supplier is required!" : ""}
                     />
                 )}
             />

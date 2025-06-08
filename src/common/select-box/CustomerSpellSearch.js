@@ -6,11 +6,11 @@ import { useLoader } from '../../hooks/useLoader';
 import { sendGetRequest } from '../../utils/network';
 import { useSelector } from 'react-redux';
 
-const CustomerSpellSearch = ({ onChange, value }) => {
+const CustomerSpellSearch = ({ onChange, value, error }) => {
     const [customers, setCustomers] = useState([]);
     const [{ start, stop }, Loader] = useLoader();
     const user = useSelector((state) => state.user);
-
+console.log("error--", error)
     useEffect(() => {
         getCustomers();
     }, []);
@@ -52,10 +52,13 @@ const CustomerSpellSearch = ({ onChange, value }) => {
                         label="Select customer..."
                         variant="outlined"
                         size="small"
-                        placeholder='Search customer'
+                        placeholder="Search customer"
+                        error={Boolean(error)}
+                        helperText={error ? "Customer is required!" : ""}
                     />
                 )}
             />
+
         </>
     );
 };

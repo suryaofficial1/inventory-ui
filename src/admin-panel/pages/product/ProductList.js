@@ -2,10 +2,10 @@ import { Button } from '@material-ui/core';
 import { DataGrid } from '@material-ui/data-grid';
 import { Add, Refresh, Search } from '@material-ui/icons';
 import { makeStyles } from '@material-ui/styles';
-import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
+import React, { useEffect, useState } from 'react';
 import Swal from 'sweetalert2';
-import ActionButton from '../../../common/action-button/ActionButton';
+import NameActionButtons from '../../../common/action-button/NameActionButtons';
 import { DELETE_PRODUCT, PRODUCT_LIST } from '../../../config/api-urls';
 import { useLoader } from '../../../hooks/useLoader';
 import { roleBasePolicy } from '../../../utils/Constent';
@@ -36,8 +36,9 @@ const ProductList = () => {
 
     const [page, setPage] = useState(0);
     const [rows, setRows] = useState([]);
-    const [filter, setFilter] = useState({ name: "" });
-    const [tempFilter, setTempFilter] = useState({ name: "" });
+    const [filter, setFilter] = useState({ productId: "", type: 'all' });
+    const [tempFilter, setTempFilter] = useState({ productId: "", type: 'all' });
+    const [clearSignal, setClearSignal] = useState(0);
     const [totalRecords, setTotalRecords] = useState(0);
     const [open, setOpen] = useState(false);
     const [editData, setEditData] = useState({});
@@ -51,7 +52,7 @@ const ProductList = () => {
 
     const getProducts = () => {
         start()
-        sendGetRequest(`${PRODUCT_LIST}?name=${filter?.name ? filter?.name.name : ""}&page=${page + 1}&per_page=10`, user.token)
+        sendGetRequest(`${PRODUCT_LIST}?type=${filter.type !== 'all' ? filter.type : ""}&productId=${filter?.productId ? filter?.productId : ""}&page=${page + 1}&per_page=10`, user.token)
             .then(res => {
                 if (res.status === 200) {
                     setRows(res.data.rows)
@@ -114,41 +115,40 @@ const ProductList = () => {
 
     const columns = [
         {
+            field: "Action", align: "center", headerName: "Action", width: 250, resizable: true, sortable: false,
+            renderCell: (params) => (
+                <NameActionButtons
+                    params={params}
+                    handleAction={handleAction}
+                    deleteAction={deleteAction}
+                />
+            )
+        },
+        {
             field: 'id',
             headerName: '#Id',
             width: 80,
-            sortable: true,
+            sortable: false,
         },
-
-        { field: 'name', headerName: 'Product Name', width: 180, resizable: false, sortable: false, },
-        {
-            field: 'description', headerName: 'Description', width: 300, resizable: false, sortable: false,
-            // renderCell: (params) => {
-            //     return (
-            //         <textarea readOnly>{params.row.description}</textarea>
-            //     )
-            // }
-        },
+        { field: 'name', headerName: 'Product Name', width: 180, resizable: true, sortable: false, },
+        { field: 'type', headerName: 'Type', width: 130, resizable: true, sortable: false },
+        { field: 'unit', headerName: 'Unit', width: 110, resizable: true, sortable: false },
         { field: 'qty', headerName: 'quantity', width: 110, resizable: true, sortable: false },
         { field: 'price', headerName: 'Price', width: 110, resizable: true, sortable: false },
-        { field: 'unit', headerName: 'Unit', width: 110, resizable: true, sortable: false },
-        { field: 'type', headerName: 'Type', width: 130, resizable: true, sortable: false },
+        {
+            field: 'description', headerName: 'Description', width: 300, resizable: true, sortable: false,
+            renderCell: (params) => {
+                return (
+                    params.row.description ? <textarea readOnly>{params.row.description}</textarea> : ""
+                )
+            }
+        },
         {
             field: 'status', headerName: 'Status', width: 100, resizable: true, sortable: false,
             renderCell: (params) => (
                 (params.row.status === 1) ? <span style={{ color: "green" }}>Active</span> : <span style={{ color: "red" }}>Inactive</span>
             )
         },
-        {
-            field: "Action", headerName: "Action", width: 200, resizable: true, sortable: false,
-            renderCell: (params) => (
-                <ActionButton
-                    params={params}
-                    handleAction={handleAction}
-                    deleteAction={deleteAction}
-                />
-            )
-        }
     ];
 
     const applyFilter = () => {
@@ -157,10 +157,11 @@ const ProductList = () => {
     }
 
     const resetAllData = () => {
-        setFilter({ name: null });
-        setTempFilter({ name: null, });
-        setPage(0)
-    }
+        setFilter({ productId: '', type: 'all' });
+        setTempFilter({ productId: '', type: 'all' });
+        setPage(0);
+        setClearSignal(prev => prev + 1); 
+    };
 
     return (
         <div >
@@ -170,6 +171,7 @@ const ProductList = () => {
                     reset={resetAllData}
                     filter={tempFilter}
                     setFilter={setTempFilter}
+                    clearSignal={clearSignal}
                 />
             </div>
             <div>
@@ -180,9 +182,9 @@ const ProductList = () => {
             <DataGrid
                 autoHeight
                 // row
-                rowHeight={85}
+                rowHeight={100}
                 pagination
-                style={{ background: "#fff", width: "100%" }}
+                style={{ background: "#fff", width: "100%", lineHeight: "55 !important" }}
                 rows={rows}
                 columns={columns}
                 page={page}
@@ -203,7 +205,6 @@ const ProductList = () => {
                 readOnly={readOnly}
                 onClose={onClose}
                 successAction={getProducts}
-                title={readOnly ? 'View Product' : editData.id ? 'Edit Product' : 'Add Product'}
             />}
         </div>
     );

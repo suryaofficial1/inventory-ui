@@ -21,7 +21,7 @@ import SalesReturnList from '../pages/sales-return/SalesReturnList';
 import SalesList from "../pages/sales/SalesList";
 import SupplierList from "../pages/supplier/SupplierList";
 import UserList from "../pages/users/UserList";
-
+import MasterLists from '../pages/items-reports/MasterLists';
 
 
 const MenuRoutes = [
@@ -115,12 +115,20 @@ const MenuRoutes = [
             },
         ]
     },
+    // {
+    //     path: '#reports',
+    //     sidebarName: 'Reports',
+    //     navbarName: 'Reports',
+    //     icon: ReceiptIcon,
+    //     component: <ReportsHome />,
+    //     roles: ['Admin', 'Store manager', 'User'] // Accessible to all roles
+    // },
     {
-        path: '#reports',
+        path: '#items-reports',
         sidebarName: 'Reports',
         navbarName: 'Reports',
         icon: ReceiptIcon,
-        component: <ReportsHome />,
+        component: <MasterLists />,
         roles: ['Admin', 'Store manager', 'User'] // Accessible to all roles
     },
 ];

@@ -41,10 +41,9 @@ export default function NewProductionDetails({ data }) {
         createData(data.pDate, data.product, data.customer, data.operatorName, data.qty, data.unit, data.status),
     ];
 
-    function createData(pDate, product, customer, operator, quantity, unit, status) {
-        return { pDate, product, customer, operator, quantity, unit, status };
+    function createData(pDate, product, customer, operatorName, quantity, unit, status) {
+        return { pDate, product, customer, operatorName, quantity, unit, status };
     }
-
 
     return (
         <TableContainer component={Paper}>
@@ -64,9 +63,9 @@ export default function NewProductionDetails({ data }) {
                     {rows.map((row) => (
                         <StyledTableRow key={row.name}>
                             <StyledTableCell align="left">{moment(row.pDate).format("DD-MM-YYYY")}</StyledTableCell>
-                            <StyledTableCell align="center">{row.product}</StyledTableCell>
+                            <StyledTableCell align="center">{row.product.name}</StyledTableCell>
                             <StyledTableCell align="center">{row.customer.name}</StyledTableCell>
-                            <StyledTableCell align="center">{row.operator}</StyledTableCell>
+                            <StyledTableCell align="center">{row.operatorName}</StyledTableCell>
                             <StyledTableCell align="center">{row.quantity}</StyledTableCell>
                             <StyledTableCell align="center">{row.unit}</StyledTableCell>
                             <StyledTableCell align="center">{row.status ? "Active" : "Inactive"}</StyledTableCell>

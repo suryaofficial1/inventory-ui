@@ -2,14 +2,16 @@ import { Grid } from '@material-ui/core';
 import React from 'react';
 import CustomerSpellSearch from '../../../common/select-box/CustomerSpellSearch';
 import ProductionProductSelect from '../../../common/select-box/ProductionProductSelect';
+import PurchaseItemsSpellSearch from '../../../common/input-search/PurchaseItemsSpellSearch';
+import ProductionProductSpellSearch from '../../../common/input-search/ProductionProductSpellSearch';
 
-const Filter = ({ filter, setFilter, reset }) => {
+const Filter = ({ filter, setFilter, reset, clearSignal }) => {
 
     const handleCustomerChange = (e) => {
         setFilter({ ...filter, "cName": e });
     };
     const handleProductChange = (e) => {
-        setFilter({ ...filter, "pName": e });
+        setFilter({ ...filter, "pName": e.product });
     };
 
     const handleReset = () => {
@@ -25,7 +27,11 @@ const Filter = ({ filter, setFilter, reset }) => {
                 <CustomerSpellSearch onChange={handleCustomerChange} value={filter.cName} onReset={handleReset} />
             </Grid>
             <Grid item xs={12} sm={6}>
-                <ProductionProductSelect onChangeAction={handleProductChange} value={filter.pName} onReset={handleReset} />
+                <ProductionProductSpellSearch
+                    onSelect={handleProductChange}
+                    clearSignal={clearSignal}
+                    status="all"
+                    />
             </Grid>
         </Grid>
     );

@@ -5,6 +5,7 @@ import { PURCHASE_PRODUCTS_LIST } from '../../config/api-urls';
 import { useLoader } from '../../hooks/useLoader';
 import { sendGetRequest } from '../../utils/network';
 import { useSelector } from 'react-redux';
+import { Refresh } from '@material-ui/icons';
 
 const PurchaseProductSelect = ({ onChangeAction, value }) => {
     const [products, setProducts] = useState([]);
@@ -46,13 +47,17 @@ const PurchaseProductSelect = ({ onChangeAction, value }) => {
                 value={value || null}
                 options={products}
                 onChange={handleSelection}
-                getOptionLabel={(option) => option.product}
+                getOptionLabel={(option) => option.name}
                 renderInput={(params) => (
                     <TextField
                         {...params}
                         label="Select product..."
                         variant="outlined"
                         size="small"
+                        // InputProps={{
+                        //      ...params.inputProps,
+                        //     endAdornment: <Refresh onClick={getProducts}  style={{ cursor: 'pointer' }}/>,
+                        // }}
                         placeholder='Enter min 3 char of product name ...'
                     />
                 )}
