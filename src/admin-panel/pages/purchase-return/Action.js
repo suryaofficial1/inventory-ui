@@ -4,16 +4,16 @@ import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import PurchaseItemsSpellSearch from '../../../common/input-search/PurchaseItemsSpellSearch';
 import PopupAction from '../../../common/PopupAction';
+import SupplierSpellSearch from '../../../common/select-box/SupplierSpellSearch';
+import UnitSelect from '../../../common/select-box/UnitSelect';
 import { ADD_RETURN_PURCHASE_DETAILS, AVAILABLE_PURCHASE_PRODUCT_QTY, PURCHASE_DETAILS_BY_PRODUCT_ID, UPDATE_RETURN_PURCHASE_DETAILS } from '../../../config/api-urls';
 import { useLoader } from '../../../hooks/useLoader';
 import { showMessage } from '../../../utils/message';
 import { sendGetRequest, sendPostRequestWithAuth } from '../../../utils/network';
 import { validateNumber } from '../../../utils/validation';
-import SupplierSpellSearch from '../../../common/select-box/SupplierSpellSearch';
-import UnitSelect from '../../../common/select-box/UnitSelect';
 
 const Action = ({ onClose, successAction, title, selectedData = {}, readOnly = false }) => {
-  const [formsData, setFormsData] = useState({
+  const [formsData, setFormsData] = React.useState({
     supplier: selectedData?.supplier ? selectedData.supplier : {} || {},
     product: selectedData?.product ? selectedData.product : {} || {},
     returnDate: moment(selectedData.returnDate).local().format('YYYY-MM-DD') || '',
@@ -70,7 +70,7 @@ const Action = ({ onClose, successAction, title, selectedData = {}, readOnly = f
 
   const getAvailableQty = async () => {
     try {
-      const res = await sendGetRequest(AVAILABLE_PURCHASE_PRODUCT_QTY(formsData.product.id, formsData.supplier.id), user.token);
+      const res = await sendGetRequest(AVAILABLE_PURCHASE_PRODUCT_QTY(formsData.purchaseId, formsData.product.id, formsData.supplier.id), user.token);
       if (res.status === 200) {
         setAvailableQty(res.data.availableQty);
       } else {
@@ -85,7 +85,7 @@ const Action = ({ onClose, successAction, title, selectedData = {}, readOnly = f
 
   const getPurchaseDetailsByProductId = (e) => {
     start();
-    sendGetRequest(PURCHASE_DETAILS_BY_PRODUCT_ID(e.product.id, formsData.supplier.id, 'purchase_return'), user.token).then((res) => {
+    sendGetRequest(PURCHASE_DETAILS_BY_PRODUCT_ID(e.id, e.product.id, formsData.supplier.id, 'purchase_return'), user.token).then((res) => {
       if (res.status === 200) {
         if (Object.keys(res.data).length !== 0) {
           setClearSignal((prev) => prev + 1);

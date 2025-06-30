@@ -16,7 +16,6 @@ import ManufacturingList from '../pages/Manufacturing/List';
 import ProductList from '../pages/product/ProductList';
 import ReturnList from '../pages/purchase-return/ReturnList';
 import PurchaseList from "../pages/purchase/PurchaseList";
-import ReportsHome from "../pages/reports/ReportsList";
 import SalesReturnList from '../pages/sales-return/SalesReturnList';
 import SalesList from "../pages/sales/SalesList";
 import SupplierList from "../pages/supplier/SupplierList";

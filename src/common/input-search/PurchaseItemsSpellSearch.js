@@ -30,7 +30,7 @@ const CustomListItemText = styled(ListItemText)({
     },
 });
 
-const PurchaseItemsSpellSearch = ({ onSelect, clearSignal, type, supplier ="" }) => {
+const PurchaseItemsSpellSearch = ({ onSelect, clearSignal, type, supplier = "", qtyShow = false }) => {
     const [query, setQuery] = useState('');
     const [loading, setLoading] = useState(false);
     const [results, setResults] = useState([]);
@@ -121,7 +121,7 @@ const PurchaseItemsSpellSearch = ({ onSelect, clearSignal, type, supplier ="" })
                                 <CustomListItemText
                                     primary={
                                         <Typography variant="body2" component="div" >
-                                            <b>{item.product.name}</b> - <span style={{ color: item.availableQty == 0 ? 'red' : '' }}>Qty:-{item.availableQty}</span>
+                                            <b>{item.product.name}</b> <span style={{ color: item.availableQty == 0 ? 'red' : '' }}>{!qtyShow ? `- Qty:- ${item.availableQty}` : ''}</span>
                                         </Typography>
                                     }
                                     secondary={

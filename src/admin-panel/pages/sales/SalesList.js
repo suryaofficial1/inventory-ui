@@ -115,13 +115,8 @@ const SalesList = () => {
             width: 80,
             sortable: true,
         },
-        { field: 'invoiceNo', headerName: 'Invoice No', width: 130, sortable: false },
-        {
-            field: 'customer', headerName: 'Customer Name', width: 180, resizable: true, sortable: true,
-            renderCell: (params) => (
-                params.row.customer.name ? params.row.customer.name : ""
-            )
-        },
+        { field: 'salesName', headerName: 'Sales Name', width: 120, sortable: false, resizable: true },
+        { field: 'batchNo', headerName: 'Production Batch', width: 180, sortable: false, resizable: true },
         {
             field: 'product', headerName: 'Product', width: 180, resizable: true, sortable: true,
             renderCell: (params) => (
@@ -129,14 +124,12 @@ const SalesList = () => {
             )
         },
         {
-            field: 'pDesc', headerName: 'Product Desc', width: 220, resizable: true, sortable: false,
-            renderCell: (params) => {
-                return (
-                    params.row.pDesc ? <textarea readOnly>{params.row.pDesc}</textarea> : ''
-                )
-            }
+            field: 'customer', headerName: 'Customer Name', width: 180, resizable: true, sortable: true,
+            renderCell: (params) => (
+                params.row.customer.name ? params.row.customer.name : ""
+            )
         },
-
+        { field: 'invoiceNo', headerName: 'Invoice No', width: 130, sortable: false },
         { field: 'qty', headerName: 'Quantity', width: 90, resizable: true, sortable: false },
         { field: 'salesPrice', headerName: 'Sales Price', width: 110, resizable: true, sortable: false },
         {
@@ -146,6 +139,14 @@ const SalesList = () => {
             )
         },
         { field: 'unit', headerName: 'Unit', width: 80, resizable: true, sortable: false },
+        {
+            field: 'pDesc', headerName: 'Product Desc', width: 220, resizable: true, sortable: false,
+            renderCell: (params) => {
+                return (
+                    params.row.pDesc ? <textarea readOnly>{params.row.pDesc}</textarea> : ''
+                )
+            }
+        },
         {
             field: 'status', headerName: 'Status', width: 100, resizable: true, sortable: false,
             renderCell: (params) => (
@@ -180,7 +181,7 @@ const SalesList = () => {
         <div >
             <Loader />
             <div className={classes.addBtn}>
-                <SalesFilter reset={resetAllData} filter={tempFilter} setFilter={setTempFilter} clearSignal={clearSignal}/>
+                <SalesFilter reset={resetAllData} filter={tempFilter} setFilter={setTempFilter} clearSignal={clearSignal} />
             </div>
             <div>
                 {roleBasePolicy(user?.role) && <Button startIcon={<Add />} className={classes.actionButton} variant="contained" color="primary" onClick={() => setOpen(!open)}>Add Sales</Button>}

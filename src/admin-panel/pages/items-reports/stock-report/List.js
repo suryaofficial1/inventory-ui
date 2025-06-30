@@ -15,11 +15,12 @@ import {
 import { format, subMonths } from 'date-fns';
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { STOCK_REPORT } from '../../../../config/api-urls';
+import { STOCK_REPORT, STOCK_REPORT_BY_TYPE } from '../../../../config/api-urls';
 import { useLoader } from '../../../../hooks/useLoader';
 import { showMessage } from '../../../../utils/message';
 import { sendGetRequest } from '../../../../utils/network';
-import ExcelReportAction from './ExcelReport';
+import FinishGoodExcelReport from './excel-reports/FinishGoodExcelReport';
+import { exportPurchaseStock } from './excel-reports/PurchaseExcelReport';
 import SalesFilter from './Filter';
 import ShowHistoryDetails from './history/ShowHistoryDetails';
 
@@ -92,7 +93,9 @@ const StockReport = () => {
   const fetchPurchaseData = () => {
     start();
     setLoading(true);
-    sendGetRequest(`${STOCK_REPORT}?startDate=${filter?.selectedRange.start}&endDate=${filter?.selectedRange.end}&product=${filter?.product ? filter?.product : ""}&type=${filter.type}&per_page=${rowsPerPage}&page=${page}`, user.token)
+    let url = filter.type !== "sales" ? `${STOCK_REPORT_BY_TYPE}?startDate=${filter?.selectedRange.start}&endDate=${filter?.selectedRange.end}&product=${filter?.product ? filter?.product : ""}&type=${filter.type}&per_page=${rowsPerPage}&page=${page}` :
+      `${STOCK_REPORT}?startDate=${filter?.selectedRange.start}&endDate=${filter?.selectedRange.end}&pId=${filter?.product ? filter?.product : ""}&per_page=${rowsPerPage}&page=${page}`
+    sendGetRequest(url, user.token)
       .then((_res) => {
         if (_res.status === 200) {
           setRows(_res.data.rows);
@@ -133,7 +136,11 @@ const StockReport = () => {
   }
 
   const exportToExcel = async () => {
-    await ExcelReportAction(rows, filter)
+    if (filter.type == "sales") {
+      await FinishGoodExcelReport(rows, filter)
+    } else {
+      await exportPurchaseStock(rows, filter)
+    }
   }
 
   const handlePrintAction = () => {
@@ -171,10 +178,10 @@ const StockReport = () => {
     return reportBy
   }
 
-  console.log("filter.type", filter.type)
-
   const historyShowByType = (row) => {
-    setHistoryData({ title: row.product.name, id: row.product.id, type: filter.type });
+    const supId = row?.supplier ? row.supplier?.id : 0;
+    const batchNo = filter.type == "sales" ? row.batchNo : 0;
+    setHistoryData({ title: row.product.name, id: row.product.id, type: filter.type, supId, batchNo });
   }
   const onClose = () => {
     setHistoryData({});
@@ -207,7 +214,7 @@ const StockReport = () => {
                       </IconButton>
                     </Tooltip>
                     <Tooltip title="Excel Report in progress" placement="top">
-                      <IconButton onClick={() => showMessage("error", "Excel Report in progress")}>
+                      <IconButton onClick={exportToExcel}>
                         <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="1.2em" height="1.2em" viewBox="0 0 48 48">
                           <path fill="#169154" d="M29,6H15.744C14.781,6,14,6.781,14,7.744v7.259h15V6z"></path><path fill="#18482a" d="M14,33.054v7.202C14,41.219,14.781,42,15.743,42H29v-8.946H14z"></path><path fill="#0c8045" d="M14 15.003H29V24.005000000000003H14z"></path><path fill="#17472a" d="M14 24.005H29V33.055H14z"></path><g><path fill="#29c27f" d="M42.256,6H29v9.003h15V7.744C44,6.781,43.219,6,42.256,6z"></path><path fill="#27663f" d="M29,33.054V42h13.257C43.219,42,44,41.219,44,40.257v-7.202H29z"></path><path fill="#19ac65" d="M29 15.003H44V24.005000000000003H29z"></path><path fill="#129652" d="M29 24.005H44V33.055H29z"></path></g><path fill="#0c7238" d="M22.319,34H5.681C4.753,34,4,33.247,4,32.319V15.681C4,14.753,4.753,14,5.681,14h16.638 C23.247,14,24,14.753,24,15.681v16.638C24,33.247,23.247,34,22.319,34z"></path><path fill="#fff" d="M9.807 19L12.193 19 14.129 22.754 16.175 19 18.404 19 15.333 24 18.474 29 16.123 29 14.013 25.07 11.912 29 9.526 29 12.719 23.982z"></path>
                         </svg>
@@ -256,7 +263,7 @@ const StockReport = () => {
                           <TableCell>{row.purchaseDate}</TableCell>
                           <TableCell>{row.purchaseExpiryDate}</TableCell>
                           <TableCell>{row.invoiceNo}</TableCell>
-                          <TableCell>{row.bNumber}</TableCell>
+                          <TableCell>{row.batch}</TableCell>
                           <TableCell>{row.supplier?.name}</TableCell>
                           <TableCell>{row.product?.name}</TableCell>
                           <TableCell>{row.purchaseQty}</TableCell>
@@ -287,10 +294,12 @@ const StockReport = () => {
                     <TableRow>
                       <TableCell>History</TableCell>
                       <TableCell>Manufacturing Date</TableCell>
+                      <TableCell>Batch No</TableCell>
                       <TableCell>Product Name</TableCell>
                       <TableCell>Operator Name</TableCell>
                       <TableCell>Manufacturing Qty</TableCell>
                       <TableCell>Total Sales Qty</TableCell>
+                      <TableCell>Return Sales Qty</TableCell>
                       <TableCell>Total Stock Qty</TableCell>
                       <TableCell style={{ textAlign: 'center' }}>Sales Price</TableCell>
                       {/* <TableCell style={{ textAlign: 'center' }}>Total Sales</TableCell> */}
@@ -300,7 +309,7 @@ const StockReport = () => {
                     {loading ? (
                       Array.from({ length: 10 }).map((_, idx) => (
                         <TableRow key={idx}>
-                          {[...Array(8)].map((_, cellIdx) => (
+                          {[...Array(10)].map((_, cellIdx) => (
                             <TableCell key={cellIdx}>
                               <Skeleton variant="text" width="80%" />
                             </TableCell>
@@ -312,10 +321,12 @@ const StockReport = () => {
                         <TableRow key={idx}>
                           <TableCell><TrendingUp style={{ color: 'green', cursor: 'pointer' }} onClick={() => historyShowByType(row)} /></TableCell>
                           <TableCell>{row.manufacturingDate}</TableCell>
+                          <TableCell>{row.batchNo}</TableCell>
                           <TableCell>{row.product?.name}</TableCell>
                           <TableCell>{row.operatorName}</TableCell>
                           <TableCell>{row.manufacturingQty}</TableCell>
                           <TableCell>{row.salesQty}</TableCell>
+                          <TableCell>{row.returnQty}</TableCell>
                           <TableCell>{row.stockQty}</TableCell>
                           <TableCell style={{ textAlign: 'center' }}>₹{row.salesPrice}</TableCell>
                           {/* <TableCell style={{ textAlign: 'center' }}>₹{Number(row.stockQty) * Number(row.salesPrice)}</TableCell> */}
@@ -330,7 +341,7 @@ const StockReport = () => {
                   <TableFooter className={classes.tableHead}>
                     <TableRow>
                       <TableCell align="right" style={{ fontSize: 16 }}><strong>Total:</strong></TableCell>
-                      <TableCell colSpan={3} ></TableCell>
+                      <TableCell colSpan={5} ></TableCell>
                       <TableCell style={{ fontSize: 16 }}><strong>{rows?.reduce((acc, row) => acc + Number(row.manufacturingQty), 0) || 0}</strong></TableCell>
                       <TableCell style={{ fontSize: 16 }}><strong>{rows?.reduce((acc, row) => acc + Number(row.salesQty), 0) || 0}</strong></TableCell>
                       <TableCell colSpan={2} style={{ fontSize: 16 }}><strong>{rows?.reduce((acc, row) => acc + Number(row.stockQty), 0) || 0}</strong></TableCell>
@@ -371,7 +382,10 @@ const StockReport = () => {
           maxWidth={'xl'}
           onClose={onClose}
           id={historyData.id}
-          type={historyData.type} /> : ""}
+          type={historyData.type}
+          supId={historyData.supId}
+          batchNo={historyData.batchNo}
+        /> : ""}
       </div>
     </div>
   )

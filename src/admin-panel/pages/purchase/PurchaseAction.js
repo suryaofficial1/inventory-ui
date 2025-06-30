@@ -1,20 +1,20 @@
-import { Button, Grid, MenuItem, TextField } from '@material-ui/core';
+import { Button, Grid, TextField } from '@material-ui/core';
 import moment from 'moment';
-import { useSelector } from 'react-redux';
 import React, { useState } from 'react';
+import { useSelector } from 'react-redux';
 import ProductSpellSearch from '../../../common/input-search/ProductSpellSearch';
 import PopupAction from '../../../common/PopupAction';
 import SupplierSpellSearch from '../../../common/select-box/SupplierSpellSearch';
 import UnitSelect from '../../../common/select-box/UnitSelect';
-import { ADD_PURCHASE_DETAILS, PURCHASE_DETAILS_BY_PRODUCT_ID, UPDATE_PURCHASE_DETAILS } from '../../../config/api-urls';
+import { ADD_PURCHASE_DETAILS, UPDATE_PURCHASE_DETAILS } from '../../../config/api-urls';
 import { useLoader } from '../../../hooks/useLoader';
 import { showMessage } from '../../../utils/message';
-import { sendGetRequest, sendPostRequestWithAuth } from '../../../utils/network';
+import { sendPostRequestWithAuth } from '../../../utils/network';
 import { validateNumber } from '../../../utils/validation';
 
 
 const PurchaseAction = ({ onClose, successAction, title, selectedData = {}, readOnly = false }) => {
-  const [formsData, setFormsData] = useState({
+  const [formsData, setFormsData] = React.useState({
     supplier: selectedData?.supplier || {},
     product: selectedData?.product || {},
     purchaseDate: selectedData?.purchaseDate
@@ -137,25 +137,6 @@ const PurchaseAction = ({ onClose, successAction, title, selectedData = {}, read
     setFormsData({ ...formsData, ["supplier"]: e, ['product']: {}, unit: "", invoiceNo: "", bNumber: "" });
   };
 
-  const getPurchaseDetailsByProductId = (e) => {
-    start();
-    sendGetRequest(PURCHASE_DETAILS_BY_PRODUCT_ID(e.id, formsData.supplier.id, 'purchase'), user.token).then((res) => {
-      if (res.status === 200) {
-        if (Object.keys(res.data).length !== 0) {
-          setClearSignal((prev) => prev + 1);
-          setFormsData((prev) => ({ ...prev, product: {}, unit: "", price: "", qty: "", invoiceNo: "", bNumber: "" }));
-          showMessage('error', "Product already exists on purchase list please update this product!");
-        } else {
-          setFormsData((prev) => ({ ...prev, product: e, unit: e.unit }));
-        }
-      }
-    }).catch((err) => {
-      console.log("err", err);
-    }).finally(() => {
-      stop();
-    });
-  }
-
   const handleProductChange = (e) => {
 
     if (!formsData.supplier.id) {
@@ -164,12 +145,17 @@ const PurchaseAction = ({ onClose, successAction, title, selectedData = {}, read
       setClearSignal((prev) => prev + 1);
       setFormsData((prev) => ({ ...prev, product: {}, unit: "", price: "", qty: "", invoiceNo: "", bNumber: "" }));
       return
-    } else {
-      if (typeof e === "object" && e?.id) {
-        getPurchaseDetailsByProductId(e);
-        return;
-      }
-    }
+    } 
+
+              setFormsData((prev) => ({ ...prev, product: e, unit: e.unit }));
+
+    
+    // else {
+    //   if (typeof e === "object" && e?.id) {
+    //     getPurchaseDetailsByProductId(e);
+    //     return;
+    //   }
+    // }
   };
 
   const handleReset = () => {

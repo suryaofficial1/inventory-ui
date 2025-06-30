@@ -29,6 +29,7 @@ const ProductionAction = ({ successAction, title, selectedData = {}, readOnly = 
         pDesc: selectedData.pDesc || '',
         status: selectedData.status || '0',
         productionId: selectedData.id || '',
+        batchNo: selectedData.batchNo || '',
     }));
     const [productionData, setProductionData] = useState({});
     const [clearSignal, setClearSignal] = useState(0);
@@ -40,12 +41,12 @@ const ProductionAction = ({ successAction, title, selectedData = {}, readOnly = 
 console.log("formsData", formsData)
     const getProductionDetailsByProductId = (e) => {
         start();
-        sendGetRequest(PRODUCTION_DETAIL_BY_PRODUCT_ID(e.id), user.token).then((res) => {
+        sendGetRequest(PRODUCTION_DETAIL_BY_PRODUCT_ID(e.id, formsData.batchNo), user.token).then((res) => {
             if (res.status === 200) {
                 if (Object.keys(res.data).length !== 0){
                     setClearSignal((prev) => prev + 1);
                     setFormData((prev) => ({ ...prev, product: {}, unit: "" }));
-                    showMessage('error', "Product already exists in production!");
+                    showMessage('error', `Same product already exists on ${res.data.batchNo} batch Number`);
                 } else {
                 setFormData((prev) => ({ ...prev, product: e, unit: e.unit }));
                 }
@@ -58,8 +59,14 @@ console.log("formsData", formsData)
     }
 
     const handleInputChange = (e) => {
-        console.log("e", e, typeof e);
         if (typeof e === "object" && e?.id) {
+            if (formsData.batchNo == '' || formsData.batchNo.trim() == '') {
+                setClearSignal((prev) => prev + 1);
+                setFormData((prev) => ({ ...prev, product: {}, unit: "" }));
+                setErrors({ ...errors, ["batchNo"]: "Batch No is required" });
+                showMessage('error', "Please enter batch no before selecting product.");
+                return;
+            }
             getProductionDetailsByProductId(e);
             return;
         }
@@ -74,6 +81,12 @@ console.log("formsData", formsData)
                 setErrors({ ...errors, ["qty"]: '' });
                 setFormData((prev) => ({ ...prev, ["qty"]: value }));
             }
+        } 
+         if (name === "batchNo") {
+            setClearSignal((prev) => prev + 1);
+             setFormData((prev) => ({ ...prev, product: {}, unit: "" }));
+            setErrors({ ...errors, ["batchNo"]: '' });
+            setFormData((prev) => ({ ...prev, [name]: value }));
         } else {
             setFormData((prev) => ({ ...prev, [name]: value }));
         }
@@ -82,6 +95,7 @@ console.log("formsData", formsData)
     const validation = () => {
         const errors = {};
         if (!formsData.customer) errors.customer = "Customer is required";
+        if (!formsData.batchNo) errors.batchNo = "Batch No is required";
         if (!formsData.pDate) errors.pDate = "Manufacturing Date is required";
         if (!formsData.product) errors.product = "Product is required";
         if (!formsData.unit) errors.unit = "Unit is required";
@@ -100,6 +114,7 @@ console.log("formsData", formsData)
         if (validation()) return;
         const reqData = {
             customer: formsData.customer.id,
+            batchNo: formsData.batchNo,
             manufacturingDate: formsData.pDate,
             product: formsData.product.id,
             unit: formsData.unit,
@@ -185,6 +200,33 @@ console.log("formsData", formsData)
                     <TextField
                         variant="outlined"
                         fullWidth
+                        name="batchNo"
+                        value={formsData.batchNo}
+                        onChange={handleInputChange}
+                        label="Batch Number"
+                        size='small'
+                        error={errors.batchNo ? true : false}
+                        helperText={errors.batchNo}
+                    />
+                </Grid>
+                <Grid item xs={12}>
+                    {selectedData.id ?
+                        <TextField label="Product Name" variant="outlined" fullWidth name='product' size='small' value={formsData.product.name} placeholder="Enter Product Name..." InputProps={{ readOnly: true }} />
+                        :
+                        <ProductSpellSearch
+                            type="sales"
+                            onSelect={(e) => handleInputChange(e)}
+                            clearSignal={clearSignal}
+                        />
+                    }
+                </Grid>
+                <Grid item xs={6}>
+                    <UnitSelect onChange={handleInputChange} value={formsData.unit} readOnly={readOnly} />
+                </Grid>
+                <Grid item xs={6}>
+                    <TextField
+                        variant="outlined"
+                        fullWidth
                         name="pDate"
                         value={formsData.pDate}
                         onChange={handleInputChange}
@@ -198,25 +240,6 @@ console.log("formsData", formsData)
                             format: "MM/dd/yy"
                         }}
                     />
-                </Grid>
-                <Grid item xs={6}>
-                    {selectedData.id ?
-                        <TextField label="Product Name" variant="outlined" fullWidth name='product' size='small' value={formsData.product.name} placeholder="Enter Product Name..." InputProps={{ readOnly: true }} />
-                        :
-                                        <ProductSpellSearch
-                                            type="sales"
-                                            onSelect={(e) => handleInputChange(e)}
-                                            clearSignal={clearSignal}
-                                        />
-                        // <PurchaseItemsSpellSearch
-                        //     type="sales"
-                        //     onSelect={handleInputChange}
-                        //     clearSignal={clearSignal} />
-                    }
-
-                </Grid>
-                <Grid item xs={6}>
-                    <UnitSelect onChange={handleInputChange} value={formsData.unit} readOnly={readOnly} />
                 </Grid>
                 <Grid item xs={6}>
                     <TextField
@@ -250,7 +273,6 @@ console.log("formsData", formsData)
                         onChange={handleInputChange}
                     />
                 </Grid>
-
                 <Grid item xs={12}>
                     <TextField
                         label="Product Description"

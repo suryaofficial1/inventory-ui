@@ -45,8 +45,8 @@ export default function UsedMaterialDetails({ data,  deleteAction, readOnly }) {
         ? data.map((item) =>
             createData(
                 item.id,
-                item.product,
                 item.supplier,
+                item.product,
                 item.mqty,
                 item.mPrice,
                 item.rqty,

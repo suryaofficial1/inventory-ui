@@ -12,7 +12,7 @@ import { PRODUCT_HISTORY } from '../../../../../config/api-urls';
 import { showMessage } from '../../../../../utils/message';
 import { sendGetRequest } from '../../../../../utils/network';
 import './ProductTimeline.css';
-export default function ShowHistoryDetails({ title, open, onClose, id, type}) {
+export default function ShowHistoryDetails({ title, open, onClose, id, type, supId, batchNo}) {
 
     const [productDetails, setProductDetails] = React.useState([]);
     const [loading, setLoading] = React.useState(false);
@@ -24,7 +24,8 @@ export default function ShowHistoryDetails({ title, open, onClose, id, type}) {
 
   const fetchProductHistory = () => {
     setLoading(true);
-    sendGetRequest(PRODUCT_HISTORY(id, type), user.token)
+    console.log("id", id, type, supId)
+    sendGetRequest(PRODUCT_HISTORY(id, type, supId, batchNo), user.token)
       .then((_res) => {
         if (_res.status === 200) {
           setProductDetails(_res.data);
@@ -36,8 +37,6 @@ export default function ShowHistoryDetails({ title, open, onClose, id, type}) {
           showMessage("error", `Something went wrong while loading ${type} product history details`);
       }).finally(() => setLoading(false));
   }
-
-  console.log("productDetails", productDetails)
 
   return (
     <>
@@ -61,10 +60,10 @@ export default function ShowHistoryDetails({ title, open, onClose, id, type}) {
                 </Grid>
             </Grid>
             </DialogTitle>
-        <DialogContent>
+        <DialogContent >
            <div className="timeline">
       <div className="outer">
-        {productDetails?.length != 0 && productDetails?.map((item, index) => (
+        {productDetails?.length != 0 ? productDetails?.map((item, index) => (
           <div className="card" key={index}>
             <div className="info">
               <h3 className="title">{item.action}</h3>
@@ -89,9 +88,13 @@ export default function ShowHistoryDetails({ title, open, onClose, id, type}) {
                     </Grid>}
                      {['Sales', 'Sales Return'].includes(item.action) &&<Grid item xs={12}>
                         <Typography variant="body2"><b>Customers</b> {item.reference.name}</Typography>
+                        <Typography variant="body2"></Typography>
+                        <Typography variant="body2"><b>Sales Name</b> {item.salesName}</Typography>
                     </Grid>}
                      {['Used in Production', 'Production Entry'].includes(item.action) &&<Grid item xs={12}>
                         <Typography variant="body2"><b>Operator Name:</b> {item.reference.operatorName}</Typography>
+                        <Typography variant="body2"></Typography>
+                        <Typography variant="body2"><b>Batch Number:</b> {item.batchNo}</Typography>
                     </Grid>}
                      {['Used in Production'].includes(item.action) &&<Grid item xs={12}>
                         <Typography variant="body2"><b>Manufacturing product name:</b> ❝ {item.manufBy.name} ❞</Typography>
@@ -102,7 +105,12 @@ export default function ShowHistoryDetails({ title, open, onClose, id, type}) {
                 </Grid>
             </div>
           </div>
-        ))}
+        ))
+       : 
+       <div className="card" style={{ width: 500 }}>
+          <Typography variant="body2">No history found</Typography>
+        </div>
+       }
       </div>
     </div>
         </DialogContent>

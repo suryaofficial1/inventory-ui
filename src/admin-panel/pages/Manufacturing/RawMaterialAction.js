@@ -1,15 +1,13 @@
 import { Button, Collapse, Grid, TextField, Typography } from '@material-ui/core';
 import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import PurchaseProductSelect from '../../../common/select-box/PurchaseProductSelect';
-import { ADD_MATERIAL_DETAILS, AVAILABLE_PURCHASE_PRODUCT_QTY, DELETE_MATERIAL, MATERIAL_LIST, UPDATE_MATERIAL_DETAILS, USED_MATERIAL_DETAIL_BY_PRODUCT_ID } from '../../../config/api-urls';
+import PurchaseItemsSpellSearch from '../../../common/input-search/PurchaseItemsSpellSearch';
+import { ADD_MATERIAL_DETAILS, DELETE_MATERIAL, MATERIAL_LIST, UPDATE_MATERIAL_DETAILS, USED_MATERIAL_DETAIL_BY_PRODUCT_ID } from '../../../config/api-urls';
 import { useLoader } from '../../../hooks/useLoader';
 import { showMessage } from '../../../utils/message';
 import { sendDeleteRequest, sendGetRequest, sendPostRequest } from '../../../utils/network';
 import { validateNumber } from '../../../utils/validation';
 import UsedMaterialDetails from './UsedMaterialDetails';
-import Swal from 'sweetalert2';
-import PurchaseItemsSpellSearch from '../../../common/input-search/PurchaseItemsSpellSearch';
 
 const RawMaterialAction = ({ productionId, readOnly = false, getProductionDetails }) => {
     const [formsData, setFormData] = useState(() => ({
@@ -21,7 +19,7 @@ const RawMaterialAction = ({ productionId, readOnly = false, getProductionDetail
         lqty: '',
         lPrice: '',
     }));
-    const [edit, setEdit] = useState(false);
+    const [edit, setEdit] = React.useState(false);
     const [selectedData, setSelectedData] = useState(false);
     const [availableQty, setAvailableQty] = useState(0);
     const [errors, setErrors] = useState({});
@@ -89,19 +87,18 @@ const RawMaterialAction = ({ productionId, readOnly = false, getProductionDetail
         }
     };
 
-    console.log("formsData", formsData)
     const getMaterialDetailsByProductId = (e) => {
         start();
-        sendGetRequest(USED_MATERIAL_DETAIL_BY_PRODUCT_ID(e.product.id, productionId), user.token).then((res) => {
+        sendGetRequest(USED_MATERIAL_DETAIL_BY_PRODUCT_ID(e.product.id, e.id, productionId), user.token).then((res) => {
             if (res.status === 200) {
                 if (Object.keys(res.data).length !== 0 && res.data[0].s_id == e.supplier.id) {
                     setClearSignal((prev) => prev + 1);
                     setAvailableQty(0);
-                    setFormData({ ...formsData, ["product"]: {}, ['mqty']: '', ['mPrice']: '', ['rqty']: '', ['rPrice']: '', ['lqty']: '', ['lPrice']: '' });
+                    setFormData({ ...formsData, ["purchaseId"]: '', ["product"]: {}, ['mqty']: '', ['mPrice']: '', ['rqty']: '', ['rPrice']: '', ['lqty']: '', ['lPrice']: '' });
                     showMessage('error', "Product already exists in production!");
                 } else {
                     setAvailableQty(e.availableQty)
-                    setFormData({ ...formsData, ["supplier"]: e.supplier, ["product"]: e.product, ['mqty']: '', ['mPrice']: '', ['rqty']: '', ['rPrice']: '', ['lqty']: '', ['lPrice']: '' });
+                    setFormData({ ...formsData, ["purchaseId"]: e.id, ["supplier"]: e.supplier, ["product"]: e.product, ['mqty']: '', ['mPrice']: '', ['rqty']: '', ['rPrice']: '', ['lqty']: '', ['lPrice']: '' });
                 }
             }
         }).catch((err) => {
@@ -116,13 +113,6 @@ const RawMaterialAction = ({ productionId, readOnly = false, getProductionDetail
             getMaterialDetailsByProductId(e);
             return;
         }
-    };
-
-    const handleReset = () => {
-        setFormData({ pName: '', cName: '' });
-        setFormData({ ...formsData, ["customer"]: '', ['product']: '' });
-        handleProductChange({});
-        handleCustomerChange('');
     };
 
     const validation = () => {
@@ -141,6 +131,7 @@ const RawMaterialAction = ({ productionId, readOnly = false, getProductionDetail
         if (validation()) return;
         const reqData = {
             productionId,
+            purchaseId: formsData.purchaseId,
             supplier: formsData.supplier.id,
             product: formsData.product.id,
             mqty: formsData.mqty,
@@ -163,7 +154,7 @@ const RawMaterialAction = ({ productionId, readOnly = false, getProductionDetail
                     rPrice: '',
                     lqty: '',
                     lPrice: '',
-                    supplier: {},   
+                    supplier: {},
                 });
                 setClearSignal((prev) => prev + 1);
                 setAvailableQty(0);
@@ -250,6 +241,7 @@ const RawMaterialAction = ({ productionId, readOnly = false, getProductionDetail
                     fullWidth
                     size='small'
                     name='mPrice'
+                    type="number"
                     InputProps={{
                         readOnly: readOnly,
                     }}
@@ -263,6 +255,7 @@ const RawMaterialAction = ({ productionId, readOnly = false, getProductionDetail
                     onChange={handleInputChange}
                     name='rqty'
                     label="Rejection Quantity"
+                    type="number"
                     variant='outlined'
                     size='small'
                     value={formsData.rqty}
@@ -276,6 +269,7 @@ const RawMaterialAction = ({ productionId, readOnly = false, getProductionDetail
                     label="Rejection Price"
                     variant="outlined"
                     fullWidth
+                    type="number"
                     size='small'
                     name='rPrice'
                     InputProps={{
@@ -290,6 +284,7 @@ const RawMaterialAction = ({ productionId, readOnly = false, getProductionDetail
                 <TextField fullWidth id="Lumps Quantity"
                     onChange={handleInputChange}
                     name='lqty'
+                    type="number"
                     label="Lumps Quantity"
                     variant='outlined'
                     size='small'
@@ -302,6 +297,7 @@ const RawMaterialAction = ({ productionId, readOnly = false, getProductionDetail
                     variant="outlined"
                     fullWidth
                     size='small'
+                    type="number"
                     name='lPrice'
                     InputProps={{
                         readOnly: readOnly,
@@ -312,7 +308,6 @@ const RawMaterialAction = ({ productionId, readOnly = false, getProductionDetail
                 />
             </Grid>
             {!readOnly && <Grid item xs={12} >
-
                 <Button
                     variant="contained"
                     color="primary"

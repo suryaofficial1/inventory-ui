@@ -1,9 +1,7 @@
 import { Grid } from '@material-ui/core';
 import React from 'react';
-
-import SupplierSpellSearch from '../../../common/select-box/SupplierSpellSearch';
-import SpellSearchPurchase from '../../../common/select-box/SpellSearchPurchase';
 import PurchaseItemsSpellSearch from '../../../common/input-search/PurchaseItemsSpellSearch';
+import SupplierSpellSearch from '../../../common/select-box/SupplierSpellSearch';
 
 const PurchaseFilter = ({ filter, setFilter, reset , clearSignal}) => {
 
@@ -21,7 +19,6 @@ const PurchaseFilter = ({ filter, setFilter, reset , clearSignal}) => {
         reset();
     };
 
-    console.log("filter", filter)
     return (
         <Grid container spacing={1}>
             <Grid item xs={12} sm={6}>
@@ -31,6 +28,7 @@ const PurchaseFilter = ({ filter, setFilter, reset , clearSignal}) => {
                 
                 <PurchaseItemsSpellSearch
                     type="purchase_return"
+                    qtyShow={true}
                     onSelect={(e) => handleProductChange(e)}
                     clearSignal={clearSignal}
                 />

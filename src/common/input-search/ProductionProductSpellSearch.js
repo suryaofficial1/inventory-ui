@@ -121,7 +121,9 @@ const ProductionProductSpellSearch = ({ onSelect, clearSignal, status }) => {
                     <List disablePadding>
                         {results.map((item, index) => (
                             <CustomListItem button key={index} onMouseDown={(e) => handleSelect(e, item)}>
-                                <CustomListItemText primary={item.product.name} />
+                                <CustomListItemText primary={item.product.name} 
+                                    secondary={item.batchNo}
+                                />
                             </CustomListItem>
                         ))}
                     </List>

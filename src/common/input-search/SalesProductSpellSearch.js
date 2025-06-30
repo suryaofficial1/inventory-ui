@@ -123,8 +123,8 @@ const SalesProductSpellSearch = ({ onSelect, clearSignal, customer= false }) => 
                         {results.map((item, index) => (
                             <CustomListItem button key={index} onMouseDown={(e) => handleSelect(e, item)}>
                                 <CustomListItemText
-                                    secondary={customer && <Typography variant="caption" color="inherit">{item.customer.name}</Typography>}
-                                    primary={<Typography variant="caption" color="inherit"><b>{item.product.name}</b></Typography>} />
+                                    secondary={<Typography variant="caption" color="inherit"><b>{item.batchNo}</b> - {item.salesName}</Typography>}
+                                    primary={<Typography variant="caption" color="inherit"><b>{item.product.name}</b> - <span style={{color: "red"}}>{item.qty}</span></Typography>} />
                             </CustomListItem>
                         ))}
                     </List>

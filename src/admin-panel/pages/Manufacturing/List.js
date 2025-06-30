@@ -117,6 +117,7 @@ const ManufacturingList = () => {
             sortable: true,
         },
 
+        { field: 'batchNo', headerName: 'Batch No', width: 110, resizable: true, sortable: false },
         {
             field: 'customer', headerName: 'Customer', width: 150, resizable: true, sortable: false,
             renderCell: (params) => (

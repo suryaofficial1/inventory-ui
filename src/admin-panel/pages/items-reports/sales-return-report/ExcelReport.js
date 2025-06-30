@@ -1,6 +1,8 @@
 
 import ExcelJS from "exceljs";
 import { showMessage } from "../../../../utils/message";
+import { saveAs } from "file-saver";
+
 
 const getValues = (formsData) => {
     let reportBy;
@@ -46,7 +48,7 @@ const ExcelReportAction = async (salesData, formsData) => {
     };
 
     // 🎯 Add Title (Merged)
-    worksheet.mergeCells("A1:F1"); // Merge first row for title
+    worksheet.mergeCells("A1:G1"); // Merge first row for title
     worksheet.getCell("A1").value = getValues(formsData);
     const titleCell = worksheet.getCell("A1");
     titleCell.font = titleStyle.font;
@@ -54,7 +56,7 @@ const ExcelReportAction = async (salesData, formsData) => {
     titleCell.fill = titleStyle.fill;
 
     // 🎯 Column Headers
-    const headers = ["Date", "Customer Name", "Product Name", "Qty", "Return Sales Price", "Total Return Sales"];
+    const headers = ["Date", "Sales Name", "Customer Name", "Product Name", "Qty", "Return Sales Price", "Total Return Sales"];
     worksheet.addRow([]); // Add empty row for spacing
     const headerRow = worksheet.addRow(headers);
     headerRow.eachCell((cell) => {
@@ -66,6 +68,7 @@ const ExcelReportAction = async (salesData, formsData) => {
     // 🎯 Define Column Widths & Alignment
     worksheet.columns = [
         { key: "date", width: 15, alignment: { horizontal: "left" } },
+        { key: "salesName", width: 15, alignment: { horizontal: "left" } },
         { key: "customer", width: 30, alignment: { horizontal: "left" } },
         { key: "product", width: 30, alignment: { horizontal: "left" } },
         { key: "qty", width: 10, alignment: { horizontal: "center" }, numFmt: 0 },
@@ -77,6 +80,7 @@ const ExcelReportAction = async (salesData, formsData) => {
     salesData.forEach(row => {
         const rowData = worksheet.addRow({
             date: row.salesDate,
+            salesName: row.salesName,
             customer: row.customer.name,
             product: row.product.name,
             qty: Number(row.qty),
@@ -85,7 +89,7 @@ const ExcelReportAction = async (salesData, formsData) => {
         });
 
         rowData.eachCell((cell, colNumber) => {
-            if (colNumber <= 3) {
+            if (colNumber <= 4) {
                 cell.alignment = { horizontal: "left" };
             } else {
                 cell.alignment = { horizontal: "center" };
@@ -104,10 +108,10 @@ const ExcelReportAction = async (salesData, formsData) => {
     // ]);
 
     const totalRow = worksheet.addRow([
-        "Total", "", "",
-        { formula: `SUM(D3:D${lastRow - 1})`, numFmt: '"\u20B9" #,##0.00' },
+        "Total", "", "","",
+        { formula: `SUM(E3:E${lastRow - 1})`, numFmt: '"\u20B9" #,##0.00' },
         "",
-        { formula: `SUM(F3:F${lastRow - 1})`, numFmt: '"\u20B9" #,##0.00' }
+        { formula: `SUM(G3:G${lastRow - 1})`, numFmt: '"\u20B9" #,##0.00' }
     ]);
 
     totalRow.eachCell((cell) => {

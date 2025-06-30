@@ -121,9 +121,8 @@ const SalesReturnList = () => {
             width: 80,
             sortable: true,
         },
-        { field: 'invoiceNo', headerName: 'Invoice No', width: 130, sortable: false },
-
-
+        { field: 'salesName', headerName: 'Sales Name', width: 130, sortable: false },
+        { field: 'batchNo', headerName: 'Production Batch', width: 180, sortable: false, resizable: true },
         {
             field: 'customer', headerName: 'Customer Name', width: 150, resizable: true, sortable: false,
             renderCell: (params) => (
@@ -136,15 +135,7 @@ const SalesReturnList = () => {
                 params.row.product.name ? params.row.product.name : ''
             )
         },
-        {
-            field: 'rDesc', headerName: 'Description', width: 220, resizable: false, sortable: false,
-            renderCell: (params) => {
-                return (
-                    params.row.rDesc ? <textarea readOnly>{params.row.rDesc}</textarea> : ''
-                )
-            }
-        },
-
+        { field: 'invoiceNo', headerName: 'Invoice No', width: 130, sortable: false },
         { field: 'qty', headerName: 'Quantity', width: 110, resizable: true, sortable: false },
         { field: 'salesPrice', headerName: 'Sales Price', width: 110, resizable: true, sortable: false },
         {
@@ -154,6 +145,14 @@ const SalesReturnList = () => {
             )
         },
         { field: 'unit', headerName: 'Unit', width: 110, resizable: true, sortable: false },
+        {
+            field: 'rDesc', headerName: 'Description', width: 220, resizable: false, sortable: false,
+            renderCell: (params) => {
+                return (
+                    params.row.rDesc ? <textarea readOnly>{params.row.rDesc}</textarea> : ''
+                )
+            }
+        },
         {
             field: 'status', headerName: 'Status', width: 100, resizable: true, sortable: false,
             renderCell: (params) => (

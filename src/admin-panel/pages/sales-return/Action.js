@@ -13,7 +13,7 @@ import { validateNumber } from '../../../utils/validation';
 
 
 const Action = ({ onClose, successAction, title, selectedData = {}, readOnly = false }) => {
-  const [formsData, setFormsData] = useState({
+  const [formsData, setFormsData] = React.useState({
     customer: selectedData?.customer ? selectedData.customer : '' || '',
     product: selectedData?.product ? selectedData.product : {} || {},
     rDesc: selectedData?.rDesc || '',
@@ -23,6 +23,7 @@ const Action = ({ onClose, successAction, title, selectedData = {}, readOnly = f
     price: selectedData?.salesPrice || '',
     status: selectedData?.status || '1',
     salesId: selectedData?.salesId || '',
+    salesName: selectedData?.salesName || '',
     productionId: selectedData?.productionId || '',
   });
   const [clearSignal, setClearSignal] = useState(0);
@@ -84,6 +85,7 @@ const Action = ({ onClose, successAction, title, selectedData = {}, readOnly = f
     const reqData = {
       productionId: formsData.productionId,
       salesId: formsData.salesId,
+      salesName: formsData.salesName,
       customer: formsData.customer.id,
       product: formsData.product.id,
       invoiceNo: formsData.invoiceNo,
@@ -123,7 +125,7 @@ const Action = ({ onClose, successAction, title, selectedData = {}, readOnly = f
 
   const getAvailableQty = async () => {
     try {
-      const res = await sendGetRequest(`${SALES_ITEM_AVAILABLE_QTY(formsData?.product?.id)}?type=sales_return&customer=${formsData?.customer?.id}`, user.token);
+      const res = await sendGetRequest(`${SALES_ITEM_AVAILABLE_QTY(formsData?.product?.id, formsData?.productionId)}?type=sales_return&customer=${formsData?.customer?.id}&salesId=${formsData?.salesId ? formsData?.salesId : ''}  `, user.token);
       if (res.status === 200) {
         setAvailableQty(res.data.availableQty || 0);
       } else {
@@ -139,21 +141,23 @@ const Action = ({ onClose, successAction, title, selectedData = {}, readOnly = f
   const handleCustomerChange = (e) => {
     setErrors({ ...errors, ["customer"]: "", qty: "" });
     setClearSignal((prev) => prev + 1);
-    setFormsData({ ...formsData, ["customer"]: e, ['product']: {}, unit: "" , price: "", qty: ""});
+    setFormsData({ ...formsData, ["customer"]: e, ['salesName']: '', ['product']: {}, unit: "", price: "", qty: "" });
   };
 
   const getProductionDetailsByProductId = (e) => {
     start();
-    console.log(e);
-    sendGetRequest(SALES_DETAIL_BY_PRODUCT_ID(e.product.id, formsData.customer.id,  'sales_return'), user.token).then((res) => {
+    console.log("cxvdsvds",e);
+    sendGetRequest(SALES_DETAIL_BY_PRODUCT_ID(e.product.id, formsData.customer.id, e.id), user.token).then((res) => {
       if (res.status === 200) {
-        console.log(res.data, "Object.keys(res.data).length !== 0", Object.keys(res.data).length !== 0,);
-        if (Object.keys(res.data).length !== 0 && e.customer.id == formsData.customer.id) {
+        if (Object.keys(res.data).length !== 0) {
           setClearSignal((prev) => prev + 1);
-            setFormsData((prev) => ({ ...prev, product: {}, unit: "", price: "", qty: "", invoiceNo: "", productionId: '', salesId: '' }));
+          setFormsData((prev) => ({ ...prev, salesName: '', product: {}, unit: "", price: "", qty: "", invoiceNo: "", productionId: '', salesId: '' }));
           showMessage('error', "Product already exists on sales return list please update this product!");
         } else {
-            setFormsData((prev) => ({ ...prev, product: e.product, unit: e.unit, productionId: e.productionId, salesId: e.id }));
+          setFormsData((prev) => ({ ...prev, salesName: e.salesName, product: e.product, unit: e.unit, productionId: e.productionId, salesId: e.id }));
+          setTimeout(() =>{
+            getAvailableQty()
+          }, 400)
         }
       }
     }).catch((err) => {
@@ -165,15 +169,15 @@ const Action = ({ onClose, successAction, title, selectedData = {}, readOnly = f
 
   const handleProductChange = (e) => {
     if (!formsData.customer) {
-            setErrors({ ...errors, ["customer"]: "Customer is required" });
-            showMessage('error', "Please select customer first!");
-            setClearSignal((prev) => prev + 1);
-            setFormsData((prev) => ({ ...prev, product: {}, unit: "", price: "", qty: "", invoiceNo: "", productionId: '', salesId: '' }));
+      setErrors({ ...errors, ["customer"]: "Customer is required" });
+      showMessage('error', "Please select customer first!");
+      setClearSignal((prev) => prev + 1);
+      setFormsData((prev) => ({ ...prev, salesName: '', product: {}, unit: "", price: "", qty: "", invoiceNo: "", productionId: '', salesId: '' }));
     } else {
-      
+
       if (typeof e === "object" && e?.id) {
         setErrors({ ...errors, ["customer"]: "", ["qty"]: "" });
-        setFormsData((prev) => ({ ...prev, product: {}, unit: "", price: "", qty: "", invoiceNo: "", productionId: '', salesId: '' }));
+        setFormsData((prev) => ({ ...prev, salesName: '', product: {}, unit: "", price: "", qty: "", invoiceNo: "", productionId: '', salesId: '' }));
         getProductionDetailsByProductId(e);
         return;
       }
@@ -205,7 +209,7 @@ const Action = ({ onClose, successAction, title, selectedData = {}, readOnly = f
           <Grid item xs={6}>
             {selectedData.id ?
               <TextField
-                            autoComplete='off'
+                autoComplete='off'
                 label="Customer"
                 variant="outlined"
                 fullWidth
@@ -228,7 +232,7 @@ const Action = ({ onClose, successAction, title, selectedData = {}, readOnly = f
           <Grid item xs={6}>
             {selectedData.id ?
               <TextField
-                            autoComplete='off'
+                autoComplete='off'
                 label="Product"
                 variant="outlined"
                 fullWidth
@@ -248,7 +252,7 @@ const Action = ({ onClose, successAction, title, selectedData = {}, readOnly = f
 
           <Grid item xs={6}>
             <TextField
-                            autoComplete='off'
+              autoComplete='off'
               label="Invoice No"
               variant="outlined"
               fullWidth
@@ -264,7 +268,7 @@ const Action = ({ onClose, successAction, title, selectedData = {}, readOnly = f
           </Grid>
           <Grid item xs={6}>
             <TextField
-                            autoComplete='off'
+              autoComplete='off'
               label="Price"
               variant="outlined"
               fullWidth
@@ -284,7 +288,7 @@ const Action = ({ onClose, successAction, title, selectedData = {}, readOnly = f
           </Grid>
           <Grid item xs={8}>
             <TextField
-                            autoComplete='off'
+              autoComplete='off'
               label="Quantity"
               variant="outlined"
               fullWidth
@@ -303,7 +307,7 @@ const Action = ({ onClose, successAction, title, selectedData = {}, readOnly = f
           </Grid>
           <Grid item xs={12}>
             <TextField
-                            autoComplete='off'
+              autoComplete='off'
               label="Description"
               variant="outlined"
               fullWidth

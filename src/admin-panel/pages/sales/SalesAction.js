@@ -66,10 +66,9 @@ const SalesAction = ({ onClose, successAction, title, selectedData = {}, readOnl
         }
     }, [formsData?.product?.id]);
 
-
     const getAvailableQty = async () => {
         try {
-            const res = await sendGetRequest(`${SALES_ITEM_AVAILABLE_QTY(formsData?.product?.id)}?type=sales`, user.token);
+            const res = await sendGetRequest(`${SALES_ITEM_AVAILABLE_QTY(formsData?.product?.id, formsData?.productionId)}?type=sales&salesId=${selectedData?.id ? selectedData?.id : ''}`, user.token);
             if (res.status === 200) {
                 setAvailableQty(res.data.availableQty);
             } else {
@@ -104,6 +103,7 @@ const SalesAction = ({ onClose, successAction, title, selectedData = {}, readOnl
         if (validation()) return;
         const reqData = {
             productionId: formsData?.productionId,
+            batchNo: formsData.batchNo,
             customer: formsData.customer.id,
             invoiceNo: formsData.invoiceNo,
             product: formsData.product.id,
@@ -162,7 +162,24 @@ const SalesAction = ({ onClose, successAction, title, selectedData = {}, readOnl
         });
     }
 
+    // const handleProductChange = (e) => {
+    //     setFormsData((prev) => ({ ...prev, product: e.product, unit: e.unit, productionId: e.id, batchNo: e.batchNo }));
+    //     if (!formsData.customer) {
+    //         setErrors({ ...errors, ["customer"]: "Customer is required" });
+    //         showMessage('error', "Please select customer first!");
+    //         setClearSignal((prev) => prev + 1);
+    //         setFormsData((prev) => ({ ...prev, product: {}, unit: "" }));
+    //         return false
+    //     } else {
+    //         setAvailableQty(0)
+    //         setFormsData((prev) => ({ ...prev, unit: "", qty: '' }));
+    //         getAvailableQty();
+    //         setFormsData((prev) => ({ ...prev, product: e.product, unit: e.unit, productionId: e.id, batchNo: e.batchNo }));
+    //     }
+    // };
+
     const handleProductChange = (e) => {
+        // setFormsData((prev) => ({ ...prev, product: e.product, unit: e.unit, productionId: e.id, batchNo: e.batchNo }));
         if (!formsData.customer) {
             setErrors({ ...errors, ["customer"]: "Customer is required" });
             showMessage('error', "Please select customer first!");
@@ -170,11 +187,12 @@ const SalesAction = ({ onClose, successAction, title, selectedData = {}, readOnl
             setFormsData((prev) => ({ ...prev, product: {}, unit: "" }));
             return false
         } else {
-
-            if (typeof e === "object" && e?.id) {
-                getProductionDetailsByProductId(e);
-                return;
-            }
+            setAvailableQty(0)
+            setFormsData((prev) => ({ ...prev, unit: "", qty: '', product: {}, productionId: '', batchNo: '' }));
+            getAvailableQty();
+            setTimeout(() => {
+                setFormsData((prev) => ({ ...prev, product: e.product, unit: e.unit, productionId: e.id, batchNo: e.batchNo }));
+            }, 1000)
         }
     };
 
@@ -288,6 +306,7 @@ const SalesAction = ({ onClose, successAction, title, selectedData = {}, readOnl
                             fullWidth
                             name='salesPrice'
                             size='small'
+                            type='number'
                             value={formsData.salesPrice}
                             placeholder="Enter Sales Price..."
                             InputProps={{

@@ -215,6 +215,7 @@ const SalesReturnList = () => {
                 <TableHead className={classes.tableHead}>
                   <TableRow>
                     <TableCell>Date</TableCell>
+                    <TableCell>Sales Name</TableCell>
                     <TableCell>Customer Name</TableCell>
                     <TableCell>Product Name</TableCell>
                     <TableCell>Qty</TableCell>
@@ -226,7 +227,7 @@ const SalesReturnList = () => {
                   {loading ? (
                     Array.from({ length: 10 }).map((_, idx) => (
                       <TableRow key={idx}>
-                        {[...Array(6)].map((_, cellIdx) => (
+                        {[...Array(7)].map((_, cellIdx) => (
                           <TableCell key={cellIdx}>
                             <Skeleton variant="text" width="80%" />
                           </TableCell>
@@ -237,6 +238,7 @@ const SalesReturnList = () => {
                     rows && rows.length > 0 ? rows.map((row, idx) => (
                       <TableRow key={idx}>
                         <TableCell>{row.salesDate}</TableCell>
+                        <TableCell>{row.salesName}</TableCell>
                         <TableCell>{row.customer.name}</TableCell>
                         <TableCell>{row.product.name}</TableCell>
                         <TableCell>{row.qty}</TableCell>
@@ -253,7 +255,7 @@ const SalesReturnList = () => {
                 <TableFooter className={classes.tableHead}>
                   <TableRow>
                     <TableCell align="right" style={{ fontSize: 16 }}><strong>Total:</strong></TableCell>
-                    <TableCell colSpan={2}></TableCell>
+                    <TableCell colSpan={3}></TableCell>
                     <TableCell colSpan={2} style={{ fontSize: 16 }}><strong>{rows?.reduce((acc, row) => acc + Number(row.qty), 0) || 0}</strong></TableCell>
                     <TableCell style={{ fontSize: 16, textAlign: 'center' }}><strong>₹{rows?.reduce((acc, row) => acc + Number(row.qty) * Number(row.salesReturnPrice), 0) || 0}</strong></TableCell>
                   </TableRow>
