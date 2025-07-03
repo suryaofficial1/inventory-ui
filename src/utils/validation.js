@@ -63,6 +63,23 @@ export function validateNumber(name, value) {
     return { error: false, value: value.trim() };
 }
 
+export function validateGSTNumber(value) {
+    if (value.trim() === "") {
+        return { error: false, value: "" };
+    }
+
+    const gstPattern = /^[a-zA-Z0-9]+$/;
+    if (!gstPattern.test(value.trim())) {
+        return { error: true, message: 'GST number accepts only alphanumeric characters' };
+    }
+
+    if (value.trim().length > 15) {
+        return { error: true, message: 'GST number must have 15 characters' };
+    }
+
+    return { error: false, value: value.trim() };
+}
+
 
 
 const LETTERS_REGEX = /^[a-zA-Z]+(\s{0,1}[a-zA-Z])*$/;

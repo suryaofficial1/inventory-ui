@@ -6,6 +6,7 @@ import { ADD_CUSTOMER, UPDATE_CUSTOMER } from '../../../config/api-urls'
 import { useLoader } from '../../../hooks/useLoader'
 import { showMessage } from '../../../utils/message'
 import { sendPostRequestWithAuth } from '../../../utils/network'
+import { validateGSTNumber } from '../../../utils/validation'
 
 const CustomerAction = ({ onClose, successAction, title, selectedData = {}, readOnly = false }) => {
     const [formsData, setFormData] = useState(() => ({
@@ -17,6 +18,7 @@ const CustomerAction = ({ onClose, successAction, title, selectedData = {}, read
         gstin: selectedData.gstin || '',
         status: selectedData.status || '1',
     }));
+    const [errors, setErrors] = useState({});
     const user = useSelector((state) => state.user);
 
 
@@ -26,6 +28,23 @@ const CustomerAction = ({ onClose, successAction, title, selectedData = {}, read
         const { name, value } = e.target;
         setFormData((prev) => ({ ...prev, [name]: value }));
     };
+    const gstNumberHandle = (e) => {
+        const value = e.target.value;
+        const gstValue = validateGSTNumber(value);
+        if (gstValue.error) {
+            setErrors({ ...errors, ["gstin"]: gstValue.message });
+        } else {
+            setErrors({ ...errors, ["gstin"]: '' });
+            setFormData((prev) => ({ ...prev, ['gstin']: value }));
+        }
+    }
+
+    const handleContactChange = (e) => {
+        const { name, value } = e.target;
+        const numericValue = Number(value);
+        if (isNaN(numericValue)) return;
+        setFormData((prev) => ({ ...prev, [name]: numericValue }));
+    }
 
     const validation = () => {
         const errors = {};
@@ -134,7 +153,7 @@ const CustomerAction = ({ onClose, successAction, title, selectedData = {}, read
                             InputProps={{
                                 readOnly: readOnly,
                             }}
-                            onChange={handleInputChange}
+                            onChange={(e) => handleContactChange(e)}
                         />
                     </Grid>
                     <Grid item xs={12} sm={6}>
@@ -149,8 +168,11 @@ const CustomerAction = ({ onClose, successAction, title, selectedData = {}, read
                             placeholder="Enter GSTIN..."
                             InputProps={{
                                 readOnly: readOnly,
+                                maxLength: 15
                             }}
-                            onChange={handleInputChange}
+                            error={errors.gstin}
+                            helperText={errors.gstin}
+                            onChange={(e) => gstNumberHandle(e)}
                         />
                     </Grid>
                     <Grid item xs={12}>

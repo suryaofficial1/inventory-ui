@@ -5,6 +5,8 @@ import { ADD_SUPPLIER, UPDATE_SUPPLIER } from '../../../config/api-urls'
 import { useLoader } from '../../../hooks/useLoader'
 import { showMessage } from '../../../utils/message'
 import { sendPostRequest } from '../../../utils/network'
+import { validateGSTNumber } from '../../../utils/validation'
+import { useSelector } from 'react-redux'
 
 const SupplierAction = ({ onClose, successAction, title, selectedData = {}, readOnly = false }) => {
     const [formsData, setFormData] = useState(() => ({
@@ -16,6 +18,8 @@ const SupplierAction = ({ onClose, successAction, title, selectedData = {}, read
         gstin: selectedData.gstin || '',
         status: selectedData.status || '1',
     }));
+    const [errors, setErrors] = useState({});
+    const user = useSelector((state) => state.user);
 
     const [{ start, stop }, Loader] = useLoader();
 
@@ -23,6 +27,24 @@ const SupplierAction = ({ onClose, successAction, title, selectedData = {}, read
         const { name, value } = e.target;
         setFormData((prev) => ({ ...prev, [name]: value }));
     };
+
+    const gstNumberHandle = (e) => {
+        const value = e.target.value;
+        const gstValue = validateGSTNumber(value);
+        if (gstValue.error) {
+            setErrors({ ...errors, ["gstin"]: gstValue.message });
+        } else {
+            setErrors({ ...errors, ["gstin"]: '' });
+            setFormData((prev) => ({ ...prev, ['gstin']: value }));
+        }
+    }
+
+    const handleContactChange = (e) => {
+        const { name, value } = e.target;
+        const numericValue = Number(value);
+        if (isNaN(numericValue)) return;
+        setFormData((prev) => ({ ...prev, [name]: numericValue }));
+    }
 
     const validation = () => {
         const errors = {};
@@ -132,7 +154,7 @@ const SupplierAction = ({ onClose, successAction, title, selectedData = {}, read
                             InputProps={{
                                 readOnly: readOnly,
                             }}
-                            onChange={handleInputChange}
+                            onChange={(e) => handleContactChange(e)}
                         />
                     </Grid>
                     <Grid item xs={6}>
@@ -148,7 +170,9 @@ const SupplierAction = ({ onClose, successAction, title, selectedData = {}, read
                             InputProps={{
                                 readOnly: readOnly,
                             }}
-                            onChange={handleInputChange}
+                            error={errors.gstin}
+                            helperText={errors.gstin}
+                            onChange={(e) => gstNumberHandle(e)}
                         />
                     </Grid>
                       <Grid item xs={12}>
