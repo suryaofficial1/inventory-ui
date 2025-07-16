@@ -5,6 +5,7 @@ import SalesReturnList from './sales-return-report/List';
 import PurchaseReportList from './purchase-report/List';
 import PurchaseReturnReportList from './purchase-return-report/List';
 import StockReport from './stock-report/List';
+import FifoReport from './fifo-report/FifoReport';
 
 const MasterLists = () => {
     const [selectedTab, setSelectedTab] = React.useState(2);
@@ -17,6 +18,7 @@ const MasterLists = () => {
             <PurchaseReportList />,
             <PurchaseReturnReportList />,
             <StockReport />,
+            <FifoReport />,
             <SalesList />,
             <SalesReturnList />,
         ];
@@ -35,6 +37,7 @@ const MasterLists = () => {
                     <Tab label="Purchase Report" />
                     <Tab label="Purchase Return" />
                     <Tab label="Stock Report" />
+                    <Tab label="FIFO Report" />
                     <Tab label="Sales Report" />
                     <Tab label="Sales Return" />
                 </Tabs>

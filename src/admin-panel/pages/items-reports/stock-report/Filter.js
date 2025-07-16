@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import DateRangeDropdown from '../../../../common/date-range/DateRangeDropdown';
 import ProductNameByType from '../../../../common/input-search/ProductNameByType';
 
-const Filter = ({ applyFilter, reset }) => {
+const Filter = ({ applyFilter, reset, isDisabled = false }) => {
   const [type, setType] = React.useState('purchase');
   const [product, setProduct] = useState('');
   const [selectedRange, setSelectedRange] = useState({
@@ -60,7 +60,7 @@ const Filter = ({ applyFilter, reset }) => {
           width: '100%'
         }}>
           <option value="purchase">Purchase</option>
-          <option value="sales">Finished Good</option>
+          {!isDisabled && <option value="sales">Finished Good</option>}
         </select>
 
       </Grid>
